@@ -1,9 +1,5 @@
-
-
 function dashboard() {
-  return (
-    <div>dashboard</div>
-  )
+  return <div className="px-40 py-20"></div>;
 }
 
-export default dashboard
+export default dashboard;
