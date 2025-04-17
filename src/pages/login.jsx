@@ -1,4 +1,4 @@
-import imagenlogin from "../assets/imagenlogin.jpeg";
+import imagenlogin from "../assets/imprenta.jpg";
 import logo from "../assets/ALEXANDER.png";
 import { Link } from "react-router";
 function login() {
