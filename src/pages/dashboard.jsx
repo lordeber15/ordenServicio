@@ -1,11 +1,12 @@
 import { useState } from "react";
 import Modal from "react-modal";
-import logo from "../assets/icons8-editar.svg";
+import logoeditar from "../assets/icons8-editar.svg";
+import logodelete from "../assets/delete.svg";
 import plus from "../assets/plus.svg";
 import back from "../assets/back.svg";
 import { Link } from "react-router";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getServicios } from "../request/serviciosrequest";
+import { useQuery ,useQueryClient, useMutation  } from "@tanstack/react-query";
+import { getServicios, createServicios, updateServicios, deleteServicios} from "../request/serviciosrequest";
 
 Modal.setAppElement("#root"); // Asegura la accesibilidad del modal
 
@@ -17,11 +18,166 @@ function Dashboard() {
 
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
-  const [formData, setFormData] = useState({});
+  const queryClient = useQueryClient();
+
+  const addServiciosMutation = useMutation({
+    mutationFn: createServicios,
+    onSuccess: () => {
+      queryClient.invalidateQueries("servicios");
+    },
+  });
+
+  const deleteServiciosMutation = useMutation({
+    mutationFn: deleteServicios,
+    onSuccess: () => {
+      queryClient.invalidateQueries("servicios");
+    },
+  });
+
+  const updateServiciosMutation = useMutation({
+    mutationFn: updateServicios,
+    onSuccess: () => {
+      queryClient.invalidateQueries("servicios");
+    },
+  });
+
+  const [valueInputnombre, setInputnombre] = useState("");
+  const [valueInputCantidad, setValueInputCantidad] = useState("");
+  const [valueInputTrabajo, setInputTrabajo] = useState("");
+  const [valueInputEstado, setInputEstado] = useState("");
+  const [valueInputTotal, setInputTotal] = useState(0.0);
+  const [valueInputAcuenta, setInputAcuenta] = useState(0.0);
+  const [editServiciosId, setEditServiciosId] = useState(null);
+  const [activeTab, setActiveTab] = useState("inventario");
+
+  const handlerChangeNombre = (e) => {
+    setInputnombre(e.target.value);
+  };
+  const handlerChangeCantidad = (e) => {
+    setValueInputCantidad(e.target.value);
+  };
+  const handlerChangeTrabajo = (e) => {
+    setInputTrabajo(e.target.value);
+  };
+  const handlerChangeEstado = (e) => {
+    setInputEstado(e.target.value);
+  };
+  const handlerChangeTotal = (e) => {
+    setInputTotal(e.target.value);
+  };
+  const handlerChangeAcuenta = (e) => {
+    setInputAcuenta(e.target.value);
+  };
+
+  const handlerClickServicios = async () => {
+    if (
+      valueInputnombre == "" &&
+      valueInputCantidad == "" &&
+      valueInputTrabajo == "" &&
+      valueInputEstado == "" &&
+      valueInputTotal == 0 &&
+      valueInputAcuenta == 0
+    ) {
+      return console.log(
+        "Debes ingresar un servicios"
+      );
+    } else if (valueInputnombre == "") {
+      return console.log("Debes ingresar un Nombre");
+    } else if (valueInputCantidad == "") {
+      return console.log("Debes ingresar una cantidad");
+    } else if (valueInputTrabajo == "") {
+      return console.log("Debes ingresar un descripcion");
+    } else if (valueInputEstado == "") {
+      return console.log("Debes Seleccionar un estado");
+    } else if (valueInputTotal == "") {
+      return console.log("Debes ingresar un Total");
+    }else if (valueInputAcuenta == "") {
+      return console.log("Debes ingresar un A cuenta");
+    }
+    try {
+      await addServiciosMutation.mutateAsync({
+        nombre: valueInputnombre,
+        cantidad: valueInputCantidad,
+        descripcion: valueInputTrabajo,
+        estado: valueInputEstado,
+        total: valueInputTotal,
+        acuenta: valueInputAcuenta,
+      });
+      handlerReset();
+      closeModal();
+      queryClient.invalidateQueries("servicios");
+    } catch (error) {
+      console.error("Error al agregar el servicio:", error);
+    }
+  };
+
+  const handleEditServicios = (id) => {
+    setEditServiciosId(id);
+    const servicios = dataServicios.find((servicios) => servicios.id === id);
+    if (servicios) {
+      setInputnombre(servicios.nombre);
+      setValueInputCantidad(servicios.cantidad);
+      setInputTrabajo(servicios.descripcion);
+      setInputEstado(servicios.estado);
+      setInputTotal(servicios.total);
+      setInputAcuenta(servicios.acuenta);
+      openModal({
+        nombre: "",
+        cantidad: "",
+        descripcion: "",
+        estado: "",
+        total: "",
+        acuenta:""
+      })
+    }
+  };
+
+  const handlerUpdateServicios = () => {
+    if (
+      valueInputnombre.trim() === "" ||
+      valueInputCantidad === "" ||
+      valueInputTrabajo.trim() === "" ||
+      valueInputEstado === "" ||
+      valueInputTotal === "" ||
+      valueInputAcuenta === ""
+    ) {
+      console.log("Por favor, completa todos los campos.");
+      return;
+    }
+    try {
+      updateServiciosMutation.mutate({
+        id: editServiciosId,
+        nombre: valueInputnombre,
+        cantidad: valueInputCantidad,
+        descripcion: valueInputTrabajo,
+        estado: valueInputEstado,
+        total: valueInputTotal,
+        acuenta: valueInputAcuenta,
+      });
+      closeModal();
+      handlerReset();
+    } catch (error) {
+      console.error("Error al actualizar el empaque:", error);
+    }
+  };
+
+  const handleDeleteServicios = (id) => {
+    deleteServiciosMutation.mutate(id);
+    queryClient.invalidateQueries("servicios");
+  };
+
+  const handlerReset = () => {
+    setEditServiciosId(null)
+    setInputnombre("");
+    setValueInputCantidad("");
+    setInputTrabajo("");
+    setInputEstado("");
+    setInputTotal(0.0);
+    setInputAcuenta(0.0);
+  };
 
   const openModal = (item) => {
     setSelectedItem(item);
-    setFormData(item);
     setModalIsOpen(true);
   };
 
@@ -30,15 +186,8 @@ function Dashboard() {
     setSelectedItem(null);
   };
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Datos actualizados:", formData);
-    closeModal();
-  };
+    
 
   return (
     <div className="flex flex-col">
@@ -54,14 +203,18 @@ function Dashboard() {
               </Link>
               <div className="text-3xl ">Lista de Trabajos</div>
               <button
-                onClick={() =>
+                onClick={() =>{
+                  handlerReset()
                   openModal({
                     nombre: "",
                     cantidad: "",
                     descripcion: "",
-                    estado: "Pendiente",
+                    estado: "",
                     total: "",
+                    acuenta:""
                   })
+                }
+                  
                 }
                 className="bg-gray-400 hover:bg-gray-500 flex items-center flex-row px-3 py-2 text-sx rounded-md text-white gap-2 shadow-lg"
               >
@@ -69,6 +222,40 @@ function Dashboard() {
                 Nuevo Trabajo
               </button>
             </div>
+            <div className="flex gap-4 mb-6">
+  <button
+    onClick={() => setActiveTab("inventario")}
+    className={`px-4 py-2 rounded-md ${
+      activeTab === "inventario" ? "bg-blue-500 text-white" : "bg-gray-300"
+    }`}
+  >
+    Todos
+  </button>
+  <button
+    onClick={() => setActiveTab("pendiente")}
+    className={`px-4 py-2 rounded-md ${
+      activeTab === "pendiente" ? "bg-blue-500 text-white" : "bg-gray-300"
+    }`}
+  >
+    Pendiente
+  </button>
+  <button
+    onClick={() => setActiveTab("proceso")}
+    className={`px-4 py-2 rounded-md ${
+      activeTab === "proceso" ? "bg-blue-500 text-white" : "bg-gray-300"
+    }`}
+  >
+    En Proceso
+  </button>
+  <button
+    onClick={() => setActiveTab("completado")}
+    className={`px-4 py-2 rounded-md ${
+      activeTab === "completado" ? "bg-blue-500 text-white" : "bg-gray-300"
+    }`}
+  >
+    Completados
+  </button>
+</div>
             <table className="min-w-full text-left text-sm font-light border rounded-lg shadow-lg overflow-hidden">
               <thead className="border-b font-medium dark:border-neutral-500 bg-gray-400 rounded-t-lg">
                 <tr>
@@ -81,60 +268,62 @@ function Dashboard() {
                   <th className="px-3 py-4">A cuenta</th>
                   <th className="px-3 py-4">Saldo</th>
                   <th className="px-3 py-4">Editar</th>
+                  <th className="px-3 py-4">Eliminar</th>
                 </tr>
               </thead>
               <tbody className="rounded-b-lg">
-                {dataServicios &&
-                  dataServicios.map((cont, i) => (
-                    <tr
-                      className="border-b dark:border-neutral-500 last:rounded-b-lg"
-                      key={i}
-                    >
-                      <td className="whitespace-nowrap px-3 py-4 font-medium">
-                        {cont.id}
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-4">
-                        {cont.nombre}
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-4">
-                        {cont.cantidad}
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-4">
-                        {cont.descripcion}
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-4">
-                        <span
-                          className={`px-3 py-2 rounded-full font-bold text-white ${
-                            cont.estado === "Pendiente"
-                              ? "bg-rose-500"
-                              : cont.estado === "Proceso"
-                              ? "bg-yellow-500"
-                              : "bg-green-500"
-                          }`}
-                        >
-                          {cont.estado}
-                        </span>
-                      </td>
-                      <td className="whitespace-nowrap px-6 py-4">
-                        S./ {cont.total}.00
-                      </td>
-                      <td className="whitespace-nowrap px-6 py-4">
-                        S./ {cont.acuenta}.00
-                      </td>
-                      <td className="whitespace-nowrap px-6 py-4">
-                        S./ {cont.total - cont.acuenta}.00
-                      </td>
-                      <td className="whitespace-nowrap px-6 py-4">
-                        <button
-                          className="cursor-pointer w-6"
-                          onClick={() => openModal(cont)}
-                        >
-                          <img src={logo} alt="Editar" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
+  {dataServicios &&
+    dataServicios
+      .filter((cont) => {
+        if (activeTab === "inventario") return true; // Inventario muestra todos
+        return cont.estado.toLowerCase() === activeTab;
+      })
+      .map((cont, i) => (
+        <tr
+          className="border-b dark:border-neutral-500 last:rounded-b-lg"
+          key={i}
+        >
+          <td className="whitespace-nowrap px-3 py-4 font-medium">{cont.id}</td>
+          <td className="whitespace-nowrap px-3 py-4">{cont.nombre}</td>
+          <td className="whitespace-nowrap px-3 py-4">{cont.cantidad}</td>
+          <td className="whitespace-nowrap px-3 py-4">{cont.descripcion}</td>
+          <td className="whitespace-nowrap px-3 py-4">
+            <span
+              className={`px-3 py-2 rounded-full font-bold text-white ${
+                cont.estado === "Pendiente"
+                  ? "bg-rose-500"
+                  : cont.estado === "Proceso"
+                  ? "bg-yellow-500"
+                  : "bg-green-500"
+              }`}
+            >
+              {cont.estado}
+            </span>
+          </td>
+          <td className="whitespace-nowrap px-6 py-4">S./ {cont.total}.00</td>
+          <td className="whitespace-nowrap px-6 py-4">S./ {cont.acuenta}.00</td>
+          <td className="whitespace-nowrap px-6 py-4">
+            S./ {cont.total - cont.acuenta}.00
+          </td>
+          <td className="whitespace-nowrap px-6 py-4">
+            <button
+              className="cursor-pointer w-6"
+              onClick={() => handleEditServicios(cont.id)}
+            >
+              <img src={logoeditar} alt="Editar" />
+            </button>
+          </td>
+          <td className="whitespace-nowrap px-6 py-4">
+            <button
+              className="cursor-pointer w-6"
+              onClick={() => handleDeleteServicios(cont.id)}
+            >
+              <img src={logodelete} alt="Eliminar" />
+            </button>
+          </td>
+        </tr>
+      ))}
+</tbody>
             </table>
 
             {/* Modal de edición */}
@@ -150,15 +339,15 @@ function Dashboard() {
               }}
             >
               {selectedItem && (
-                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                <div className="flex flex-col gap-4">
                   <h2 className="text-lg font-bold">Trabajo</h2>
 
                   <label className="text-sm font-medium">Nombre:</label>
                   <input
                     type="text"
                     name="nombre"
-                    value={formData.nombre || ""}
-                    onChange={handleChange}
+                    value={valueInputnombre || ""}
+                    onChange={handlerChangeNombre}
                     className="border px-3 py-2 rounded-lg w-full"
                   />
 
@@ -166,8 +355,8 @@ function Dashboard() {
                   <input
                     type="number"
                     name="cantidad"
-                    value={formData.cantidad || ""}
-                    onChange={handleChange}
+                    value={valueInputCantidad || ""}
+                    onChange={handlerChangeCantidad}
                     className="border px-3 py-2 rounded-lg w-full"
                   />
 
@@ -175,18 +364,19 @@ function Dashboard() {
                   <input
                     type="text"
                     name="descripcion"
-                    value={formData.descripcion || ""}
-                    onChange={handleChange}
+                    value={valueInputTrabajo || ""}
+                    onChange={handlerChangeTrabajo}
                     className="border px-3 py-2 rounded-lg w-full"
                   />
 
                   <label className="text-sm font-medium">Estado:</label>
                   <select
                     name="estado"
-                    value={formData.estado || ""}
-                    onChange={handleChange}
+                    value={valueInputEstado || ""}
+                    onChange={handlerChangeEstado}
                     className="border px-3 py-2 rounded-lg w-full"
                   >
+                    <option value="">Seleciona una opcion</option>
                     <option value="Pendiente">Pendiente</option>
                     <option value="Proceso">Proceso</option>
                     <option value="Completado">Completado</option>
@@ -196,16 +386,16 @@ function Dashboard() {
                   <input
                     type="number"
                     name="total"
-                    value={formData.total || ""}
-                    onChange={handleChange}
+                    value={valueInputTotal || ""}
+                    onChange={handlerChangeTotal}
                     className="border px-3 py-2 rounded-lg w-full"
                   />
                   <label className="text-sm font-medium">A Cuenta:</label>
                   <input
                     type="number"
                     name="acuenta"
-                    value={formData.acuenta || ""}
-                    onChange={handleChange}
+                    value={valueInputAcuenta || ""}
+                    onChange={handlerChangeAcuenta}
                     className="border px-3 py-2 rounded-lg w-full"
                   />
 
@@ -217,14 +407,24 @@ function Dashboard() {
                     >
                       Cancelar
                     </button>
-                    <button
-                      type="submit"
+                    {editServiciosId == null ? (
+              <button
+              onClick={handlerClickServicios}
+              className="bg-cyan-500 text-white px-4 py-2 rounded-lg"
+            >
+              Guardar
+            </button>
+            ) : (
+              <button
+                      onClick={handlerUpdateServicios}
                       className="bg-cyan-500 text-white px-4 py-2 rounded-lg"
                     >
-                      Guardar
+                      Actualizar
                     </button>
+            )}
+                    
                   </div>
-                </form>
+                </div>
               )}
             </Modal>
           </div>
