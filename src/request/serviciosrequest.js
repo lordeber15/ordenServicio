@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const serviciosApi = axios.create({
-  baseURL: "http://localhost:3000/",
+  baseURL: "https://backendserviciosimprenta-production.up.railway.app//",
 });
 export const getServicios = async () => {
   const res = await serviciosApi.get("/servicios");
