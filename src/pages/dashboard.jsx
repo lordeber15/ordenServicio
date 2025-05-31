@@ -5,8 +5,13 @@ import logodelete from "../assets/delete.svg";
 import plus from "../assets/plus.svg";
 import back from "../assets/back.svg";
 import { Link } from "react-router";
-import { useQuery ,useQueryClient, useMutation  } from "@tanstack/react-query";
-import { getServicios, createServicios, updateServicios, deleteServicios} from "../request/serviciosrequest";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import {
+  getServicios,
+  createServicios,
+  updateServicios,
+  deleteServicios,
+} from "../request/serviciosrequest";
 
 Modal.setAppElement("#root"); // Asegura la accesibilidad del modal
 
@@ -71,37 +76,24 @@ function Dashboard() {
 
   const handlerClickServicios = async () => {
     if (
-      valueInputnombre == "" &&
-      valueInputCantidad == "" &&
-      valueInputTrabajo == "" &&
-      valueInputEstado == "" &&
-      valueInputTotal == 0 &&
-      valueInputAcuenta == 0
+      !valueInputnombre ||
+      !valueInputCantidad ||
+      !valueInputTrabajo ||
+      !valueInputEstado ||
+      !valueInputTotal ||
+      !valueInputAcuenta
     ) {
-      return console.log(
-        "Debes ingresar un servicios"
-      );
-    } else if (valueInputnombre == "") {
-      return console.log("Debes ingresar un Nombre");
-    } else if (valueInputCantidad == "") {
-      return console.log("Debes ingresar una cantidad");
-    } else if (valueInputTrabajo == "") {
-      return console.log("Debes ingresar un descripcion");
-    } else if (valueInputEstado == "") {
-      return console.log("Debes Seleccionar un estado");
-    } else if (valueInputTotal == "") {
-      return console.log("Debes ingresar un Total");
-    }else if (valueInputAcuenta == "") {
-      return console.log("Debes ingresar un A cuenta");
+      console.log("Todos los campos son obligatorios");
+      return;
     }
     try {
       await addServiciosMutation.mutateAsync({
         nombre: valueInputnombre,
-        cantidad: valueInputCantidad,
+        cantidad: parseInt(valueInputCantidad, 10),
         descripcion: valueInputTrabajo,
         estado: valueInputEstado,
-        total: valueInputTotal,
-        acuenta: valueInputAcuenta,
+        total: parseFloat(valueInputTotal),
+        acuenta: parseFloat(valueInputAcuenta),
       });
       handlerReset();
       closeModal();
@@ -127,8 +119,8 @@ function Dashboard() {
         descripcion: "",
         estado: "",
         total: "",
-        acuenta:""
-      })
+        acuenta: "",
+      });
     }
   };
 
@@ -167,7 +159,7 @@ function Dashboard() {
   };
 
   const handlerReset = () => {
-    setEditServiciosId(null)
+    setEditServiciosId(null);
     setInputnombre("");
     setValueInputCantidad("");
     setInputTrabajo("");
@@ -186,9 +178,6 @@ function Dashboard() {
     setSelectedItem(null);
   };
 
-
-    
-
   return (
     <div className="flex flex-col">
       <div className="overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -203,19 +192,17 @@ function Dashboard() {
               </Link>
               <div className="text-3xl ">Lista de Trabajos</div>
               <button
-                onClick={() =>{
-                  handlerReset()
+                onClick={() => {
+                  handlerReset();
                   openModal({
                     nombre: "",
                     cantidad: "",
                     descripcion: "",
                     estado: "",
                     total: "",
-                    acuenta:""
-                  })
-                }
-                  
-                }
+                    acuenta: "",
+                  });
+                }}
                 className="bg-gray-400 hover:bg-gray-500 flex items-center flex-row px-3 py-2 text-sx rounded-md text-white gap-2 shadow-lg"
               >
                 <img src={plus} className="w-6 items-center " />
@@ -223,44 +210,73 @@ function Dashboard() {
               </button>
             </div>
             <div className="flex gap-4 mb-6">
-  <button
-    onClick={() => setActiveTab("inventario")}
-    className={`px-4 py-2 rounded-md ${
-      activeTab === "inventario" ? "bg-blue-500 text-white" : "bg-gray-300"
-    }`}
-  >
-    Todos
-  </button>
-  <button
-    onClick={() => setActiveTab("pendiente")}
-    className={`px-4 py-2 rounded-md ${
-      activeTab === "pendiente" ? "bg-blue-500 text-white" : "bg-gray-300"
-    }`}
-  >
-    Pendiente
-  </button>
-  <button
-    onClick={() => setActiveTab("proceso")}
-    className={`px-4 py-2 rounded-md ${
-      activeTab === "proceso" ? "bg-blue-500 text-white" : "bg-gray-300"
-    }`}
-  >
-    En Proceso
-  </button>
-  <button
-    onClick={() => setActiveTab("completado")}
-    className={`px-4 py-2 rounded-md ${
-      activeTab === "completado" ? "bg-blue-500 text-white" : "bg-gray-300"
-    }`}
-  >
-    Completados
-  </button>
-</div>
+              <button
+                onClick={() => setActiveTab("Todos")}
+                className={`px-4 py-2 rounded-md ${
+                  activeTab === "Todos"
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-300"
+                }`}
+              >
+                Todos
+              </button>
+              <button
+                onClick={() => setActiveTab("pendiente")}
+                className={`px-4 py-2 rounded-md ${
+                  activeTab === "pendiente"
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-300"
+                }`}
+              >
+                Pendiente
+              </button>
+              <button
+                onClick={() => setActiveTab("Diseño")}
+                className={`px-4 py-2 rounded-md ${
+                  activeTab === "Diseño"
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-300"
+                }`}
+              >
+                Diseño
+              </button>
+              <button
+                onClick={() => setActiveTab("Impresión")}
+                className={`px-4 py-2 rounded-md ${
+                  activeTab === "Impresión"
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-300"
+                }`}
+              >
+                Impresión
+              </button>
+              <button
+                onClick={() => setActiveTab("Terminado")}
+                className={`px-4 py-2 rounded-md ${
+                  activeTab === "Terminado"
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-300"
+                }`}
+              >
+                Terminado
+              </button>
+              <button
+                onClick={() => setActiveTab("Entregado")}
+                className={`px-4 py-2 rounded-md ${
+                  activeTab === "Entregado"
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-300"
+                }`}
+              >
+                Entregado
+              </button>
+            </div>
             <table className="min-w-full text-left text-sm font-light border rounded-lg shadow-lg overflow-hidden">
               <thead className="border-b font-medium dark:border-neutral-500 bg-gray-400 rounded-t-lg">
                 <tr>
                   <th className="px-3 py-4">N°</th>
                   <th className="px-3 py-4">Nombre Cliente</th>
+                  <th className="px-3 py-4">Fecha de Recepcion</th>
                   <th className="px-3 py-4">Cantidad</th>
                   <th className="px-3 py-4">Descripcion</th>
                   <th className="px-3 py-4">Estado</th>
@@ -272,65 +288,88 @@ function Dashboard() {
                 </tr>
               </thead>
               <tbody className="rounded-b-lg">
-  {dataServicios &&
-    dataServicios
-      .filter((cont) => {
-        if (activeTab === "inventario") return true; // Inventario muestra todos
-        return cont.estado.toLowerCase() === activeTab;
-      })
-      .map((cont, i) => (
-        <tr
-          className="border-b dark:border-neutral-500 last:rounded-b-lg"
-          key={i}
-        >
-          <td className="whitespace-nowrap px-3 py-4 font-medium">{cont.id}</td>
-          <td className="whitespace-nowrap px-3 py-4">{cont.nombre}</td>
-          <td className="whitespace-nowrap px-3 py-4">{cont.cantidad}</td>
-          <td className="whitespace-nowrap px-3 py-4">{cont.descripcion}</td>
-          <td className="whitespace-nowrap px-3 py-4">
-            <span
-              className={`px-3 py-2 rounded-full font-bold text-white ${
-                cont.estado === "Pendiente"
-                  ? "bg-rose-500"
-                  : cont.estado === "Proceso"
-                  ? "bg-yellow-500"
-                  : "bg-green-500"
-              }`}
-            >
-              {cont.estado}
-            </span>
-          </td>
-          <td className="whitespace-nowrap px-6 py-4">S./ {cont.total}.00</td>
-          <td className="whitespace-nowrap px-6 py-4">S./ {cont.acuenta}.00</td>
-          <td className="whitespace-nowrap px-6 py-4">
-            S./ {cont.total - cont.acuenta}.00
-          </td>
-          <td className="whitespace-nowrap px-6 py-4">
-            <button
-              className="cursor-pointer w-6"
-              onClick={() => handleEditServicios(cont.id)}
-            >
-              <img src={logoeditar} alt="Editar" />
-            </button>
-          </td>
-          <td className="whitespace-nowrap px-6 py-4">
-            <button
-              className="cursor-pointer w-6"
-              onClick={() => handleDeleteServicios(cont.id)}
-            >
-              <img src={logodelete} alt="Eliminar" />
-            </button>
-          </td>
-        </tr>
-      ))}
-</tbody>
+                {dataServicios &&
+                  dataServicios
+                    .filter((cont) => {
+                      if (activeTab === "Todos") return true; // Inventario muestra todos
+                      return (
+                        cont.estado.toLowerCase() === activeTab.toLowerCase()
+                      );
+                    })
+                    .map((cont, i) => (
+                      <tr
+                        className="border-b dark:border-neutral-500 last:rounded-b-lg"
+                        key={i}
+                      >
+                        <td className="whitespace-nowrap px-3 py-4 font-medium">
+                          {cont.id}
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-4">
+                          {cont.nombre}
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-4">
+                          {new Date(cont.createdAt).toLocaleDateString("es-PE")}
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-4">
+                          {cont.cantidad}
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-4">
+                          {cont.descripcion}
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-4">
+                          <span
+                            className={`px-3 py-2 rounded-full font-bold text-white ${
+                              cont.estado === "Pendiente"
+                                ? "bg-rose-500"
+                                : cont.estado === "Diseño"
+                                ? "bg-orange-500"
+                                : cont.estado === "Impresión"
+                                ? "bg-blue-500"
+                                : cont.estado === "Terminado"
+                                ? "bg-green-500"
+                                : cont.estado === "Entregado"
+                                ? "bg-gray-500"
+                                : "bg-black"
+                            }`}
+                          >
+                            {cont.estado}
+                          </span>
+                        </td>
+                        <td className="whitespace-nowrap px-6 py-4">
+                          S./ {parseFloat(cont.total).toFixed(2)}
+                        </td>
+                        <td className="whitespace-nowrap px-6 py-4">
+                          S./ {cont.acuenta}.00
+                        </td>
+                        <td className="whitespace-nowrap px-6 py-4">
+                          S./ {cont.total - cont.acuenta}.00
+                        </td>
+                        <td className="whitespace-nowrap px-6 py-4">
+                          <button
+                            className="cursor-pointer w-6"
+                            onClick={() => handleEditServicios(cont.id)}
+                          >
+                            <img src={logoeditar} alt="Editar" />
+                          </button>
+                        </td>
+                        <td className="whitespace-nowrap px-6 py-4">
+                          <button
+                            className="cursor-pointer w-6"
+                            onClick={() => handleDeleteServicios(cont.id)}
+                          >
+                            <img src={logodelete} alt="Eliminar" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+              </tbody>
             </table>
 
             {/* Modal de edición */}
             <Modal
               isOpen={modalIsOpen}
               onRequestClose={closeModal}
-              className="bg-white p-6 rounded-xl shadow-lg w-1/5 mx-auto mt-20"
+              className="bg-white p-6 rounded-xl shadow-lg w-full sm:w-1/2 md:w-1/3 mx-auto mt-20"
               overlayClassName="fixed inset-0 flex items-center justify-center"
               style={{
                 overlay: {
@@ -378,8 +417,10 @@ function Dashboard() {
                   >
                     <option value="">Seleciona una opcion</option>
                     <option value="Pendiente">Pendiente</option>
-                    <option value="Proceso">Proceso</option>
-                    <option value="Completado">Completado</option>
+                    <option value="Diseño">Diseño</option>
+                    <option value="Impresión">Impresión</option>
+                    <option value="Terminado">Terminado</option>
+                    <option value="Entregado">Entregado</option>
                   </select>
 
                   <label className="text-sm font-medium">Total:</label>
@@ -408,21 +449,21 @@ function Dashboard() {
                       Cancelar
                     </button>
                     {editServiciosId == null ? (
-              <button
-              onClick={handlerClickServicios}
-              className="bg-cyan-500 text-white px-4 py-2 rounded-lg"
-            >
-              Guardar
-            </button>
-            ) : (
-              <button
-                      onClick={handlerUpdateServicios}
-                      className="bg-cyan-500 text-white px-4 py-2 rounded-lg"
-                    >
-                      Actualizar
-                    </button>
-            )}
-                    
+                      <button
+                        onClick={handlerClickServicios}
+                        className="bg-cyan-500 text-white px-4 py-2 rounded-lg"
+                        disabled={addServiciosMutation.isLoading}
+                      >
+                        Guardar
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handlerUpdateServicios}
+                        className="bg-cyan-500 text-white px-4 py-2 rounded-lg"
+                      >
+                        Actualizar
+                      </button>
+                    )}
                   </div>
                 </div>
               )}
