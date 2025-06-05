@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const serviciosApi = axios.create({
-  baseURL: "https://backend-servicios-imprenta.onrender.com",
+  baseURL: "https://imprenta-imprenta-a2bsyh-c1440d-62-171-181-168.traefik.me/",
 });
 export const getServicios = async () => {
   const res = await serviciosApi.get("/servicios");
