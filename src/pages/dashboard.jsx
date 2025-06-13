@@ -53,7 +53,7 @@ function Dashboard() {
   const [valueInputTotal, setInputTotal] = useState(0.0);
   const [valueInputAcuenta, setInputAcuenta] = useState(0.0);
   const [editServiciosId, setEditServiciosId] = useState(null);
-  const [activeTab, setActiveTab] = useState("inventario");
+  const [activeTab, setActiveTab] = useState("pendiente");
 
   const handlerChangeNombre = (e) => {
     setInputnombre(e.target.value);
@@ -187,10 +187,10 @@ function Dashboard() {
               <Link to={"/"}>
                 <img
                   src={back}
-                  className="w-12 cursor-pointer bg-gray-400 p-2 rounded-md"
+                  className="w-12 cursor-pointer  p-2 rounded-md hover:bg-sky-700 transition ease-in duration-300"
                 />
               </Link>
-              <div className="text-3xl ">Lista de Trabajos</div>
+              <div className="text-3xl text-sky-700 ">Lista de Trabajos</div>
               <button
                 onClick={() => {
                   handlerReset();
@@ -203,76 +203,76 @@ function Dashboard() {
                     acuenta: "",
                   });
                 }}
-                className="bg-gray-400 hover:bg-gray-500 flex items-center flex-row px-3 py-2 text-sx rounded-md text-white gap-2 shadow-lg"
+                className=" cursor-pointer hover:bg-sky-700 text-sky-700 hover:text-white flex items-center flex-row px-3 py-2 text-sx rounded-md gap-2 transition ease-in duration-300"
               >
                 <img src={plus} className="w-6 items-center " />
                 Nuevo Trabajo
               </button>
             </div>
-            <div className="flex gap-4 mb-6">
+            <div className="flex gap-2 mb-4">
               <button
                 onClick={() => setActiveTab("Todos")}
-                className={`px-4 py-2 rounded-md ${
+                className={`px-4 py-2 rounded-md cursor-pointer ${
                   activeTab === "Todos"
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-300"
+                    ? "border-b-2 text-sky-700 hover:border-b-2 border-sky-700 animate-fade animate-duration-300 animate-ease-in"
+                    : "bg-white"
                 }`}
               >
                 Todos
               </button>
               <button
                 onClick={() => setActiveTab("pendiente")}
-                className={`px-4 py-2 rounded-md ${
+                className={`px-4 py-2 rounded-md cursor-pointer ${
                   activeTab === "pendiente"
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-300"
+                    ? "border-b-2 text-sky-700 hover:border-b-2 border-sky-700 animate-fade animate-duration-300 animate-ease-in"
+                    : "bg-white"
                 }`}
               >
                 Pendiente
               </button>
               <button
                 onClick={() => setActiveTab("Diseño")}
-                className={`px-4 py-2 rounded-md ${
+                className={`px-4 py-2 rounded-md cursor-pointer ${
                   activeTab === "Diseño"
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-300"
+                    ? "border-b-2 text-sky-700 hover:border-b-2 border-sky-700 animate-fade animate-duration-300 animate-ease-in"
+                    : "bg-white"
                 }`}
               >
                 Diseño
               </button>
               <button
                 onClick={() => setActiveTab("Impresión")}
-                className={`px-4 py-2 rounded-md ${
+                className={`px-4 py-2 rounded-md cursor-pointer ${
                   activeTab === "Impresión"
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-300"
+                    ? "border-b-2 text-sky-700 hover:border-b-2 border-sky-700 animate-fade animate-duration-300 animate-ease-in"
+                    : "bg-white"
                 }`}
               >
                 Impresión
               </button>
               <button
                 onClick={() => setActiveTab("Terminado")}
-                className={`px-4 py-2 rounded-md ${
+                className={`px-4 py-2 rounded-md cursor-pointer ${
                   activeTab === "Terminado"
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-300"
+                    ? "border-b-2 text-sky-700 hover:border-b-2 border-sky-700 animate-fade animate-duration-300 animate-ease-in"
+                    : "bg-white"
                 }`}
               >
                 Terminado
               </button>
               <button
                 onClick={() => setActiveTab("Entregado")}
-                className={`px-4 py-2 rounded-md ${
+                className={`px-4 py-2 rounded-md cursor-pointer ${
                   activeTab === "Entregado"
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-300"
+                    ? "border-b-2 text-sky-700 hover:border-b-2 border-sky-700 animate-fade animate-duration-300 animate-ease-in"
+                    : "bg-white"
                 }`}
               >
                 Entregado
               </button>
             </div>
             <table className="min-w-full text-left text-sm font-light border rounded-lg shadow-lg overflow-hidden">
-              <thead className="border-b font-medium dark:border-neutral-500 bg-gray-400 rounded-t-lg">
+              <thead className="border-b font-medium bg-sky-700 text-white rounded-t-lg">
                 <tr>
                   <th className="px-3 py-4">N°</th>
                   <th className="px-3 py-4">Nombre Cliente</th>
@@ -287,7 +287,7 @@ function Dashboard() {
                   <th className="px-3 py-4">Eliminar</th>
                 </tr>
               </thead>
-              <tbody className="rounded-b-lg">
+              <tbody className="rounded-b-lg text-sky-900">
                 {dataServicios &&
                   dataServicios
                     .filter((cont) => {
@@ -298,7 +298,7 @@ function Dashboard() {
                     })
                     .map((cont, i) => (
                       <tr
-                        className="border-b dark:border-neutral-500 last:rounded-b-lg"
+                        className="border-b border-sky-700 dark:border-neutral-500 last:rounded-b-lg"
                         key={i}
                       >
                         <td className="whitespace-nowrap px-3 py-4 font-medium">
