@@ -61,7 +61,7 @@ function Login() {
     <div className="flex justify-center bg-gradient-to-r from-indigo-500 to-blue-500">
       <div>
         {isLoading ? (
-          <div className="w-screen h-screen border-4 scale-25 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-screen h-screen border-32 scale-25 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
         ) : (
           <div className="flex flex-col p-4 gap-4 justify-center items-center max-w-2xl h-screen">
             <img
@@ -86,7 +86,7 @@ function Login() {
             <button
               onClick={handleIngresar}
               disabled={isLoading || isError}
-              className="w-8/12 bg-cyan-500 rounded-md p-2 text-white font-bold hover:bg-cyan-400 flex justify-center"
+              className="w-8/12 bg-cyan-500 rounded-md p-2 text-white font-bold hover:bg-cyan-400 flex justify-center cursor-pointer"
             >
               Ingresar
             </button>
