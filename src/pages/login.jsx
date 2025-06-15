@@ -59,37 +59,39 @@ function Login() {
 
   return (
     <div className="flex justify-center bg-gradient-to-r from-indigo-500 to-blue-500">
-      <div className="flex flex-col p-4 gap-4 justify-center items-center max-w-2xl h-screen">
-        <img
-          src={logo}
-          className="w-7/12 animate-fade-down animate-once animate-duration-1000 animate-ease-in-out"
-          alt="logo"
-        />
-        <input
-          type="text"
-          value={usuario}
-          onChange={handledusuario}
-          className="p-2 w-8/12 border rounded-md font-bold px-4 text-amber-50 bg-transparent placeholder:text-amber-100"
-          placeholder="Nombre"
-        />
-        <input
-          type="password"
-          value={contrasena}
-          onChange={handledPassword}
-          className="p-2 w-8/12 border rounded-md font-bold px-4 text-amber-50 bg-transparent placeholder:text-amber-100"
-          placeholder="Contraseña"
-        />
-        <button
-          onClick={handleIngresar}
-          disabled={isLoading || isError}
-          className="w-8/12 bg-cyan-500 rounded-md p-2 text-white font-bold hover:bg-cyan-400 flex justify-center"
-        >
-          {isLoading ? (
-            <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-          ) : (
-            "Ingresar"
-          )}
-        </button>
+      <div>
+        {isLoading ? (
+          <div className="w-screen h-screen border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        ) : (
+          <div className="flex flex-col p-4 gap-4 justify-center items-center max-w-2xl h-screen">
+            <img
+              src={logo}
+              className="w-7/12 animate-fade-down animate-once animate-duration-1000 animate-ease-in-out"
+              alt="logo"
+            />
+            <input
+              type="text"
+              value={usuario}
+              onChange={handledusuario}
+              className="p-2 w-8/12 border rounded-md font-bold px-4 text-amber-50 bg-transparent placeholder:text-amber-100"
+              placeholder="Nombre"
+            />
+            <input
+              type="password"
+              value={contrasena}
+              onChange={handledPassword}
+              className="p-2 w-8/12 border rounded-md font-bold px-4 text-amber-50 bg-transparent placeholder:text-amber-100"
+              placeholder="Contraseña"
+            />
+            <button
+              onClick={handleIngresar}
+              disabled={isLoading || isError}
+              className="w-8/12 bg-cyan-500 rounded-md p-2 text-white font-bold hover:bg-cyan-400 flex justify-center"
+            >
+              Ingresar
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
