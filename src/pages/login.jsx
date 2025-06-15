@@ -1,34 +1,86 @@
-//import imagenlogin from "../assets/imprenta.jpg";
+import { useState, useEffect } from "react";
 import logo from "../assets/ALEXANDER.png";
-import { Link } from "react-router";
-function login() {
+import { useNavigate } from "react-router";
+import { useQuery } from "@tanstack/react-query";
+import { getLogin } from "../request/loginrequest";
+
+function Login() {
+  const [userData, setUserData] = useState(null);
+  const [usuario, setUsuario] = useState("");
+  const [contrasena, setContrasena] = useState("");
+  const navigate = useNavigate();
+
+  const {
+    data: dataLogin,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["login"],
+    queryFn: getLogin,
+  });
+
+  useEffect(() => {
+    const storedUserData = localStorage.getItem("userData");
+    if (storedUserData) {
+      setUserData(JSON.parse(storedUserData));
+    }
+  }, []);
+
+  const handledusuario = (e) => {
+    setUsuario(e.target.value);
+  };
+  const handledPassword = (e) => {
+    setContrasena(e.target.value);
+  };
+
+  const handleIngresar = () => {
+    if (dataLogin) {
+      const user = dataLogin.find(
+        (user) => usuario === user.usuario && contrasena === user.password
+      );
+      if (user) {
+        localStorage.setItem("userData", JSON.stringify(user));
+        navigate("/dashboard");
+      } else {
+        console.log("No puedes ingresar");
+      }
+    } else {
+      console.log("Datos de usuario no disponibles aún");
+    }
+  };
+
   return (
     <div className="flex justify-center bg-gradient-to-r from-indigo-500 to-blue-500">
-      {/* <img className="w-8/12 m-auto h-screen object-cover" src={imagenlogin} /> */}
       <div className="flex flex-col p-4 gap-4 justify-center items-center max-w-2xl h-screen">
         <img
           src={logo}
           className="w-7/12 animate-fade-down animate-once animate-duration-1000 animate-ease-in-out"
+          alt="logo"
         />
         <input
           type="text"
-          className="p-2 w-8/12 border rounded-md font-bold px-4 text-amber-50 animate-fade-down animate-once animate-duration-1200 animate-ease-in-out"
+          value={usuario}
+          onChange={handledusuario}
+          className="p-2 w-8/12 border rounded-md font-bold px-4 text-amber-50 bg-transparent placeholder:text-amber-100"
           placeholder="Nombre"
         />
         <input
           type="password"
-          className="p-2 w-8/12 border rounded-md font-bold px-4 text-amber-50 animate-fade-down animate-once animate-duration-1500 animate-ease-in-out"
+          value={contrasena}
+          onChange={handledPassword}
+          className="p-2 w-8/12 border rounded-md font-bold px-4 text-amber-50 bg-transparent placeholder:text-amber-100"
           placeholder="Contraseña"
         />
-        <Link
-          to={"/dashboard"}
-          className=" w-8/12 bg-cyan-500 rounded-md p-2 text-white font-bold hover:bg-cyan-400 flex justify-center animate-fade-down animate-once animate-duration-1600 animate-ease-in-out"
+        <button
+          onClick={handleIngresar}
+          disabled={isLoading || isError}
+          className="w-8/12 bg-cyan-500 rounded-md p-2 text-white font-bold hover:bg-cyan-400 flex justify-center"
         >
-          Ingresar
-        </Link>
+          {isLoading ? "Cargando usuarios..." : "Ingresar"}
+        </button>
       </div>
     </div>
   );
 }
 
-export default login;
+export default Login;
