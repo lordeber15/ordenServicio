@@ -21,6 +21,12 @@ function Login() {
   });
 
   useEffect(() => {
+    if (isError) {
+      toast.error("Error al conectar con el servidor. Intenta de nuevo.");
+    }
+  }, [isError]);
+
+  useEffect(() => {
     const storedUserData = localStorage.getItem("userData");
     if (storedUserData) {
       setUserData(JSON.parse(storedUserData));
@@ -85,8 +91,12 @@ function Login() {
             />
             <button
               onClick={handleIngresar}
-              disabled={isLoading || isError}
-              className="w-8/12 bg-cyan-500 rounded-md p-2 text-white font-bold hover:bg-cyan-400 flex justify-center cursor-pointer"
+              disabled={isLoading}
+              className={`w-8/12 bg-cyan-500 rounded-md p-2 text-white font-bold flex justify-center cursor-pointer ${
+                isLoading
+                  ? "opacity-50 cursor-not-allowed"
+                  : "hover:bg-cyan-400"
+              }`}
             >
               Ingresar
             </button>
