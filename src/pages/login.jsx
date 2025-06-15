@@ -84,7 +84,11 @@ function Login() {
           disabled={isLoading || isError}
           className="w-8/12 bg-cyan-500 rounded-md p-2 text-white font-bold hover:bg-cyan-400 flex justify-center"
         >
-          {isLoading ? "Cargando usuarios..." : "Ingresar"}
+          {isLoading ? (
+            <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          ) : (
+            "Ingresar"
+          )}
         </button>
       </div>
     </div>
