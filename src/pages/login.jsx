@@ -3,6 +3,7 @@ import logo from "../assets/ALEXANDER.png";
 import { useNavigate } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { getLogin } from "../request/loginrequest";
+import toast from "react-hot-toast";
 
 function Login() {
   const [userData, setUserData] = useState(null);
@@ -34,17 +35,24 @@ function Login() {
   };
 
   const handleIngresar = () => {
+    if (!usuario || !contrasena) {
+      toast.error("Debes completar usuario y contraseña");
+      return;
+    }
     if (dataLogin) {
       const user = dataLogin.find(
         (user) => usuario === user.usuario && contrasena === user.password
       );
       if (user) {
         localStorage.setItem("userData", JSON.stringify(user));
+        toast.success("¡Acceso correcto!");
         navigate("/dashboard");
       } else {
+        toast.error("Usuario o contraseña incorrectos");
         console.log("No puedes ingresar");
       }
     } else {
+      toast.error("Datos no disponibles aún, intenta en unos segundos");
       console.log("Datos de usuario no disponibles aún");
     }
   };

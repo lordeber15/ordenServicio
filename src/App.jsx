@@ -4,12 +4,14 @@ import Dashboard from "./pages/dashboard";
 import NavBar from "./components/navbar";
 import { Route, Routes, useLocation } from "react-router";
 import ProtectedRoutes from "./components/protectedRoutes";
+import { Toaster } from "react-hot-toast";
 
 function App() {
   const storedUserData = JSON.parse(localStorage.getItem("userData")) || null;
   const locationNow = useLocation();
   return (
     <div>
+      <Toaster position="top-center" reverseOrder={false} />
       {locationNow.pathname !== "/" && <NavBar />}
       <Routes>
         <Route path="/" element={<Login />} />
