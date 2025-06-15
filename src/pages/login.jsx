@@ -91,6 +91,7 @@ function Login() {
             />
             <button
               onClick={handleIngresar}
+              onTouchEnd={handleIngresar}
               disabled={isLoading}
               className={`w-8/12 bg-cyan-500 rounded-md p-2 text-white font-bold flex justify-center cursor-pointer ${
                 isLoading
