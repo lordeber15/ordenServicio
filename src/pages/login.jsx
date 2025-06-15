@@ -61,7 +61,7 @@ function Login() {
     <div className="flex justify-center bg-gradient-to-r from-indigo-500 to-blue-500">
       <div>
         {isLoading ? (
-          <div className="w-screen h-screen border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-screen h-screen border-4 scale-10 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
         ) : (
           <div className="flex flex-col p-4 gap-4 justify-center items-center max-w-2xl h-screen">
             <img
