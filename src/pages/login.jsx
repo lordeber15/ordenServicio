@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import logo from "../assets/ALEXANDER.png";
+import logo from "../assets/ALEXANDER.webp";
 import { useNavigate } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { getLogin } from "../request/loginrequest";
