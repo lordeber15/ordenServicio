@@ -54,7 +54,7 @@ function Pagination({ data, activeTab, onEdit, onDelete }) {
     setCurrentPage((prev) => Math.min(prev + 1, totalPages));
 
   return (
-    <div>
+    <div className="h-screen">
       <table className="min-w-full text-left text-sm font-light rounded-md shadow-lg border border-sky-700">
         <thead className="border-b font-medium bg-sky-700 text-white rounded-t-lg">
           <tr>
@@ -124,14 +124,14 @@ function Pagination({ data, activeTab, onEdit, onDelete }) {
                 {open === cont.id && (
                   <div
                     ref={dropdownRef}
-                    className=" absolute flex flex-col z-50 top-14 right-14 bg-white border border-gray-200 rounded-md shadow-lg w-36 text-sm"
+                    className=" absolute flex flex-col z-50 top-14 right-6 lg:right-10 bg-white border border-gray-200 rounded-md shadow-lg w-36 text-sm animate-fade-down animate-duration-100 animate-ease-in"
                   >
                     <button
                       onClick={() => {
                         onEdit(cont.id); // Reemplaza con tu lógica de edición
                         setOpen(null);
                       }}
-                      className="w-full text-left text-md px-4 py-2 hover:bg-sky-100 text-sky-700 flex gap-2 items-center"
+                      className="w-full text-left text-md px-4 py-2 hover:bg-sky-100 text-sky-700 flex gap-2 items-center "
                     >
                       <CiEdit className="w-5 h-5" />
                       Editar
@@ -152,13 +152,6 @@ function Pagination({ data, activeTab, onEdit, onDelete }) {
                   </div>
                 )}
               </td>
-
-              {/* <button
-                  className="cursor-pointer w-6"
-                  onClick={() => onEdit(cont.id)}
-                >
-                  <img src={logoeditar} alt="Editar" />
-                </button> */}
             </tr>
           ))}
         </tbody>

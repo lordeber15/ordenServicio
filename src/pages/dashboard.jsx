@@ -52,6 +52,8 @@ function Dashboard() {
   const [valueInputAcuenta, setInputAcuenta] = useState(0.0);
   const [editServiciosId, setEditServiciosId] = useState(null);
   const [activeTab, setActiveTab] = useState("pendiente");
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [idToDelete, setIdToDelete] = useState(null);
 
   const handlerChangeNombre = (e) => {
     setInputnombre(e.target.value);
@@ -151,9 +153,28 @@ function Dashboard() {
     }
   };
 
-  const handleDeleteServicios = (id) => {
+  /*const handleDeleteServicios = (id) => {
     deleteServiciosMutation.mutate(id);
     queryClient.invalidateQueries("servicios");
+  };*/
+
+  const handleDeleteServicios = (id) => {
+    setIdToDelete(id);
+    setConfirmModalOpen(true);
+  };
+
+  const confirmDeleteServicios = () => {
+    if (idToDelete !== null) {
+      deleteServiciosMutation.mutate(idToDelete);
+      queryClient.invalidateQueries("servicios");
+      setIdToDelete(null);
+      setConfirmModalOpen(false);
+    }
+  };
+
+  const cancelDelete = () => {
+    setIdToDelete(null);
+    setConfirmModalOpen(false);
   };
 
   const handlerReset = () => {
@@ -180,7 +201,7 @@ function Dashboard() {
     <div className="flex flex-col">
       <div className="overflow-x-auto sm:-mx-6 lg:-mx-8">
         <div className="inline-block min-w-full py-2 sm:px-6 lg:px-8">
-          <div className="overflow-hidden px-20 py-4">
+          <div className="overflow-hidden px-10 py-4">
             <div className="font-bold flex py-4 justify-between">
               <div className="" />
               <div className="text-3xl text-sky-700 ">Lista de Trabajos</div>
@@ -275,7 +296,7 @@ function Dashboard() {
             <Modal
               isOpen={modalIsOpen}
               onRequestClose={closeModal}
-              className="bg-white p-6 rounded-xl shadow-lg w-full sm:w-1/2 md:w-1/3 mx-auto mt-20"
+              className="bg-white p-6 rounded-xl shadow-lg w-full sm:w-1/2 md:w-1/3 mx-auto mt-20 animate-fade animate-duration-200 animate-ease-in"
               overlayClassName="fixed inset-0 flex items-center justify-center"
               style={{
                 overlay: {
@@ -373,6 +394,44 @@ function Dashboard() {
                   </div>
                 </div>
               )}
+            </Modal>
+            <Modal
+              isOpen={confirmModalOpen}
+              onRequestClose={cancelDelete}
+              contentLabel="Confirmar eliminación"
+              className="bg-white p-6 rounded-xl shadow-lg w-full sm:w-1/3 mx-auto mt-40 animate-fade animate-duration-200 animate-ease-in"
+              overlayClassName="fixed inset-0  flex items-center justify-center z-50"
+              style={{
+                overlay: {
+                  backgroundColor: "rgba(0, 0, 0, 0.5)",
+                },
+              }}
+            >
+              <h2 className="text-xl font-bold text-red-600 mb-4">
+                ¿Estás seguro?
+              </h2>
+              <p className="text-gray-700 mb-6">
+                Esta acción eliminará el servicio{" "}
+                <span className="font-semibold text-red-700">
+                  {dataServicios?.find((item) => item.id === idToDelete)
+                    ?.nombre || "desconocido"}
+                </span>{" "}
+                permanentemente. ¿Deseas continuar?
+              </p>
+              <div className="flex justify-end gap-4">
+                <button
+                  onClick={cancelDelete}
+                  className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={confirmDeleteServicios}
+                  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                >
+                  Eliminar
+                </button>
+              </div>
             </Modal>
           </div>
         </div>

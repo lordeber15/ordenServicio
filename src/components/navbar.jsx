@@ -49,7 +49,7 @@ function Navbar() {
           <TiThMenu />
         </div>
         {open && (
-          <div className="absolute right-0 mt-45 mr-6 w-40 bg-sky-600 rounded-md shadow-lg py-2 z-10">
+          <div className="absolute right-0 mt-45 mr-6 w-40 bg-sky-600 rounded-md shadow-lg py-2 z-10 animate-fade-down animate-duration-100 animate-ease-in">
             {admin ? (
               <Link
                 to={"/perfil"}
