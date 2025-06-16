@@ -1,10 +1,10 @@
 import Logo from "../assets/ALEXANDER.png";
 import { useState, useEffect } from "react";
 import { FaRegUser } from "react-icons/fa";
-import { GrConfigure } from "react-icons/gr";
 import { LuLogOut } from "react-icons/lu";
 import { TiThMenu } from "react-icons/ti";
 import { Link } from "react-router";
+import { MdOutlineSpaceDashboard } from "react-icons/md";
 
 function Navbar() {
   const [open, setOpen] = useState(false);
@@ -41,19 +41,31 @@ function Navbar() {
         {open && (
           <div className="absolute right-0 mt-45 mr-6 w-40 bg-sky-600 rounded-md shadow-lg py-2 z-10">
             {admin ? (
-              <Link className="px-4 py-2 cursor-pointer hover:bg-sky-500 text-white w-full text-left flex flex-row gap-2 justify-start items-center hover:text-white">
+              <Link
+                to={"/perfil"}
+                onClick={() => setOpen(!open)}
+                className="px-4 py-2 cursor-pointer hover:bg-sky-500 text-white w-full text-left flex flex-row gap-2 justify-start items-center hover:text-white"
+              >
                 <FaRegUser className="text-white" />
                 Crear Perfil
               </Link>
             ) : (
-              <Link className="px-4 py-2 cursor-pointer hover:bg-sky-500 text-white w-full text-left flex flex-row gap-2 justify-start items-center hover:text-white">
+              <Link
+                to={"/perfil"}
+                onClick={() => setOpen(!open)}
+                className="px-4 py-2 cursor-pointer hover:bg-sky-500 text-white w-full text-left flex flex-row gap-2 justify-start items-center hover:text-white"
+              >
                 <FaRegUser className="text-white" />
                 Perfil
               </Link>
             )}
-            <Link className="px-4 py-2 cursor-pointer hover:bg-sky-500 text-white w-full text-left flex flex-row gap-2 justify-start items-center">
-              <GrConfigure />
-              Configuración
+            <Link
+              to={"/dashboard"}
+              onClick={() => setOpen(!open)}
+              className="px-4 py-2 cursor-pointer hover:bg-sky-500 text-white w-full text-left flex flex-row gap-2 justify-start items-center hover:text-white"
+            >
+              <MdOutlineSpaceDashboard className="text-white" />
+              Dashboard
             </Link>
             <Link
               to={"/"}

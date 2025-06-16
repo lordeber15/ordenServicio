@@ -1,10 +1,41 @@
-import { useState } from "react";
-import logoeditar from "../assets/icons8-editar.svg";
-import logodelete from "../assets/delete.svg";
+import { useState, useEffect, useRef } from "react";
+import { FaCaretUp } from "react-icons/fa";
+import { CiEdit } from "react-icons/ci";
+import { MdDelete } from "react-icons/md";
 
 const ITEMS_PER_PAGE = 8;
 function Pagination({ data, activeTab, onEdit, onDelete }) {
   const [currentPage, setCurrentPage] = useState(1);
+  const [open, setOpen] = useState(null);
+  const [userData, setUserData] = useState("");
+  const [admin, setIsAdmin] = useState(false);
+  const dropdownRef = useRef(null);
+  useEffect(() => {
+    const storedUserData = localStorage.getItem("userData");
+    if (storedUserData) {
+      setUserData(JSON.parse(storedUserData));
+    }
+  }, []);
+  useEffect(() => {
+    if (userData && userData.cargo === "Administrador") {
+      setIsAdmin(true);
+    } else {
+      setIsAdmin(false);
+    }
+  }, [userData]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setOpen(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const filteredData = data.filter((item) => {
     if (activeTab === "Todos") return true;
@@ -24,7 +55,7 @@ function Pagination({ data, activeTab, onEdit, onDelete }) {
 
   return (
     <div>
-      <table className="min-w-full text-left text-sm font-light border rounded-lg shadow-lg overflow-hidden">
+      <table className="min-w-full text-left text-sm font-light rounded-md shadow-lg border border-sky-700">
         <thead className="border-b font-medium bg-sky-700 text-white rounded-t-lg">
           <tr>
             <th className="px-3 py-4">N°</th>
@@ -37,10 +68,9 @@ function Pagination({ data, activeTab, onEdit, onDelete }) {
             <th className="px-3 py-4">A cuenta</th>
             <th className="px-3 py-4">Saldo</th>
             <th className="px-3 py-4">Editar</th>
-            <th className="px-3 py-4">Eliminar</th>
           </tr>
         </thead>
-        <tbody className="rounded-b-lg text-sky-900">
+        <tbody className="rounded-b-lg text-sky-900 ">
           {paginatedData.map((cont, i) => (
             <tr key={i} className="border-b border-sky-700">
               <td className="whitespace-nowrap px-3 py-4 font-medium">
@@ -82,22 +112,53 @@ function Pagination({ data, activeTab, onEdit, onDelete }) {
               <td className="whitespace-nowrap px-6 py-4">
                 S./ {(cont.total - cont.acuenta).toFixed(2)}
               </td>
-              <td className="whitespace-nowrap px-6 py-4">
+
+              <td className="relative whitespace-nowrap px-6 py-4">
                 <button
+                  onClick={() => setOpen(open === cont.id ? null : cont.id)}
+                  className="rounded-md w-10 h-10 bg-sky-700 text-white hover:text-sky-700 flex items-center justify-center cursor-pointer hover:bg-sky-500"
+                >
+                  <FaCaretUp />
+                </button>
+
+                {open === cont.id && (
+                  <div
+                    ref={dropdownRef}
+                    className=" absolute flex flex-col z-50 top-14 right-6 bg-white border border-gray-200 rounded-md shadow-lg w-36 text-sm"
+                  >
+                    <button
+                      onClick={() => {
+                        onEdit(cont.id); // Reemplaza con tu lógica de edición
+                        setOpen(null);
+                      }}
+                      className="w-full text-left text-md px-4 py-2 hover:bg-sky-100 text-sky-700 flex gap-2 items-center"
+                    >
+                      <CiEdit className="w-5 h-5" />
+                      Editar
+                    </button>
+
+                    {admin && (
+                      <button
+                        onClick={() => {
+                          onDelete(cont.id);
+                          setOpen(null);
+                        }}
+                        className="w-full text-left text-md  px-4 py-2 hover:bg-rose-100 text-red-600 flex gap-2 items-center"
+                      >
+                        <MdDelete className="w-5 h-5" />
+                        Eliminar
+                      </button>
+                    )}
+                  </div>
+                )}
+              </td>
+
+              {/* <button
                   className="cursor-pointer w-6"
                   onClick={() => onEdit(cont.id)}
                 >
                   <img src={logoeditar} alt="Editar" />
-                </button>
-              </td>
-              <td className="whitespace-nowrap px-6 py-4">
-                <button
-                  className="cursor-pointer w-6"
-                  onClick={() => onDelete(cont.id)}
-                >
-                  <img src={logodelete} alt="Eliminar" />
-                </button>
-              </td>
+                </button> */}
             </tr>
           ))}
         </tbody>

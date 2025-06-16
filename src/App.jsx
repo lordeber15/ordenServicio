@@ -2,6 +2,7 @@ import "./App.css";
 import Login from "./pages/login";
 import Dashboard from "./pages/dashboard";
 import NavBar from "./components/navbar";
+import Perfil from "./pages/perfil";
 import { Route, Routes, useLocation } from "react-router";
 import ProtectedRoutes from "./components/protectedRoutes";
 import { Toaster } from "react-hot-toast";
@@ -17,6 +18,7 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route element={<ProtectedRoutes user={storedUserData} />}>
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/perfil" element={<Perfil />} />
         </Route>
       </Routes>
     </div>
