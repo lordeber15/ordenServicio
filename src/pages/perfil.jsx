@@ -73,7 +73,7 @@ function Perfil() {
         </span>
         <div className="flex gap-2 items-center w-full">
           <span className="w-1/3">Usuario:</span>
-          <label className="px-2">{userData.usuario}</label>
+          <label className="px-2 w-full">{userData.usuario}</label>
         </div>
         <div className="flex flex-col gap-4 w-full">
           <div className="flex flex-row gap-2 items-center w-full">
@@ -82,7 +82,7 @@ function Perfil() {
               type="password"
               placeholder="Nueva Contraseña"
               onChange={handlerChangePassword}
-              className="p-2"
+              className="p-2 w-full"
             ></input>
           </div>
 
