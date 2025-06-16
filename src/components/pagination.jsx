@@ -80,7 +80,7 @@ function Pagination({ data, activeTab, onEdit, onDelete }) {
         </thead>
         <tbody className="rounded-b-lg text-sky-900 ">
           {paginatedData.map((cont, i) => (
-            <tr key={i} className="border-b border-sky-700">
+            <tr key={i} className="border-b border-sky-700 ">
               <td className="whitespace-nowrap px-3 py-4 font-medium">
                 {cont.id}
               </td>
@@ -88,9 +88,7 @@ function Pagination({ data, activeTab, onEdit, onDelete }) {
               <td className="whitespace-nowrap px-3 py-4 ">
                 {new Date(cont.createdAt).toLocaleDateString("es-PE")}
               </td>
-              <td className="whitespace-nowrap px-3 py-4 flex justify-center">
-                {cont.cantidad}
-              </td>
+              <td className="whitespace-nowrap px-3 py-4 ">{cont.cantidad}</td>
               <td className="whitespace-nowrap px-3 py-4">
                 {cont.descripcion}
               </td>
