@@ -275,7 +275,7 @@ function Dashboard() {
             <Modal
               isOpen={modalIsOpen}
               onRequestClose={closeModal}
-              className="bg-white p-5 rounded-xl shadow-lg w-full sm:w-1/2 md:w-1/3 mx-auto mt-20"
+              className="bg-white p-6 rounded-xl shadow-lg w-full sm:w-1/2 md:w-1/3 mx-auto mt-20"
               overlayClassName="fixed inset-0 flex items-center justify-center"
               style={{
                 overlay: {
@@ -284,8 +284,8 @@ function Dashboard() {
               }}
             >
               {selectedItem && (
-                <div className="flex flex-col gap-2">
-                  <h2 className="text-lg font-bold">Trabajos</h2>
+                <div className="flex flex-col gap-4">
+                  <h2 className="text-lg font-bold">Trabajo</h2>
 
                   <label className="text-sm font-medium">Nombre:</label>
                   <input

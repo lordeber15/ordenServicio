@@ -1,5 +1,5 @@
 import Logo from "../assets/ALEXANDER.png";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FaRegUser } from "react-icons/fa";
 import { LuLogOut } from "react-icons/lu";
 import { TiThMenu } from "react-icons/ti";
@@ -10,6 +10,16 @@ function Navbar() {
   const [open, setOpen] = useState(false);
   const [userData, setUserData] = useState("");
   const [admin, setIsAdmin] = useState(false);
+  const dropdownRef = useRef(null);
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
   useEffect(() => {
     const storedUserData = localStorage.getItem("userData");
     if (storedUserData) {
@@ -27,10 +37,10 @@ function Navbar() {
     localStorage.removeItem("userData");
   };
   return (
-    <div className="h-16 bg-sky-700 flex flex-row justify-between items-center px-6 shadow-[0px_4px_6px_0px_rgba(0,_0,_0,_0.1)] text-white relative">
+    <div className="h-16 w-full bg-sky-700 flex flex-row justify-between items-center px-6 shadow-[0px_4px_6px_0px_rgba(0,_0,_0,_0.1)] text-white relative">
       <img src={Logo} className="h-11" alt="Logo" />
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2" ref={dropdownRef}>
         Bienvenido {userData.usuario} !
         <div
           onClick={() => setOpen(!open)}

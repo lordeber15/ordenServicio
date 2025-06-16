@@ -3,7 +3,7 @@ import { FaCaretUp } from "react-icons/fa";
 import { CiEdit } from "react-icons/ci";
 import { MdDelete } from "react-icons/md";
 
-const ITEMS_PER_PAGE = 8;
+const ITEMS_PER_PAGE = 7;
 function Pagination({ data, activeTab, onEdit, onDelete }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [open, setOpen] = useState(null);
@@ -124,7 +124,7 @@ function Pagination({ data, activeTab, onEdit, onDelete }) {
                 {open === cont.id && (
                   <div
                     ref={dropdownRef}
-                    className=" absolute flex flex-col z-50 top-14 right-6 bg-white border border-gray-200 rounded-md shadow-lg w-36 text-sm"
+                    className=" absolute flex flex-col z-50 top-14 right-14 bg-white border border-gray-200 rounded-md shadow-lg w-36 text-sm"
                   >
                     <button
                       onClick={() => {
