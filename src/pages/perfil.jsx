@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { updateLogin } from "../request/loginrequest";
-import logo from "../assets/ALEXANDER.png";
+import logo from "../assets/ALEXANDER.webp";
 import { Link } from "react-router";
 function Perfil() {
   const queryClient = useQueryClient();

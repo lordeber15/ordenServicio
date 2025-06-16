@@ -1,4 +1,4 @@
-import Logo from "../assets/ALEXANDER.png";
+import Logo from "../assets/ALEXANDER.webp";
 import { useState, useEffect, useRef } from "react";
 import { FaRegUser } from "react-icons/fa";
 import { LuLogOut } from "react-icons/lu";
