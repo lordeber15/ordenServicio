@@ -44,7 +44,7 @@ function Navbar() {
         Bienvenido {userData.usuario} !
         <div
           onClick={() => setOpen(!open)}
-          className="rounded-md w-10 h-10 bg-sky-700 text-white hover:text-sky-700 flex items-center justify-center cursor-pointer hover:bg-sky-500"
+          className="rounded-md w-10 h-10 bg-sky-700 text-white hover:text-white flex items-center justify-center cursor-pointer hover:bg-sky-600 transition ease-in duration-300"
         >
           <TiThMenu />
         </div>

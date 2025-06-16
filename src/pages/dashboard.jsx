@@ -199,9 +199,9 @@ function Dashboard() {
 
   return (
     <div className="flex flex-col">
-      <div className="overflow-x-auto sm:-mx-6 lg:-mx-8">
+      <div className="overflow-x-auto sm:-mx-0 lg:-mx-0">
         <div className="inline-block min-w-full py-2 sm:px-6 lg:px-8">
-          <div className="overflow-hidden px-10 py-4">
+          <div className="w-full px-10 py-4">
             <div className="font-bold flex py-4 justify-between">
               <div className="" />
               <div className="text-3xl text-sky-700 ">Lista de Trabajos</div>

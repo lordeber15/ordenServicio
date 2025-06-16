@@ -10,6 +10,7 @@ function Pagination({ data, activeTab, onEdit, onDelete }) {
   const [userData, setUserData] = useState("");
   const [admin, setIsAdmin] = useState(false);
   const dropdownRef = useRef(null);
+
   useEffect(() => {
     const storedUserData = localStorage.getItem("userData");
     if (storedUserData) {
@@ -23,6 +24,9 @@ function Pagination({ data, activeTab, onEdit, onDelete }) {
       setIsAdmin(false);
     }
   }, [userData]);
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -59,14 +63,18 @@ function Pagination({ data, activeTab, onEdit, onDelete }) {
         <thead className="border-b font-medium bg-sky-700 text-white rounded-t-lg">
           <tr>
             <th className="px-3 py-4">N°</th>
-            <th className="px-3 py-4">Nombre Cliente</th>
+            <th className="px-3 py-4 ">Nombre Cliente</th>
             <th className="px-3 py-4">Fecha de Recepción</th>
             <th className="px-3 py-4">Cantidad</th>
             <th className="px-3 py-4">Descripción</th>
             <th className="px-3 py-4">Estado</th>
-            <th className="px-3 py-4">Total</th>
-            <th className="px-3 py-4">A cuenta</th>
-            <th className="px-3 py-4">Saldo</th>
+            {admin && (
+              <>
+                <th className="px-3 py-4">Total</th>
+                <th className="px-3 py-4">A cuenta</th>
+                <th className="px-3 py-4">Saldo</th>
+              </>
+            )}
             <th className="px-3 py-4">Editar</th>
           </tr>
         </thead>
@@ -76,11 +84,13 @@ function Pagination({ data, activeTab, onEdit, onDelete }) {
               <td className="whitespace-nowrap px-3 py-4 font-medium">
                 {cont.id}
               </td>
-              <td className="whitespace-nowrap px-3 py-4">{cont.nombre}</td>
-              <td className="whitespace-nowrap px-3 py-4">
+              <td className="whitespace-nowrap px-3 py-4 ">{cont.nombre}</td>
+              <td className="whitespace-nowrap px-3 py-4 ">
                 {new Date(cont.createdAt).toLocaleDateString("es-PE")}
               </td>
-              <td className="whitespace-nowrap px-3 py-4">{cont.cantidad}</td>
+              <td className="whitespace-nowrap px-3 py-4 flex justify-center">
+                {cont.cantidad}
+              </td>
               <td className="whitespace-nowrap px-3 py-4">
                 {cont.descripcion}
               </td>
@@ -103,15 +113,19 @@ function Pagination({ data, activeTab, onEdit, onDelete }) {
                   {cont.estado}
                 </span>
               </td>
-              <td className="whitespace-nowrap px-6 py-4">
-                S./ {parseFloat(cont.total).toFixed(2)}
-              </td>
-              <td className="whitespace-nowrap px-6 py-4">
-                S./ {cont.acuenta}.00
-              </td>
-              <td className="whitespace-nowrap px-6 py-4">
-                S./ {(cont.total - cont.acuenta).toFixed(2)}
-              </td>
+              {admin && (
+                <>
+                  <td className="whitespace-nowrap px-6 py-4">
+                    S./ {parseFloat(cont.total).toFixed(2)}
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4">
+                    S./ {cont.acuenta}.00
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4">
+                    S./ {(cont.total - cont.acuenta).toFixed(2)}
+                  </td>
+                </>
+              )}
 
               <td className="relative whitespace-nowrap px-6 py-4">
                 <button
