@@ -1,4 +1,4 @@
-import Logo from "../assets/ALEXANDER.webp";
+import Logo from "../assets/logoh.png";
 import { useState, useEffect, useRef } from "react";
 import { FaRegUser } from "react-icons/fa";
 import { LuLogOut } from "react-icons/lu";
@@ -37,7 +37,7 @@ function Navbar() {
     localStorage.removeItem("userData");
   };
   return (
-    <div className="h-16 w-full bg-sky-700 flex flex-row justify-between items-center px-6 shadow-[0px_4px_6px_0px_rgba(0,_0,_0,_0.1)] text-white relative">
+    <div className="h-18 w-full bg-sky-700 flex flex-row justify-between items-center px-14 shadow-[0px_4px_6px_0px_rgba(0,_0,_0,_0.1)] text-white relative">
       <img src={Logo} className="h-11" alt="Logo" />
 
       <div className="flex items-center gap-2" ref={dropdownRef}>
