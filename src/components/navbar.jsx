@@ -41,7 +41,7 @@ function Navbar() {
       <img src={Logo} className="h-11" alt="Logo" />
 
       <div className="flex items-center gap-2" ref={dropdownRef}>
-        Bienvenido {userData.usuario} !
+        Bienvenid@ {userData.usuario} !
         <div
           onClick={() => setOpen(!open)}
           className="rounded-md w-10 h-10 bg-sky-700 text-white hover:text-white flex items-center justify-center cursor-pointer hover:bg-sky-600 transition ease-in duration-300"
