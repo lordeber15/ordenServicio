@@ -4,6 +4,7 @@ import { updateLogin } from "../request/loginrequest";
 import logo from "../assets/ALEXANDER.webp";
 import { Link } from "react-router";
 function Perfil() {
+  const [admin, setIsAdmin] = useState(false);
   const queryClient = useQueryClient();
 
   const updateLoginMutation = useMutation({
@@ -51,24 +52,49 @@ function Perfil() {
       console.error("Error al actualizar la contraseña:", error);
     }
   };
+  useEffect(() => {
+    if (userData && userData.cargo === "Administrador") {
+      setIsAdmin(true);
+    } else {
+      setIsAdmin(false);
+    }
+  }, [userData]);
 
   // Verificar si userData está inicializado antes de renderizar
   if (!userData) {
     return null; // O puedes mostrar un spinner de carga u otro indicador
   }
+
   return (
     <div className="w-screen flex flex-col md:flex-row p-6 gap-3">
       <div className=" flex flex-col w-full md:w-1/2 justify-center gap-2 items-center">
         <img src={logo} alt="Foto de Perfil" className="w-40 md:w-48" />
-        <Link className="w-7/10 p-2 hover:bg-sky-700 hover:text-white rounded-md shadow-md inset-shadow-sm">
-          Cambiar Imagen
-        </Link>
-        <Link className="w-7/10 p-2 hover:bg-sky-700 hover:text-white rounded-md shadow-md inset-shadow-sm">
-          Cambio de Contraseña
-        </Link>
+
+        {admin ? (
+          <div className="flex flex-col w-full md:w-9/12 gap-1">
+            <Link className="full p-2 hover:bg-sky-700 hover:text-white rounded-md shadow-md inset-shadow-sm">
+              Cambiar Imagen
+            </Link>
+            <Link className="w-full p-2 hover:bg-sky-700 hover:text-white rounded-md shadow-md inset-shadow-sm">
+              Cambio de Contraseña
+            </Link>
+            <Link className="w-full p-2 hover:bg-sky-700 hover:text-white rounded-md shadow-md inset-shadow-sm">
+              Lista de Usuario
+            </Link>
+          </div>
+        ) : (
+          <div className="flex flex-col w-full md:w-9/12 gap-1">
+            <Link className="w-full p-2 hover:bg-sky-700 hover:text-white rounded-md shadow-md inset-shadow-sm">
+              Cambiar Imagen
+            </Link>
+            <Link className="w-full p-2 hover:bg-sky-700 hover:text-white rounded-md shadow-md inset-shadow-sm">
+              Cambio de Contraseña
+            </Link>
+          </div>
+        )}
       </div>
       <div className="flex flex-col w-full md:w-screen justify-center gap-4 h-full m-0 md:mx-0  p-6 md:px-6 shadow-md inset-shadow-sm rounded-md">
-        <span className="text-2xl font-bold flex justify-center items-center">
+        <span className=" text-2xl font-bold flex justify-center items-center">
           Cambiar Contraseña
         </span>
         <div className="flex gap-2 items-center w-full">

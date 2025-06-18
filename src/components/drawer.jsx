@@ -1,0 +1,72 @@
+import { useState } from "react";
+import { IoExitOutline } from "react-icons/io5";
+import { Link } from "react-router";
+import { TiThMenu } from "react-icons/ti";
+
+export default function Drawer() {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <>
+      {/* Botón para abrir el Drawer */}
+      <button
+        className="p-2 bg-sky-700 text-white rounded hover:bg-sky-600"
+        onClick={() => setIsOpen(true)}
+      >
+        <TiThMenu />
+      </button>
+
+      {/* Fondo oscuro al abrir Drawer */}
+      <div
+        className={`fixed inset-0 bg-black bg-opacity-20 transition-opacity duration-300 z-40 ${
+          isOpen ? "opacity-0 visible" : "opacity-0 invisible"
+        }`}
+        onClick={() => setIsOpen(false)}
+      />
+
+      {/* Drawer lateral */}
+      <div
+        className={`fixed top-0 left-0 h-full w-64 bg-sky-700 shadow-lg z-50 transform transition-transform duration-300 ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="p-4 flex justify-between items-center border-b border-white">
+          <h2 className="text-lg font-semibold text-white">Menú</h2>
+          <button
+            onClick={() => setIsOpen(false)}
+            className="text-white cursor-pointer"
+          >
+            <IoExitOutline />
+          </button>
+        </div>
+
+        <ul className="p-4 ">
+          <li>
+            <Link
+              to="#"
+              className="block cursor-pointer text-white hover:text-white p-2 rounded-md hover:bg-sky-600"
+            >
+              Inicio
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="#"
+              className="block cursor-pointer text-white  hover:text-white p-2 rounded-md hover:bg-sky-600"
+            >
+              Servicios
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="#"
+              className="block cursor-pointer text-white  hover:text-white p-2 rounded-md hover:bg-sky-600"
+            >
+              Contacto
+            </Link>
+          </li>
+        </ul>
+      </div>
+    </>
+  );
+}
