@@ -46,7 +46,7 @@ export default function Drawer() {
               to="#"
               className="block cursor-pointer text-white hover:text-white p-2 rounded-md hover:bg-sky-600"
             >
-              Inicio
+              Inventario
             </Link>
           </li>
           <li>
@@ -54,7 +54,7 @@ export default function Drawer() {
               to="#"
               className="block cursor-pointer text-white  hover:text-white p-2 rounded-md hover:bg-sky-600"
             >
-              Servicios
+              Boleta
             </Link>
           </li>
           <li>
@@ -62,7 +62,23 @@ export default function Drawer() {
               to="#"
               className="block cursor-pointer text-white  hover:text-white p-2 rounded-md hover:bg-sky-600"
             >
-              Contacto
+              Factura
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="#"
+              className="block cursor-pointer text-white  hover:text-white p-2 rounded-md hover:bg-sky-600"
+            >
+              Guia de Remision
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="#"
+              className="block cursor-pointer text-white  hover:text-white p-2 rounded-md hover:bg-sky-600"
+            >
+              Nota de Credito
             </Link>
           </li>
         </ul>

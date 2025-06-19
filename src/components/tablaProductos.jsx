@@ -1,5 +1,6 @@
 import { CiEdit } from "react-icons/ci";
 import { MdDeleteOutline } from "react-icons/md";
+import Modal from "react-modal";
 
 export default function TablaProductos() {
   const data = [
@@ -74,6 +75,7 @@ export default function TablaProductos() {
           </tbody>
         </table>
       </div>
+      <Modal isOpen={""} />
     </div>
   );
 }
