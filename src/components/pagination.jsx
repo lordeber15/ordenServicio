@@ -58,9 +58,9 @@ function Pagination({ data, activeTab, onEdit, onDelete }) {
     setCurrentPage((prev) => Math.min(prev + 1, totalPages));
 
   return (
-    <div className="w-full">
-      <div className="overflow-x-auto">
-        <table className="min-w-full text-left text-sm font-light rounded-md shadow-lg border border-sky-700">
+    <div className="w-full ">
+      <div className="overflow-x-auto pb-16 border-0 rounded-lg">
+        <table className=" min-w-full text-left text-sm font-light rounded-md shadow-lg border border-sky-700">
           <thead className="border-b font-medium bg-sky-700 text-white rounded-t-lg">
             <tr>
               <th className="px-3 py-4">N°</th>

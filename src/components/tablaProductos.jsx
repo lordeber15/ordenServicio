@@ -34,13 +34,14 @@ export default function TablaProductos() {
                 Código
               </th>
               <th className="px-4 py-2 text-left text-sm font-semibold">
-                Descripción
+                Nombre
               </th>
+
               <th className="px-4 py-2 text-left text-sm font-semibold">
                 Unidad
               </th>
               <th className="px-4 py-2 text-left text-sm font-semibold">
-                Precio (S/)
+                Codigo Sunat
               </th>
               <th className="px-4 py-2 text-left text-sm font-semibold">
                 Acciones
@@ -50,7 +51,7 @@ export default function TablaProductos() {
           <tbody className="divide-y divide-gray-100">
             {data.map((item, index) => (
               <tr key={index} className="hover:bg-gray-50">
-                <td className="px-4 py-2 text-sm text-gray-800">
+                <td className="text-center px-4 py-2 text-sm text-gray-800">
                   {item.codigo}
                 </td>
                 <td className="px-4 py-2 text-sm text-gray-800">
