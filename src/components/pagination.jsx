@@ -64,7 +64,7 @@ function Pagination({ data, activeTab, onEdit, onDelete }) {
           <thead className="border-b font-medium bg-sky-700 text-white rounded-t-lg">
             <tr>
               <th className="px-3 py-4">N°</th>
-              <th className="px-3 py-4 whitespace-nowrap ">Nombre Cliente</th>
+              <th className="px-3 py-4 ">Nombre Cliente</th>
               <th className="px-3 py-4">Fecha de Recepción</th>
               <th className="px-3 py-4">Cantidad</th>
               <th className="px-3 py-4">Descripción</th>
@@ -85,7 +85,7 @@ function Pagination({ data, activeTab, onEdit, onDelete }) {
                 <td className="whitespace-nowrap px-3 py-4 font-medium">
                   {cont.id}
                 </td>
-                <td className="whitespace-normal px-3 py-4 ">{cont.nombre}</td>
+                <td className="whitespace-nowrap px-3 py-4 ">{cont.nombre}</td>
                 <td className="whitespace-nowrap px-3 py-4 ">
                   {new Date(cont.createdAt).toLocaleDateString("es-PE")}
                 </td>
