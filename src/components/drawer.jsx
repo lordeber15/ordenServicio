@@ -51,7 +51,7 @@ export default function Drawer() {
           </li>
           <li>
             <Link
-              to="#"
+              to="/boleta"
               className="block cursor-pointer text-white  hover:text-white p-2 rounded-md hover:bg-sky-600"
             >
               Boleta
@@ -59,7 +59,7 @@ export default function Drawer() {
           </li>
           <li>
             <Link
-              to="#"
+              to="/factura"
               className="block cursor-pointer text-white  hover:text-white p-2 rounded-md hover:bg-sky-600"
             >
               Factura
@@ -67,7 +67,7 @@ export default function Drawer() {
           </li>
           <li>
             <Link
-              to="#"
+              to="/guiarem"
               className="block cursor-pointer text-white  hover:text-white p-2 rounded-md hover:bg-sky-600"
             >
               Guia de Remision
@@ -75,7 +75,7 @@ export default function Drawer() {
           </li>
           <li>
             <Link
-              to="#"
+              to="/notacredito"
               className="block cursor-pointer text-white  hover:text-white p-2 rounded-md hover:bg-sky-600"
             >
               Nota de Credito

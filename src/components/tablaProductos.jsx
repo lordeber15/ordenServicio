@@ -41,7 +41,7 @@ export default function TablaProductos() {
                 Unidad
               </th>
               <th className="px-4 py-2 text-left text-sm font-semibold">
-                Codigo Sunat
+                Precio
               </th>
               <th className="px-4 py-2 text-left text-sm font-semibold">
                 Acciones

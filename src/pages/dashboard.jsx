@@ -223,7 +223,7 @@ function Dashboard() {
                 Nuevo Trabajo
               </button>
             </div>
-            <div className="flex gap-2 mb-4">
+            <div className="flex flex-wrap gap-2 mb-4">
               <button
                 onClick={() => setActiveTab("Todos")}
                 className={`px-4 py-2 rounded-md cursor-pointer ${
