@@ -53,7 +53,7 @@ function Dashboard() {
   const [valueInputTotal, setInputTotal] = useState(0.0);
   const [valueInputAcuenta, setInputAcuenta] = useState(0.0);
   const [editServiciosId, setEditServiciosId] = useState(null);
-  const [activeTab, setActiveTab] = useState("inventario");
+  const [activeTab, setActiveTab] = useState("Diseño");
 
   const handlerChangeNombre = (e) => {
     setInputnombre(e.target.value);
