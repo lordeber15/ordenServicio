@@ -125,8 +125,8 @@ function Ticket() {
           </div>
         </div>
         <hr className="bg-gray-200" />
-        <div className="flex py-2 gap-2 items-center justify-center">
-          <div className="w-1/5">Importe en Letras</div>
+        <div className="flex flex-col md:flex-row py-2 gap-2 items-center justify-center">
+          <div className="w-full md:w-1/5">Importe en Letras</div>
           <input
             className=" p-2 uppercase w-full text-gray-400"
             disabled
