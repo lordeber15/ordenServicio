@@ -2,8 +2,8 @@ import logo from "../assets/ALEXANDER.webp";
 
 function DatosEmpresa() {
   return (
-    <div className="flex items-center flex-col md:flex-row">
-      <div className="p-5 flex gap-3 w-full flex-col md:flex-row">
+    <div className="flex w-full items-center flex-col md:flex-row">
+      <div className="p-2 flex justify-center items-center gap-3 w-full flex-col md:flex-row">
         <img
           src={logo}
           alt="logo"
