@@ -11,7 +11,7 @@ import Notacredito from "./pages/facturacion/notadecredito";
 import { Route, Routes, useLocation } from "react-router";
 import ProtectedRoutes from "./components/protectedRoutes";
 import { Toaster } from "react-hot-toast";
-import { FaC } from "react-icons/fa6";
+import Ticket from "./pages/facturacion/ticket";
 
 function App() {
   const storedUserData = JSON.parse(localStorage.getItem("userData")) || null;
@@ -30,6 +30,7 @@ function App() {
           <Route path="/factura" element={<Factura />} />
           <Route path="/guiarem" element={<Guiarem />} />
           <Route path="/notacredito" element={<Notacredito />} />
+          <Route path="/ticket" element={<Ticket />} />
         </Route>
       </Routes>
     </div>

@@ -43,10 +43,18 @@ export default function Drawer() {
         <ul className="p-4 ">
           <li>
             <Link
-              to="#"
+              to="/inventario"
               className="block cursor-pointer text-white hover:text-white p-2 rounded-md hover:bg-sky-600"
             >
               Inventario
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="/ticket"
+              className="block cursor-pointer text-white  hover:text-white p-2 rounded-md hover:bg-sky-600"
+            >
+              Ticket
             </Link>
           </li>
           <li>

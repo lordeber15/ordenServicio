@@ -2,24 +2,42 @@ import Drawer from "../../components/drawer";
 import DatosEmpresa from "../../components/datosEmpresa";
 import { CiSearch } from "react-icons/ci";
 import TablaProductos from "../../components/tablaProductos";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { getReniec } from "../../request/reniec";
 
-function Boleta() {
+function Ticket() {
+  const [requestCliente, setRequestCliente] = useState("");
+  const [nombreCliente, setNombreCliente] = useState("");
+  const { data: dataReniec, refetch } = useQuery({
+    queryKey: ["reniec", requestCliente],
+    queryFn: () => getReniec(requestCliente),
+    enabled: false, // 👈 solo se ejecuta manualmente
+    onSuccess: (data) => {
+      setNombreCliente(data?.nombres || "");
+    },
+  });
+  const handleBuscarCliente = () => {
+    if (requestCliente.trim().length > 0) {
+      refetch();
+    }
+  };
   return (
     <div className="px-12 py-4 w-screen">
       <div className="flex justify-start gap-5 items-center ">
         <Drawer />
-        <div className="text-2xl font-bold">Emitir Boleta</div>
+        <div className="text-2xl font-bold">Ticket</div>
       </div>
       <div className="flex justify-center items-center w-full p-2">
         <div className="flex flex-col md:flex-row  w-full">
           <DatosEmpresa />
-          <div className="p-3 flex  justify-center items-center flex-col border-2 border-gray-300 border-dashed">
+          <div className="p-2 flex  justify-center items-center flex-col border-2 border-gray-300 border-dashed">
             <div className="text-2xl font-bold">RUC: 20608582011</div>
-            <div className="font-bold text-2xl text-center">
-              Boleta de Venta Electronica
+            <div className="font-bold text-2xl py-2 text-center">
+              Ticket Electronico
             </div>
             <div className="flex px-2 gap-2 items-center">
-              <p>B001</p>
+              <p>TK001</p>
               -
               <input type="number" className="p-2" />
             </div>
@@ -32,6 +50,12 @@ function Boleta() {
             type="text"
             className="w-1/2 bg-gray-200 rounded-md p-2"
             placeholder="Cliente"
+            value={
+              dataReniec
+                ? `${dataReniec.nombres} ${dataReniec.apellidoPaterno} ${dataReniec.apellidoMaterno}`
+                : ""
+            }
+            onChange={(e) => setNombreCliente(e.target.value)}
           />
           <div className="w-1/2 flex flex-row">
             <select name="Documentos" id="Documentos" className="p-2  mr-2">
@@ -43,8 +67,13 @@ function Boleta() {
               type="text"
               className="bg-gray-200 rounded-l-md p-2 w-full"
               placeholder="Numero de Documento"
+              value={requestCliente}
+              onChange={(e) => setRequestCliente(e.target.value)}
             />
-            <button className="w-fit cursor-pointer bg-gray-200 rounded-r-md p-2">
+            <button
+              onClick={handleBuscarCliente}
+              className="w-fit cursor-pointer bg-gray-200 rounded-r-md p-2"
+            >
               <CiSearch />
             </button>
           </div>
@@ -65,18 +94,7 @@ function Boleta() {
             />
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <select
-            name="ventas"
-            id="ventas"
-            className="p-2 w-1/2 bg-gray-200 rounded-md text-gray-500"
-          >
-            <option value="venta">
-              Venta Interna {"(productos/servicios)"}
-            </option>
-          </select>
-          <div className="w-1/2 text-right">PEN - {"(S/) Sol"}</div>
-        </div>
+
         <div className=" overflow-x-auto">
           <TablaProductos />
         </div>
@@ -117,7 +135,7 @@ function Boleta() {
         </div>
         <div className="flex justify-end">
           <button className="bg-sky-700 rounded-md p-2 w-1/5 text-white cursor-pointer">
-            Emitir Boleta
+            Emitir Ticket
           </button>
         </div>
       </div>
@@ -125,4 +143,4 @@ function Boleta() {
   );
 }
 
-export default Boleta;
+export default Ticket;

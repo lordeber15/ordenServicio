@@ -25,8 +25,8 @@ export default function TablaProductos() {
   ];
 
   return (
-    <div className="w-full px-10">
-      <div className="overflow-x-auto">
+    <div className="w-full">
+      <div className="overflow-x-auto ">
         <table className="min-w-full border border-sky-700 divide-y divide-sky-700">
           <thead className="bg-sky-700 text-white">
             <tr>
