@@ -1,23 +1,24 @@
 import axios from "axios";
 
-const serviciosApi = axios.create({
-  baseURL: "https://imprenta-imprenta-a2bsyh-c1440d-62-171-181-168.traefik.me/",
+const loginApi = axios.create({
+  baseURL: "https://impalexander.store",
+  //baseURL: "https://imprenta-imprenta-a2bsyh-c1440d-62-171-181-168.traefik.me/",
 });
-export const getServicios = async () => {
-  const res = await serviciosApi.get("/servicios");
+export const getLogin = async () => {
+  const res = await loginApi.get("/login");
   return res.data;
 };
 
-export const createServicios = (servicios) => {
-  return serviciosApi.post("/servicios", servicios);
+export const createLogin = (login) => {
+  return loginApi.post("/login", login);
 };
 
-export const updateServicios = (servicios) => {
-  const serviciosCopy = { ...servicios };
+export const updateLogin = (login) => {
+  const serviciosCopy = { ...login };
   delete serviciosCopy.id;
-  return serviciosApi.put(`/servicios/${servicios.id}`, serviciosCopy);
+  return loginApi.put(`/login/${login.id}`, serviciosCopy);
 };
 
-export const deleteServicios = (id) => {
-  return serviciosApi.delete(`/servicios/${id}`);
+export const deleteLogin = (id) => {
+  return loginApi.delete(`/login/${id}`);
 };

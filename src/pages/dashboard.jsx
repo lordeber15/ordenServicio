@@ -1,10 +1,6 @@
 import { useState } from "react";
 import Modal from "react-modal";
-import logoeditar from "../assets/icons8-editar.svg";
-import logodelete from "../assets/delete.svg";
-import plus from "../assets/plus.svg";
-import back from "../assets/back.svg";
-import { Link } from "react-router";
+import { FaPlus } from "react-icons/fa6";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import {
   getServicios,
@@ -12,6 +8,8 @@ import {
   updateServicios,
   deleteServicios,
 } from "../request/serviciosrequest";
+
+import Pagination from "../components/pagination";
 
 Modal.setAppElement("#root"); // Asegura la accesibilidad del modal
 
@@ -53,7 +51,9 @@ function Dashboard() {
   const [valueInputTotal, setInputTotal] = useState(0.0);
   const [valueInputAcuenta, setInputAcuenta] = useState(0.0);
   const [editServiciosId, setEditServiciosId] = useState(null);
-  const [activeTab, setActiveTab] = useState("Diseño");
+  const [activeTab, setActiveTab] = useState("pendiente");
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [idToDelete, setIdToDelete] = useState(null);
 
   const handlerChangeNombre = (e) => {
     setInputnombre(e.target.value);
@@ -153,9 +153,28 @@ function Dashboard() {
     }
   };
 
-  const handleDeleteServicios = (id) => {
+  /*const handleDeleteServicios = (id) => {
     deleteServiciosMutation.mutate(id);
     queryClient.invalidateQueries("servicios");
+  };*/
+
+  const handleDeleteServicios = (id) => {
+    setIdToDelete(id);
+    setConfirmModalOpen(true);
+  };
+
+  const confirmDeleteServicios = () => {
+    if (idToDelete !== null) {
+      deleteServiciosMutation.mutate(idToDelete);
+      queryClient.invalidateQueries("servicios");
+      setIdToDelete(null);
+      setConfirmModalOpen(false);
+    }
+  };
+
+  const cancelDelete = () => {
+    setIdToDelete(null);
+    setConfirmModalOpen(false);
   };
 
   const handlerReset = () => {
@@ -179,18 +198,13 @@ function Dashboard() {
   };
 
   return (
-    <div className="flex flex-col">
-      <div className="overflow-x-auto sm:-mx-6 lg:-mx-8">
-        <div className="inline-block min-w-full py-2 sm:px-6 lg:px-8">
-          <div className="overflow-hidden px-20 py-4">
+    <div>
+      <div className="sm:-mx-0 lg:-mx-0">
+        <div className="min-w-full py-2 sm:px-6 lg:px-8">
+          <div className=" overflow-x-auto w-full px-10 py-4">
             <div className="font-bold flex py-4 justify-between">
-              <Link to={"/"}>
-                <img
-                  src={back}
-                  className="w-12 cursor-pointer bg-gray-400 p-2 rounded-md"
-                />
-              </Link>
-              <div className="text-3xl ">Lista de Trabajos</div>
+              <div />
+              <div className="text-3xl text-sky-700 ">Lista de Trabajos</div>
               <button
                 onClick={() => {
                   handlerReset();
@@ -203,173 +217,87 @@ function Dashboard() {
                     acuenta: "",
                   });
                 }}
-                className="bg-gray-400 hover:bg-gray-500 flex items-center flex-row px-3 py-2 text-sx rounded-md text-white gap-2 shadow-lg"
+                className=" cursor-pointer hover:bg-sky-700 text-sky-700 hover:text-white flex items-center flex-row px-3 py-2 text-sx rounded-md gap-2 transition ease-in duration-300"
               >
-                <img src={plus} className="w-6 items-center " />
+                <FaPlus />
                 Nuevo Trabajo
               </button>
             </div>
-            <div className="flex gap-4 mb-6">
+            <div className="flex flex-wrap gap-2 mb-4">
               <button
                 onClick={() => setActiveTab("Todos")}
-                className={`px-4 py-2 rounded-md ${
+                className={`px-4 py-2 rounded-md cursor-pointer ${
                   activeTab === "Todos"
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-300"
+                    ? "border-b-2 text-sky-700 hover:border-b-2 border-sky-700 animate-fade animate-duration-300 animate-ease-in"
+                    : "bg-white"
                 }`}
               >
                 Todos
               </button>
               <button
                 onClick={() => setActiveTab("pendiente")}
-                className={`px-4 py-2 rounded-md ${
+                className={`px-4 py-2 rounded-md cursor-pointer ${
                   activeTab === "pendiente"
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-300"
+                    ? "border-b-2 text-sky-700 hover:border-b-2 border-sky-700 animate-fade animate-duration-300 animate-ease-in"
+                    : "bg-white"
                 }`}
               >
                 Pendiente
               </button>
               <button
                 onClick={() => setActiveTab("Diseño")}
-                className={`px-4 py-2 rounded-md ${
+                className={`px-4 py-2 rounded-md cursor-pointer ${
                   activeTab === "Diseño"
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-300"
+                    ? "border-b-2 text-sky-700 hover:border-b-2 border-sky-700 animate-fade animate-duration-300 animate-ease-in"
+                    : "bg-white"
                 }`}
               >
                 Diseño
               </button>
               <button
                 onClick={() => setActiveTab("Impresión")}
-                className={`px-4 py-2 rounded-md ${
+                className={`px-4 py-2 rounded-md cursor-pointer ${
                   activeTab === "Impresión"
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-300"
+                    ? "border-b-2 text-sky-700 hover:border-b-2 border-sky-700 animate-fade animate-duration-300 animate-ease-in"
+                    : "bg-white"
                 }`}
               >
                 Impresión
               </button>
               <button
                 onClick={() => setActiveTab("Terminado")}
-                className={`px-4 py-2 rounded-md ${
+                className={`px-4 py-2 rounded-md cursor-pointer ${
                   activeTab === "Terminado"
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-300"
+                    ? "border-b-2 text-sky-700 hover:border-b-2 border-sky-700 animate-fade animate-duration-300 animate-ease-in"
+                    : "bg-white"
                 }`}
               >
                 Terminado
               </button>
               <button
                 onClick={() => setActiveTab("Entregado")}
-                className={`px-4 py-2 rounded-md ${
+                className={`px-4 py-2 rounded-md cursor-pointer ${
                   activeTab === "Entregado"
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-300"
+                    ? "border-b-2 text-sky-700 hover:border-b-2 border-sky-700 animate-fade animate-duration-300 animate-ease-in"
+                    : "bg-white"
                 }`}
               >
                 Entregado
               </button>
             </div>
-            <table className="min-w-full text-left text-sm font-light border rounded-lg shadow-lg overflow-hidden">
-              <thead className="border-b font-medium dark:border-neutral-500 bg-gray-400 rounded-t-lg">
-                <tr>
-                  <th className="px-3 py-4">N°</th>
-                  <th className="px-3 py-4">Nombre Cliente</th>
-                  <th className="px-3 py-4">Fecha de Recepcion</th>
-                  <th className="px-3 py-4">Cantidad</th>
-                  <th className="px-3 py-4">Descripcion</th>
-                  <th className="px-3 py-4">Estado</th>
-                  <th className="px-3 py-4">Total</th>
-                  <th className="px-3 py-4">A cuenta</th>
-                  <th className="px-3 py-4">Saldo</th>
-                  <th className="px-3 py-4">Editar</th>
-                  <th className="px-3 py-4">Eliminar</th>
-                </tr>
-              </thead>
-              <tbody className="rounded-b-lg">
-                {dataServicios &&
-                  dataServicios
-                    .filter((cont) => {
-                      if (activeTab === "Todos") return true; // Inventario muestra todos
-                      return (
-                        cont.estado.toLowerCase() === activeTab.toLowerCase()
-                      );
-                    })
-                    .map((cont, i) => (
-                      <tr
-                        className="border-b dark:border-neutral-500 last:rounded-b-lg"
-                        key={i}
-                      >
-                        <td className="whitespace-nowrap px-3 py-4 font-medium">
-                          {cont.id}
-                        </td>
-                        <td className="whitespace-nowrap px-3 py-4">
-                          {cont.nombre}
-                        </td>
-                        <td className="whitespace-nowrap px-3 py-4">
-                          {new Date(cont.createdAt).toLocaleDateString("es-PE")}
-                        </td>
-                        <td className="whitespace-nowrap px-3 py-4">
-                          {cont.cantidad}
-                        </td>
-                        <td className="whitespace-nowrap px-3 py-4">
-                          {cont.descripcion}
-                        </td>
-                        <td className="whitespace-nowrap px-3 py-4">
-                          <span
-                            className={`px-3 py-2 rounded-full font-bold text-white ${
-                              cont.estado === "Pendiente"
-                                ? "bg-rose-500"
-                                : cont.estado === "Diseño"
-                                ? "bg-orange-500"
-                                : cont.estado === "Impresión"
-                                ? "bg-blue-500"
-                                : cont.estado === "Terminado"
-                                ? "bg-green-500"
-                                : cont.estado === "Entregado"
-                                ? "bg-gray-500"
-                                : "bg-black"
-                            }`}
-                          >
-                            {cont.estado}
-                          </span>
-                        </td>
-                        <td className="whitespace-nowrap px-6 py-4">
-                          S./ {parseFloat(cont.total).toFixed(2)}
-                        </td>
-                        <td className="whitespace-nowrap px-6 py-4">
-                          S./ {cont.acuenta}.00
-                        </td>
-                        <td className="whitespace-nowrap px-6 py-4">
-                          S./ {cont.total - cont.acuenta}.00
-                        </td>
-                        <td className="whitespace-nowrap px-6 py-4">
-                          <button
-                            className="cursor-pointer w-6"
-                            onClick={() => handleEditServicios(cont.id)}
-                          >
-                            <img src={logoeditar} alt="Editar" />
-                          </button>
-                        </td>
-                        <td className="whitespace-nowrap px-6 py-4">
-                          <button
-                            className="cursor-pointer w-6"
-                            onClick={() => handleDeleteServicios(cont.id)}
-                          >
-                            <img src={logodelete} alt="Eliminar" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-              </tbody>
-            </table>
+
+            <Pagination
+              data={dataServicios || []}
+              activeTab={activeTab}
+              onEdit={handleEditServicios}
+              onDelete={handleDeleteServicios}
+            />
 
             {/* Modal de edición */}
             <Modal
               isOpen={modalIsOpen}
               onRequestClose={closeModal}
-              className="bg-white p-6 rounded-xl shadow-lg w-full sm:w-1/2 md:w-1/3 mx-auto mt-20"
+              className="bg-white p-6 rounded-xl shadow-lg w-full sm:w-1/2 md:w-1/3 mx-auto mt-20 animate-fade animate-duration-200 animate-ease-in"
               overlayClassName="fixed inset-0 flex items-center justify-center"
               style={{
                 overlay: {
@@ -467,6 +395,44 @@ function Dashboard() {
                   </div>
                 </div>
               )}
+            </Modal>
+            <Modal
+              isOpen={confirmModalOpen}
+              onRequestClose={cancelDelete}
+              contentLabel="Confirmar eliminación"
+              className="bg-white p-6 rounded-xl shadow-lg w-full sm:w-1/3 mx-auto mt-40 animate-fade animate-duration-200 animate-ease-in"
+              overlayClassName="fixed inset-0  flex items-center justify-center z-50"
+              style={{
+                overlay: {
+                  backgroundColor: "rgba(0, 0, 0, 0.5)",
+                },
+              }}
+            >
+              <h2 className="text-xl font-bold text-red-600 mb-4">
+                ¿Estás seguro?
+              </h2>
+              <p className="text-gray-700 mb-6">
+                Esta acción eliminará el servicio{" "}
+                <span className="font-semibold text-red-700">
+                  {dataServicios?.find((item) => item.id === idToDelete)
+                    ?.nombre || "desconocido"}
+                </span>{" "}
+                permanentemente. ¿Deseas continuar?
+              </p>
+              <div className="flex justify-end gap-4">
+                <button
+                  onClick={cancelDelete}
+                  className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={confirmDeleteServicios}
+                  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                >
+                  Eliminar
+                </button>
+              </div>
             </Modal>
           </div>
         </div>
