@@ -2,7 +2,28 @@ import Drawer from "../../components/drawer";
 import DatosEmpresa from "../../components/datosEmpresa";
 import { CiSearch } from "react-icons/ci";
 import TablaProductos from "../../components/tablaProductos";
+import AgregarItemTabla from "../../components/agregarItemTabla";
 function factura() {
+  const dataTable = [
+    /*{
+      codigo: "P001",
+      descripcion: "Producto A",
+      unidad: "unidad",
+      precio: 10.5,
+    },
+    {
+      codigo: "P002",
+      descripcion: "Producto B",
+      unidad: "paquete",
+      precio: 23.0,
+    },
+    {
+      codigo: "P003",
+      descripcion: "Producto C",
+      unidad: "caja",
+      precio: 18.75,
+    },*/
+  ];
   return (
     <div className="px-12 py-4 w-screen">
       <div className="flex justify-start gap-5 items-center ">
@@ -75,7 +96,11 @@ function factura() {
           <div className="w-1/2 text-right">PEN - {"(S/) Sol"}</div>
         </div>
         <div className=" overflow-x-auto">
-          <TablaProductos />
+          {dataTable.length == 0 ? (
+            <AgregarItemTabla />
+          ) : (
+            <TablaProductos data={dataTable} />
+          )}
         </div>
         <div className="flex flex-col gap-2 justify-end">
           <div className="flex justify-end">

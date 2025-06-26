@@ -5,9 +5,32 @@ import TablaProductos from "../../components/tablaProductos";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getReniec } from "../../request/reniec";
+import AgregarItemTabla from "../../components/agregarItemTabla";
 
 function Ticket() {
+  const dataTable = [
+    /*{
+      codigo: "P001",
+      descripcion: "Producto A",
+      unidad: "unidad",
+      precio: 10.5,
+    },
+    {
+      codigo: "P002",
+      descripcion: "Producto B",
+      unidad: "paquete",
+      precio: 23.0,
+    },
+    {
+      codigo: "P003",
+      descripcion: "Producto C",
+      unidad: "caja",
+      precio: 18.75,
+    },*/
+  ];
+
   const [requestCliente, setRequestCliente] = useState("");
+  const [selectDocumento, setSelectDocumento] = useState("");
   const [nombreCliente, setNombreCliente] = useState("");
   const { data: dataReniec, refetch } = useQuery({
     queryKey: ["reniec", requestCliente],
@@ -22,6 +45,10 @@ function Ticket() {
       refetch();
     }
   };
+  const handleSelectDcument = (e) => {
+    setSelectDocumento(e.target.value);
+  };
+
   return (
     <div className="px-12 py-4 w-screen">
       <div className="flex justify-start gap-5 items-center ">
@@ -58,13 +85,27 @@ function Ticket() {
             onChange={(e) => setNombreCliente(e.target.value)}
           />
           <div className="w-1/2 flex flex-row">
-            <select name="Documentos" id="Documentos" className="p-2  mr-2">
-              <option>Sin Documento</option>
-              <option>DNI</option>
-              <option>RUC</option>
+            <select
+              onChange={handleSelectDcument}
+              defaultValue="DNI"
+              className="p-2 mr-2 w-1/2"
+            >
+              <option value="Sin Documento">Sin Documento</option>
+              <option value="DNI">DNI</option>
+              <option value="RUC">RUC</option>
+              <option value="CPP - Carné Temporal de Permanencia">
+                CPP - Carné Temporal de Permanencia
+              </option>
+              <option value="Pasaporte">Pasaporte</option>
+              <option value="Canet de Extranjeria">Canet de Extranjeria</option>
+              <option value="TAM - Tarjeta Andina de  Migración">
+                TAM - Tarjeta Andina de Migración{" "}
+              </option>
+              <option value="Cedula Diplomatica">Cedula Diplomatica</option>
             </select>
             <input
               type="text"
+              disabled={selectDocumento == "Sin Documento" ? true : false}
               className="bg-gray-200 rounded-l-md p-2 w-full"
               placeholder="Numero de Documento"
               value={requestCliente}
@@ -96,7 +137,11 @@ function Ticket() {
         </div>
 
         <div className=" overflow-x-auto">
-          <TablaProductos />
+          {dataTable.length == 0 ? (
+            <AgregarItemTabla />
+          ) : (
+            <TablaProductos data={dataTable} />
+          )}
         </div>
         <div className="flex flex-col gap-2 justify-end">
           <div className="flex justify-end">

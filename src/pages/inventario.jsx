@@ -6,6 +6,26 @@ import { useState } from "react";
 import ModalAgregaritem from "../components/modalAgregaritem";
 
 function Inventario() {
+  const dataTable = [
+    {
+      codigo: "P001",
+      descripcion: "Producto A",
+      unidad: "unidad",
+      precio: 10.5,
+    },
+    {
+      codigo: "P002",
+      descripcion: "Producto B",
+      unidad: "paquete",
+      precio: 22.0,
+    },
+    {
+      codigo: "P003",
+      descripcion: "Producto C",
+      unidad: "caja",
+      precio: 18.75,
+    },
+  ];
   const [openModalI, setOpenModalI] = useState(false);
   const handleOpenModal = () => setOpenModalI(true);
   const handleCloseModal = () => setOpenModalI(false);
@@ -26,7 +46,7 @@ function Inventario() {
         <Search />
       </div>
       <div className="px-10">
-        <TablaProductos />
+        <TablaProductos data={dataTable} />
       </div>
       <ModalAgregaritem isOpen={openModalI} onClose={handleCloseModal} />
     </div>

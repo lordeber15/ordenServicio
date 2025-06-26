@@ -2,28 +2,7 @@ import { CiEdit } from "react-icons/ci";
 import { MdDeleteOutline } from "react-icons/md";
 import Modal from "react-modal";
 
-export default function TablaProductos() {
-  const data = [
-    {
-      codigo: "P001",
-      descripcion: "Producto A",
-      unidad: "unidad",
-      precio: 10.5,
-    },
-    {
-      codigo: "P002",
-      descripcion: "Producto B",
-      unidad: "paquete",
-      precio: 22.0,
-    },
-    {
-      codigo: "P003",
-      descripcion: "Producto C",
-      unidad: "caja",
-      precio: 18.75,
-    },
-  ];
-
+export default function TablaProductos({ data }) {
   return (
     <div className="w-full">
       <div className="overflow-x-auto ">
