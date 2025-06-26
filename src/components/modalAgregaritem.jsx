@@ -30,7 +30,7 @@ function ModalAgregaritem({ isOpen, onClose }) {
       isOpen={isOpen}
       onRequestClose={onClose}
       ariaHideApp={false}
-      className="bg-white w-1/2 p-6 rounded-md shadow-md max-w-md mx-auto mt-20"
+      className="bg-white w-1/2  p-6 rounded-md shadow-md max-w-md mx-auto mt-15"
       overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start"
       style={{
         overlay: {
@@ -55,9 +55,9 @@ function ModalAgregaritem({ isOpen, onClose }) {
           <IoIosClose />
         </button>
       </div>
-      <div className=" flex flex-col gap-2">
-        <div className="flex gap-2 pb-2">
-          <select name="unidad" id="unidad" className="p-2 w-1/2">
+      <div className=" flex flex-col gap-2 ">
+        <div className="flex flex-col md:flex-col gap-2 pb-2">
+          <select name="unidad" id="unidad" className="p-2 w-full md:w-1/2">
             <option value="unidades">Unidad</option>
             <option value="unidades">Servicios</option>
             <option value="unidades">Baldes</option>
@@ -76,8 +76,8 @@ function ModalAgregaritem({ isOpen, onClose }) {
             placeholder="Descripcion"
             className="p-2 bg-gray-200 rounded-lg"
           />
-          <div className="flex">
-            <div className="p-2 w-1/2 text-right">Valor Unitario</div>
+          <div className="flex flex-col md:flex-row">
+            <div className="p-2 w-full md:w-1/2 text-right">Valor Unitario</div>
             <input
               type="text"
               placeholder="Valor Unitario"
@@ -86,8 +86,8 @@ function ModalAgregaritem({ isOpen, onClose }) {
             />
           </div>
 
-          <div className="flex">
-            <div className="p-2 w-1/2 text-right">IGV 18%</div>
+          <div className="flex flex-col md:flex-row">
+            <div className="p-2 w-full md:w-1/2 text-right">IGV 18%</div>
             <input
               className="w-full p-2 text-right bg-gray-200 rounded-lg"
               type="text"
@@ -95,8 +95,10 @@ function ModalAgregaritem({ isOpen, onClose }) {
               value={((cambioPu / 1.18) * 0.18).toFixed([3])}
             />
           </div>
-          <div className="flex">
-            <div className="p-2 w-1/2 text-right">Precio Unitario</div>
+          <div className="flex flex-col md:flex-row">
+            <div className="p-2 w-full md:w-1/2 text-right">
+              Precio Unitario
+            </div>
             <input
               type="text"
               placeholder="Precio unitario"
@@ -109,7 +111,7 @@ function ModalAgregaritem({ isOpen, onClose }) {
       </div>
       <hr className="my-3 h-0.5 border-t-0 bg-gray-200" />
       <div className="w-full gap-2 flex flex-col">
-        <div className="flex flex-row items-center">
+        <div className="flex flex-col md:flex-row items-end md:items-center">
           <label className="w-1/2 text-right pr-2">
             {operacionSelect ? operacionSelect : "Ope. Gravada"}
           </label>
@@ -120,7 +122,7 @@ function ModalAgregaritem({ isOpen, onClose }) {
             value={(cambioPu / 1.18).toFixed([2])}
           />
         </div>
-        <div className="flex flex-row items-center">
+        <div className="flex flex-col md:flex-row items-end md:items-center">
           <label className="w-1/2 text-right pr-2"> IGV</label>
           <input
             disabled
@@ -129,7 +131,7 @@ function ModalAgregaritem({ isOpen, onClose }) {
             value={((cambioPu / 1.18) * 0.18).toFixed([2])}
           />
         </div>
-        <div className="flex flex-row items-center">
+        <div className="flex flex-col md:flex-row items-end md:items-center">
           <label className="w-1/2 text-right pr-2"> Importe Total</label>
           <input
             disabled
@@ -139,17 +141,17 @@ function ModalAgregaritem({ isOpen, onClose }) {
           />
         </div>
       </div>
-      <div className="flex  pt-2 gap-2">
+      <div className="flex flex-col-reverse md:flex-row pt-2 gap-2">
         <button
           onClick={() => {
             onClose();
             setCambioPu("0");
           }}
-          className="p-2 w-1/2 bg-red-400 rounded-md text-white cursor-pointer"
+          className="p-2 w-full md:w-1/2 bg-red-400 rounded-md text-white cursor-pointer"
         >
           Cancelar
         </button>
-        <button className="p-2 w-1/2 bg-sky-700 rounded-md text-white cursor-pointer">
+        <button className="p-2 w-full md:w-1/2 bg-sky-700 rounded-md text-white cursor-pointer">
           Agregar
         </button>
       </div>

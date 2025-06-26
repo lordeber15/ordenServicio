@@ -59,14 +59,14 @@ function Ticket() {
         <div className="flex flex-col md:flex-row  w-full">
           <DatosEmpresa />
           <div className="p-2 flex  justify-center items-center flex-col border-2 border-gray-300 border-dashed">
-            <div className="text-2xl font-bold">RUC: 20608582011</div>
-            <div className="font-bold text-2xl py-2 text-center">
+            <div className="text-lg font-bold">RUC: 20608582011</div>
+            <div className="font-bold text-lg py-2 text-center">
               Ticket Electronico
             </div>
-            <div className="flex px-2 gap-2 items-center">
+            <div className="flex  px-2 gap-2 items-center">
               <p>TK001</p>
               -
-              <input type="number" className="p-2" />
+              <input type="number" className="p-2 w-full" />
             </div>
           </div>
         </div>
@@ -84,7 +84,7 @@ function Ticket() {
             }
             onChange={(e) => setNombreCliente(e.target.value)}
           />
-          <div className="w-1/2 flex flex-row">
+          <div className="w-full md:w-1/2 flex flex-row">
             <select
               onChange={handleSelectDcument}
               defaultValue="DNI"
