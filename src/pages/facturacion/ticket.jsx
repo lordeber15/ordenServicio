@@ -72,10 +72,10 @@ function Ticket() {
         </div>
       </div>
       <div className="py-2 flex gap-2 flex-col">
-        <div className="w-full flex gap-2">
+        <div className="w-full flex-col md:flex-row flex gap-2">
           <input
             type="text"
-            className="w-1/2 bg-gray-200 rounded-md p-2"
+            className="w-full md:w-1/2 bg-gray-200 rounded-md p-2"
             placeholder="Cliente"
             value={
               dataReniec
@@ -119,13 +119,13 @@ function Ticket() {
             </button>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex-col md:flex-row flex gap-2">
           <input
             type="text"
-            className="bg-gray-200 p-2 rounded-md w-1/2"
+            className="bg-gray-200 p-2 rounded-md w-full md:w-1/2"
             placeholder="Dirección (Opcional)"
           />
-          <div className="flex w-1/2">
+          <div className="flex w-full md:w-1/2">
             <label className="flex items-center w-full mr-2">
               Fecha de Emision
             </label>
@@ -170,8 +170,8 @@ function Ticket() {
           </div>
         </div>
         <hr className="bg-gray-200" />
-        <div className="flex py-2 gap-2 items-center justify-center">
-          <div className="w-1/5">Importe en Letras</div>
+        <div className="flex flex-col md:flex-row py-2 gap-2 items-center justify-center">
+          <div className="w-full md:w-1/5">Importe en Letras</div>
           <input
             className=" p-2 uppercase w-full text-gray-400"
             disabled
@@ -179,7 +179,7 @@ function Ticket() {
           />
         </div>
         <div className="flex justify-end">
-          <button className="bg-sky-700 rounded-md p-2 w-1/5 text-white cursor-pointer">
+          <button className="bg-sky-700 rounded-md p-2 w-1/3 md:w-1/5 text-white cursor-pointer">
             Emitir Ticket
           </button>
         </div>
