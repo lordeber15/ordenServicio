@@ -89,6 +89,14 @@ export default function Drawer() {
               Nota de Credito
             </Link>
           </li>
+          <li>
+            <Link
+              to="/ingresos"
+              className="block cursor-pointer text-white  hover:text-white p-2 rounded-md hover:bg-sky-600"
+            >
+              Ingresos y Egresos
+            </Link>
+          </li>
         </ul>
       </div>
     </>

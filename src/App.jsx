@@ -8,6 +8,7 @@ import Boleta from "./pages/facturacion/boleta";
 import Factura from "./pages/facturacion/factura";
 import Guiarem from "./pages/facturacion/guiaremision";
 import Notacredito from "./pages/facturacion/notadecredito";
+import Ingresos from "./components/ingresos y egresos/ingresos";
 import { Route, Routes, useLocation } from "react-router";
 import ProtectedRoutes from "./components/protectedRoutes";
 import { Toaster } from "react-hot-toast";
@@ -31,6 +32,7 @@ function App() {
           <Route path="/guiarem" element={<Guiarem />} />
           <Route path="/notacredito" element={<Notacredito />} />
           <Route path="/ticket" element={<Ticket />} />
+          <Route path="/ingresos" element={<Ingresos />} />s
         </Route>
       </Routes>
     </div>
