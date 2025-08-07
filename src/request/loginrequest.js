@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const loginApi = axios.create({
-  baseURL: "http://localhost",
+  baseURL: "http://impalexander.store:3000",
   //baseURL: "https://imprenta-imprenta-a2bsyh-c1440d-62-171-181-168.traefik.me/",
 });
 export const getLogin = async () => {
