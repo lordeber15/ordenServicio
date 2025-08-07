@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const serviciosApi = axios.create({
-  baseURL: "http://localhost:3000",
+  baseURL: "http://localhost",
   //baseURL: "https://imprenta-imprenta-a2bsyh-c1440d-62-171-181-168.traefik.me/",
 });
 export const getServicios = async () => {
