@@ -5,7 +5,14 @@ import tailwindcss from "@tailwindcss/vite";
 // https://vite.dev/config/
 export default defineConfig({
   server: {
+    host: "0.0.0.0", // Permite acceso desde red externa
+    port: 5173, // Puerto donde corre Vite
     allowedHosts: ["localhost", "impalexander.store", "www.impalexander.store"],
+    hmr: {
+      protocol: "ws", // o 'wss' si usas HTTPS
+      host: "impalexander.store",
+      port: 80, // 👈 importante si Nginx está en el puerto 80
+    },
   },
   plugins: [react(), tailwindcss()],
 });
