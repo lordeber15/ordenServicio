@@ -11,7 +11,7 @@ export default defineConfig({
     hmr: {
       protocol: "ws", // o 'wss' si usas HTTPS
       host: "impalexander.store",
-      port: 80, // 👈 importante si Nginx está en el puerto 80
+      port: 5173, // 👈 importante si Nginx está en el puerto 80
     },
   },
   plugins: [react(), tailwindcss()],
