@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const loginApi = axios.create({
-  baseURL: "http://impalexander.store/api/reniec/",
+  baseURL: "http://localhostapi/reniec/",
 });
 export const getReniec = async (dni) => {
   const token = "apis-token-16299.1l9ndIMxkIIiHfeLTQiTF8cxGNvDoFkt";
