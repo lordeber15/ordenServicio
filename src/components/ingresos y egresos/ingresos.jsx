@@ -1,6 +1,9 @@
 import Drawer from "../drawer";
 import Tablaingresosyegresos from "../tablaingresosegresos";
-function ingresos() {
+import { useQuery } from "@tanstack/react-query";
+import { getIngresos } from "../../request/ingresosrequest";
+import { getEgresos } from "../../request/egresosrequest";
+function Ingresos() {
   const getTodayDate = () => {
     const today = new Date();
     const year = today.getFullYear();
@@ -8,46 +11,16 @@ function ingresos() {
     const day = String(today.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
   };
+  const { data: dataIngresos } = useQuery({
+    queryKey: ["servicios"],
+    queryFn: getIngresos,
+  });
 
-  const dataIngresos = [
-    {
-      codigo: "1",
-      monto: "12.30",
-      metodo: "efectivo",
-    },
-    {
-      codigo: "2",
-      monto: "9.10",
-      metodo: "yape",
-    },
-    {
-      codigo: "3",
-      monto: "10.30",
-      metodo: "yape",
-    },
-  ];
-  const dataEgresos = [
-    {
-      codigo: "1",
-      monto: "5.30",
-      metodo: "efectivo",
-    },
-    {
-      codigo: "2",
-      monto: "46.10",
-      metodo: "yape",
-    },
-    {
-      codigo: "3",
-      monto: "20.30",
-      metodo: "yape",
-    },
-    {
-      codigo: "4",
-      monto: "1.00",
-      metodo: "efectivo",
-    },
-  ];
+  const { data: dataEgresos } = useQuery({
+    queryKey: ["servicios"],
+    queryFn: getEgresos,
+  });
+
   return (
     <div>
       <div className="flex px-10 py-4 justify-between">
@@ -82,4 +55,4 @@ function ingresos() {
   );
 }
 
-export default ingresos;
+export default Ingresos;
