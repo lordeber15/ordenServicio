@@ -9,10 +9,13 @@ export default defineConfig({
     port: 5173, // Puerto donde corre Vite
     https: false,
     allowedHosts: ["localhost", "impalexander.store", "www.impalexander.store"],
+    fs: {
+      allow: ["src"],
+    },
     hmr: {
       protocol: "wss", // o 'wss' si usas HTTPS
       host: "impalexander.store",
-      port: 443, // 👈 importante si Nginx está en el puerto 80
+      port: 5173, // 👈 importante si Nginx está en el puerto 80
     },
   },
   plugins: [react(), tailwindcss()],
