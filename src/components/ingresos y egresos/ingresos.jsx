@@ -20,6 +20,13 @@ function Ingresos() {
     queryKey: ["ingresos"],
     queryFn: getIngresos,
   });
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
 
   const { data: dataEgresos } = useQuery({
     queryKey: ["egresos"],
@@ -27,11 +34,10 @@ function Ingresos() {
   });
 
   const filteredIngresos = dataIngresos?.filter(
-    (item) => item.fecha?.slice(0, 10) === selectedDate
+    (item) => formatDate(item.fecha) === selectedDate
   );
-
   const filteredEgresos = dataEgresos?.filter(
-    (item) => item.fecha?.slice(0, 10) === selectedDate
+    (item) => formatDate(item.fecha) === selectedDate
   );
 
   return (
