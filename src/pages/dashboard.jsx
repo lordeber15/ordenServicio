@@ -2,6 +2,7 @@ import { useState } from "react";
 import Modal from "react-modal";
 import { FaPlus } from "react-icons/fa6";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 import {
   getServicios,
   createServicios,
@@ -24,21 +25,36 @@ function Dashboard() {
   const queryClient = useQueryClient();
 
   const addServiciosMutation = useMutation({
-    mutationFn: createServicios,
+    mutationFn: (data) =>
+      toast.promise(createServicios(data), {
+        loading: "Guardando...",
+        success: "Servicio agregado con éxito ✅",
+        error: "Error al agregar servicio ❌",
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries("servicios");
     },
   });
 
   const deleteServiciosMutation = useMutation({
-    mutationFn: deleteServicios,
+    mutationFn: (id) =>
+      toast.promise(deleteServicios(id), {
+        loading: "Eliminando...",
+        success: "Servicio eliminado ✅",
+        error: "Error al eliminar servicio ❌",
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries("servicios");
     },
   });
 
   const updateServiciosMutation = useMutation({
-    mutationFn: updateServicios,
+    mutationFn: (data) =>
+      toast.promise(updateServicios(data), {
+        loading: "Actualizando...",
+        success: "Servicio actualizado ✅",
+        error: "Error al actualizar servicio ❌",
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries("servicios");
     },
@@ -83,7 +99,7 @@ function Dashboard() {
       !valueInputTotal ||
       !valueInputAcuenta
     ) {
-      console.log("Todos los campos son obligatorios");
+      toast.error("Todos los campos son obligatorios ⚠️");
       return;
     }
     try {
@@ -133,7 +149,7 @@ function Dashboard() {
       valueInputTotal === "" ||
       valueInputAcuenta === ""
     ) {
-      console.log("Por favor, completa todos los campos.");
+      toast.error("Por favor, completa todos los campos ⚠️");
       return;
     }
     try {

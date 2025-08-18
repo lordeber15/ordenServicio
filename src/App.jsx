@@ -9,6 +9,7 @@ import Factura from "./pages/facturacion/factura";
 import Guiarem from "./pages/facturacion/guiaremision";
 import Notacredito from "./pages/facturacion/notadecredito";
 import Ingresos from "./components/ingresos y egresos/ingresos";
+import Reportes from "./pages/reportes";
 import { Route, Routes, useLocation } from "react-router";
 import ProtectedRoutes from "./components/protectedRoutes";
 import { Toaster } from "react-hot-toast";
@@ -19,7 +20,7 @@ function App() {
   const locationNow = useLocation();
   return (
     <div>
-      <Toaster position="top-center" reverseOrder={false} />
+      <Toaster position="bottom-right" reverseOrder={false} />
       {locationNow.pathname !== "/" && <NavBar />}
       <Routes>
         <Route path="/" element={<Login />} />
@@ -32,7 +33,8 @@ function App() {
           <Route path="/guiarem" element={<Guiarem />} />
           <Route path="/notacredito" element={<Notacredito />} />
           <Route path="/ticket" element={<Ticket />} />
-          <Route path="/ingresos" element={<Ingresos />} />s
+          <Route path="/ingresos" element={<Ingresos />} />
+          <Route path="/reportes" element={<Reportes />} />
         </Route>
       </Routes>
     </div>

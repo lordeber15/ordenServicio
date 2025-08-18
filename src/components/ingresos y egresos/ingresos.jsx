@@ -20,6 +20,7 @@ function Ingresos() {
     queryKey: ["ingresos"],
     queryFn: getIngresos,
   });
+
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     const year = date.getFullYear();

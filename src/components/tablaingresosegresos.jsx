@@ -9,6 +9,7 @@ function Tablaingresosegresos({ ingresosyegresos = [], titulo }) {
     (acc, item) => acc + parseFloat(item.monto || 0),
     0
   );
+
   const [openModalI, setOpenModalI] = useState(false);
   const handleOpenModal = () => setOpenModalI(true);
   const handleCloseModal = () => setOpenModalI(false);

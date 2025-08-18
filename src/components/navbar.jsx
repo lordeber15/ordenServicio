@@ -6,6 +6,7 @@ import { TiThMenu } from "react-icons/ti";
 import { Link } from "react-router";
 import { MdOutlineSpaceDashboard } from "react-icons/md";
 import { MdOutlineInventory } from "react-icons/md";
+import { HiOutlineDocumentReport } from "react-icons/hi";
 
 function Navbar() {
   const [open, setOpen] = useState(false);
@@ -87,6 +88,14 @@ function Navbar() {
             >
               <MdOutlineSpaceDashboard className="text-white" />
               Dashboard
+            </Link>
+            <Link
+              to={"/reportes"}
+              onClick={() => setOpen(!open)}
+              className="px-4 py-2 cursor-pointer hover:bg-sky-500 text-white w-full text-left flex flex-row gap-2 justify-start items-center hover:text-white"
+            >
+              <HiOutlineDocumentReport className="text-white" />
+              Reportes
             </Link>
             <Link
               to={"/"}
