@@ -21,12 +21,16 @@ function Reportes() {
         {dataIngresos ? (
           <CardsReports titulo="Ingresos" data={dataIngresos} />
         ) : (
-          <p>Cargando...</p>
+          <p className="flex w-full pt-2 justify-center items-center">
+            Cargando...
+          </p>
         )}
         {dataEgresos ? (
           <CardsReports titulo="Egresos" data={dataEgresos} />
         ) : (
-          <p>Cargando...</p>
+          <p className="flex w-full pt-2 justify-center items-center">
+            Cargando...
+          </p>
         )}
       </div>
     </div>

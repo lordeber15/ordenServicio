@@ -70,6 +70,7 @@ function Dashboard() {
   const [activeTab, setActiveTab] = useState("pendiente");
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [idToDelete, setIdToDelete] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const handlerChangeNombre = (e) => {
     setInputnombre(e.target.value);
@@ -213,6 +214,10 @@ function Dashboard() {
     setSelectedItem(null);
   };
 
+  const filteredServicios = (dataServicios || []).filter((servicio) =>
+    servicio.nombre.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div>
       <div className="sm:-mx-0 lg:-mx-0">
@@ -239,6 +244,17 @@ function Dashboard() {
                 Nuevo Trabajo
               </button>
             </div>
+
+            <div className="flex justify-end mb-4 text-sky-700">
+              <input
+                type="text"
+                placeholder="Buscar por nombre..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="border px-3 py-2 rounded-lg w-64 "
+              />
+            </div>
+
             <div className="flex flex-wrap gap-2 mb-4">
               <button
                 onClick={() => setActiveTab("Todos")}
@@ -303,7 +319,7 @@ function Dashboard() {
             </div>
 
             <Pagination
-              data={dataServicios || []}
+              data={filteredServicios || []}
               activeTab={activeTab}
               onEdit={handleEditServicios}
               onDelete={handleDeleteServicios}

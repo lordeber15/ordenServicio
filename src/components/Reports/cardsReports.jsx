@@ -43,7 +43,7 @@ function CardsReports({ data, titulo }) {
   return (
     <div className="rounded-lg mx-2 w-full px-8 py-2 shadow-[0px_0px_10px_-1px_rgba(0,_0,_0,_0.15)] bg-green-100 hover:scale-105 transition-all">
       <div>
-        <div className="flex flex-col">
+        <div className="flex flex-col animate-fade animate-once animate-duration-300">
           <div
             className={`flex justify-end font-bold text-2xl ${
               esMayor ? "text-green-700" : "text-red-600"
