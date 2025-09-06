@@ -2,7 +2,12 @@ import { CiEdit } from "react-icons/ci";
 import { MdDeleteOutline } from "react-icons/md";
 import Modal from "react-modal";
 
-export default function TablaProductos({ data }) {
+export default function TablaProductos({ data, unidades }) {
+  const getUnidadNombre = (id) => {
+    const unidad = unidades?.find((u) => u.id === id);
+    return unidad ? unidad.nombre : id;
+  };
+  console.log(getUnidadNombre(1));
   return (
     <div className="w-full">
       <div className="overflow-x-auto ">
@@ -28,19 +33,22 @@ export default function TablaProductos({ data }) {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {data.map((item, index) => (
+            {data?.map((item, index) => (
               <tr key={index} className="hover:bg-gray-50">
                 <td className="text-center px-4 py-2 text-sm text-gray-800">
-                  {item.codigo}
+                  {item.codigo_sunat}
                 </td>
                 <td className="px-4 py-2 text-sm text-gray-800">
-                  {item.descripcion}
+                  {item.nombre}
                 </td>
                 <td className="px-4 py-2 text-sm text-gray-800">
-                  {item.unidad}
+                  {getUnidadNombre(item.unidad_id)}
                 </td>
                 <td className="px-4 py-2 text-sm text-gray-800">
-                  S/ {item.precio.toFixed(2)}
+                  S/
+                  {typeof item.valor_unitario === "number"
+                    ? item.valor_unitario.toFixed(2)
+                    : Number(item.valor_unitario || 0).toFixed(2)}
                 </td>
                 <td className=" py-2 text-gray-800 space-x-2">
                   <button className="bg-sky-700 text-white p-2 rounded text-xs hover:bg-sky-600">

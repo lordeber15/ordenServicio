@@ -4,28 +4,20 @@ import TablaProductos from "../components/tablaProductos";
 import Search from "../components/search";
 import { useState } from "react";
 import ModalAgregaritem from "../components/modalAgregaritem";
+import { useQuery } from "@tanstack/react-query";
+import { getProducto } from "../request/productos";
+import { getUnidades } from "../request/unidades";
 
 function Inventario() {
-  const dataTable = [
-    {
-      codigo: "P001",
-      descripcion: "Producto A",
-      unidad: "unidad",
-      precio: 10.5,
-    },
-    {
-      codigo: "P002",
-      descripcion: "Producto B",
-      unidad: "paquete",
-      precio: 22.0,
-    },
-    {
-      codigo: "P003",
-      descripcion: "Producto C",
-      unidad: "caja",
-      precio: 18.75,
-    },
-  ];
+  const { data: dataProducto } = useQuery({
+    queryKey: ["producto"],
+    queryFn: getProducto,
+  });
+  const { data: dataUnidades } = useQuery({
+    queryKey: ["unidades"],
+    queryFn: getUnidades,
+  });
+
   const [openModalI, setOpenModalI] = useState(false);
   const handleOpenModal = () => setOpenModalI(true);
   const handleCloseModal = () => setOpenModalI(false);
@@ -46,7 +38,7 @@ function Inventario() {
         <Search />
       </div>
       <div className="px-10">
-        <TablaProductos data={dataTable} />
+        <TablaProductos data={dataProducto} unidades={dataUnidades} />
       </div>
       <ModalAgregaritem isOpen={openModalI} onClose={handleCloseModal} />
     </div>
