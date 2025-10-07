@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const productoApi = axios.create({
-  baseURL: "https://impalexander.store/api/",
+  baseURL: "https://api.impalexander.store/api/",
 });
 export const getProducto = async () => {
   const res = await productoApi.get("/producto");
