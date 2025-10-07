@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const loginApi = axios.create({
-  baseURL: "https://impalexander.store/api/",
+  baseURL: "https://api.impalexander.store/api/",
 });
 export const getLogin = async () => {
   const res = await loginApi.get("/login");
