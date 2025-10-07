@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const egresosoApi = axios.create({
-  baseURL: "https://impalexander.store/api/",
+  baseURL: "https://api.impalexander.store/api/",
 });
 export const getEgresos = async () => {
   const res = await egresosoApi.get("/egresos");
