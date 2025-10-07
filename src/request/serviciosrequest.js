@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const serviciosApi = axios.create({
-  baseURL: "https://impalexander.store/api/",
+  baseURL: "https://api.impalexander.store/api/",
 });
 export const getServicios = async () => {
   const res = await serviciosApi.get("/servicios");
