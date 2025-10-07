@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const unidadesApi = axios.create({
-  baseURL: "https://impalexander.store/api/",
+  baseURL: "https://api.impalexander.store/api/",
 });
 export const getUnidades = async () => {
   const res = await unidadesApi.get("/unidad");
