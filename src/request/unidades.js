@@ -1,23 +1,20 @@
-import axios from "axios";
+import axiosURL from "./axiosURL";
 
-const unidadesApi = axios.create({
-  baseURL: "https://api.impalexander.store/api/",
-});
 export const getUnidades = async () => {
-  const res = await unidadesApi.get("/unidad");
+  const res = await axiosURL.get("/unidad");
   return res.data;
 };
 
 export const createUnidades = (unidades) => {
-  return unidadesApi.post("/unidad", unidades);
+  return axiosURL.post("/unidad", unidades);
 };
 
 export const updateUnidades = (unidades) => {
   const unidadesCopy = { ...unidades };
   delete unidadesCopy.id;
-  return unidadesApi.put(`/unidad/${unidades.id}`, unidadesCopy);
+  return axiosURL.put(`/unidad/${unidades.id}`, unidadesCopy);
 };
 
 export const deleteUnidades = (id) => {
-  return unidadesApi.delete(`/unidad/${id}`);
+  return axiosURL.delete(`/unidad/${id}`);
 };

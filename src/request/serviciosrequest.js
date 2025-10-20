@@ -1,23 +1,20 @@
-import axios from "axios";
+import axiosURL from "./axiosURL";
 
-const serviciosApi = axios.create({
-  baseURL: "https://api.impalexander.store/api/",
-});
 export const getServicios = async () => {
-  const res = await serviciosApi.get("/servicios");
+  const res = await axiosURL.get("/servicios");
   return res.data;
 };
 
 export const createServicios = (servicios) => {
-  return serviciosApi.post("/servicios", servicios);
+  return axiosURL.post("/servicios", servicios);
 };
 
 export const updateServicios = (servicios) => {
   const serviciosCopy = { ...servicios };
   delete serviciosCopy.id;
-  return serviciosApi.put(`/servicios/${servicios.id}`, serviciosCopy);
+  return axiosURL.put(`/servicios/${servicios.id}`, serviciosCopy);
 };
 
 export const deleteServicios = (id) => {
-  return serviciosApi.delete(`/servicios/${id}`);
+  return axiosURL.delete(`/servicios/${id}`);
 };

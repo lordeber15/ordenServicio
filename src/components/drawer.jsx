@@ -97,6 +97,14 @@ export default function Drawer() {
               Ingresos y Egresos
             </Link>
           </li>
+          <li>
+            <Link
+              to="/almanaque"
+              className="block cursor-pointer text-white  hover:text-white p-2 rounded-md hover:bg-sky-600"
+            >
+              Almanaque
+            </Link>
+          </li>
         </ul>
       </div>
     </>

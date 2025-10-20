@@ -14,6 +14,7 @@ import { Route, Routes, useLocation } from "react-router";
 import ProtectedRoutes from "./components/protectedRoutes";
 import { Toaster } from "react-hot-toast";
 import Ticket from "./pages/facturacion/ticket";
+import Almanaque from "./pages/Almanaques/almanaques";
 
 function App() {
   const storedUserData = JSON.parse(localStorage.getItem("userData")) || null;
@@ -35,6 +36,7 @@ function App() {
           <Route path="/ticket" element={<Ticket />} />
           <Route path="/ingresos" element={<Ingresos />} />
           <Route path="/reportes" element={<Reportes />} />
+          <Route path="/almanaque" element={<Almanaque />} />
         </Route>
       </Routes>
     </div>

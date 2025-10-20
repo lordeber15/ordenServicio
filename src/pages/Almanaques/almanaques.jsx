@@ -2,52 +2,114 @@ import Drawer from "../../components/drawer";
 import DatosEmpresa from "../../components/datosEmpresa";
 import { CiSearch } from "react-icons/ci";
 import TablaProductos from "../../components/tablaProductos";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getReniec } from "../../request/reniec";
 import AgregarItemTabla from "../../components/agregarItemTabla";
+import AgregarItemsTabla from "../../components/agregarItemsTabla";
+import { useMemo } from "react";
+import ImporteLetras from "./numeroAletra";
+import { createAlmanaque } from "../../request/almanaques";
+import toast from "react-hot-toast";
 
-function Ticket() {
-  const [items, setItems] = useState([
-    {
-      codigo: "P001",
-      descripcion: "Producto A",
-      unidad: "unidad",
-      precio: 10.5,
-    },
-    {
-      codigo: "P002",
-      descripcion: "Producto B",
-      unidad: "paquete",
-      precio: 23.0,
-    },
-  ]);
+function Almanaques() {
+  const [items, setItems] = useState([]);
 
-  const [requestCliente, setRequestCliente] = useState("");
+  const [requestAlmanaque, setRequestAlmanaque] = useState("");
   const [selectDocumento, setSelectDocumento] = useState("");
-  const [nombreCliente, setNombreCliente] = useState("");
+  const [nombreAlmanaque, setNombreAlmanaque] = useState("");
+  const [direccionAlmanaque, setdireccionAlmanaque] = useState("");
+  console.log(nombreAlmanaque);
+  console.log(direccionAlmanaque);
+
+  const handleEmitir = async () => {
+    try {
+      if (!nombreAlmanaque || items.length === 0) {
+        toast.error("Debes ingresar un cliente y al menos un ítem.");
+        return;
+      }
+
+      const payload = {
+        cliente: nombreAlmanaque,
+        tipoDocumento: selectDocumento || "Sin Documento",
+        numeroDocumento: requestAlmanaque || "",
+        direccion: "", // si tienes este dato, agrégalo
+        fechaEmision: new Date().toISOString().split("T")[0],
+        precioTotal: totales.total.toFixed(2),
+        detalles: items.map((item) => ({
+          cantidad: item.cantidad,
+          descripcion: item.almanaque || item.descripcion,
+          precioUnitario: item.precio,
+          subtotal: item.precio,
+        })),
+      };
+
+      // muestra un "loading" mientras se guarda
+      const toastId = toast.loading("Guardando ticket...");
+
+      const data = await createAlmanaque(payload);
+
+      toast.success("Ticket emitido correctamente 🎉", { id: toastId });
+      console.log("✅ Respuesta del servidor:", data);
+
+      // limpia los datos del formulario
+      setItems([]);
+      setNombreAlmanaque("");
+      setSelectDocumento("");
+      setRequestAlmanaque("");
+      setdireccionAlmanaque("");
+    } catch (error) {
+      console.error("❌ Error al emitir ticket de Almanaque:", error);
+      toast.error("No se pudo guardar el ticket de Almanaque 😞");
+    }
+  };
+
+  const totales = useMemo(() => {
+    console.log("🔄 Recalculando totales...");
+
+    // 1️⃣ Sumar todos los precios (importe total)
+    const total = items.reduce(
+      (acc, item) => acc + Number(item.precio || 0),
+      0
+    );
+
+    // 2️⃣ Calcular operación gravada
+    const opeGravada = total / 1.18;
+
+    // 3️⃣ Calcular IGV
+    const igv = opeGravada * 0.18;
+
+    return { opeGravada, igv, total };
+  }, [items]);
+
   const { data: dataReniec, refetch } = useQuery({
-    queryKey: ["reniec", requestCliente],
-    queryFn: () => getReniec(requestCliente),
+    queryKey: ["reniec", requestAlmanaque],
+    queryFn: () => getReniec(requestAlmanaque),
     enabled: false, // 👈 solo se ejecuta manualmente
     onSuccess: (data) => {
-      setNombreCliente(data?.nombres || "");
+      setNombreAlmanaque(data?.nombres || "");
     },
   });
-  const handleBuscarCliente = () => {
-    if (requestCliente.trim().length > 0) {
+  const handleBuscarAlmanaque = () => {
+    if (requestAlmanaque.trim().length > 0) {
       refetch();
     }
   };
   const handleSelectDcument = (e) => {
     setSelectDocumento(e.target.value);
   };
+  useEffect(() => {
+    if (dataReniec) {
+      const nombreCompleto = `${dataReniec.nombres} ${dataReniec.apellidoPaterno} ${dataReniec.apellidoMaterno}`;
+      setNombreAlmanaque(nombreCompleto);
+    }
+  }, [dataReniec]);
 
   return (
     <div className="px-12 py-4 w-screen">
       <div className="flex justify-start gap-5 items-center ">
         <Drawer />
-        <div className="text-2xl font-bold">Ticket</div>
+        <div className="text-2xl font-bold">Almanaque</div>
       </div>
       <div className="flex justify-center items-center w-full p-2">
         <div className="flex flex-col md:flex-row  w-full">
@@ -55,10 +117,10 @@ function Ticket() {
           <div className="p-2 flex  justify-center items-center flex-col border-2 border-gray-300 border-dashed">
             <div className="text-lg font-bold">RUC: 20608582011</div>
             <div className="font-bold text-lg py-2 text-center">
-              Ticket Electronico
+              Notas de Pedido Almanaque
             </div>
             <div className="flex  px-2 gap-2 items-center">
-              <p>TK001</p>
+              <p>NPA</p>
               -
               <input type="number" className="p-2 w-full" />
             </div>
@@ -70,13 +132,9 @@ function Ticket() {
           <input
             type="text"
             className="w-full md:w-1/2 bg-gray-200 rounded-md p-2"
-            placeholder="Cliente"
-            value={
-              dataReniec
-                ? `${dataReniec.nombres} ${dataReniec.apellidoPaterno} ${dataReniec.apellidoMaterno}`
-                : ""
-            }
-            onChange={(e) => setNombreCliente(e.target.value)}
+            placeholder="Nombre Cliente"
+            value={nombreAlmanaque}
+            onChange={(e) => setNombreAlmanaque(e.target.value)}
           />
           <div className="w-full md:w-1/2 flex flex-row">
             <select
@@ -102,11 +160,13 @@ function Ticket() {
               disabled={selectDocumento == "Sin Documento" ? true : false}
               className="bg-gray-200 rounded-l-md p-2 w-full"
               placeholder="Numero de Documento"
-              value={requestCliente}
-              onChange={(e) => setRequestCliente(e.target.value)}
+              value={requestAlmanaque}
+              onChange={(e) => {
+                e.preventDefault, setRequestAlmanaque(e.target.value);
+              }}
             />
             <button
-              onClick={handleBuscarCliente}
+              onClick={handleBuscarAlmanaque}
               className="w-fit cursor-pointer bg-gray-200 rounded-r-md p-2"
             >
               <CiSearch />
@@ -132,20 +192,21 @@ function Ticket() {
 
         <div className=" overflow-x-auto">
           {items.length == 0 ? (
-            <AgregarItemTabla />
+            <AgregarItemTabla setItems={setItems} />
           ) : (
             <div>
-              <TablaProductos data={items} />
-              <AgregarItemTabla setItems={setItems} />
+              <TablaProductos data={items} setItems={setItems} />
+              <AgregarItemsTabla setItems={setItems} />
             </div>
           )}
         </div>
         <div className="flex flex-col gap-2 justify-end">
           <div className="flex justify-end">
-            <div className="flex items-center pr-2">Ope. Gravada</div>
+            <div className="flex items-center pr-2">Sub Total</div>
             <input
               type="text"
               disabled
+              value={totales.opeGravada.toFixed(2)}
               className="bg-gray-200 rounded-md p-2"
             />
           </div>
@@ -154,6 +215,7 @@ function Ticket() {
             <input
               type="text"
               disabled
+              value={totales.igv.toFixed(2)}
               className="bg-gray-200 rounded-md p-2"
             />
           </div>
@@ -162,22 +224,19 @@ function Ticket() {
             <input
               type="text"
               disabled
+              value={totales.total.toFixed(2)}
               className="bg-gray-200 rounded-md p-2"
             />
           </div>
         </div>
         <hr className="bg-gray-200" />
-        <div className="flex flex-col md:flex-row py-2 gap-2 items-center justify-center">
-          <div className="w-full md:w-1/5">Importe en Letras</div>
-          <input
-            className=" p-2 uppercase w-full text-gray-400"
-            disabled
-            defaultValue={"Ciento Treinta con 00/100 soles"}
-          />
-        </div>
+        <ImporteLetras letras={totales.total} />
         <div className="flex justify-end">
-          <button className="bg-sky-700 rounded-md p-2 w-1/3 md:w-1/5 text-white cursor-pointer">
-            Emitir Ticket
+          <button
+            onClick={handleEmitir}
+            className="bg-sky-700 rounded-md p-2 w-1/3 md:w-1/5 text-white cursor-pointer"
+          >
+            Emitir
           </button>
         </div>
       </div>
@@ -185,4 +244,4 @@ function Ticket() {
   );
 }
 
-export default Ticket;
+export default Almanaques;

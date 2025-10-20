@@ -1,28 +1,44 @@
-import Modal from "react-modal";
-import { IoIosClose } from "react-icons/io";
+import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-function ModalAgregaritem({ isOpen, onClose }) {
-  const [operacionSelect, setOperacionSelesct] = useState("");
-  const [cambioPu, setCambioPu] = useState("");
-  const manejadorCambio = (event) => {
-    setOperacionSelesct(event.target.value);
+import Modal from "react-modal";
+import { getUnidades } from "../request/unidades";
+
+function ModalAgregaritem({ isOpen, onClose, setItems }) {
+  const { data: dbUnidad } = useQuery({
+    queryKey: ["unidades"],
+    queryFn: getUnidades,
+  });
+
+  const [formData, setFormData] = useState({
+    cantidad: "",
+    descripcion: "",
+    unidad: "",
+    precio: "",
+  });
+
+  if (!isOpen) return null;
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
   };
-  const changecambioPu = (e) => {
-    setCambioPu(e.target.value);
+  const handlereset = () => {
+    onClose();
+    setFormData({
+      cantidad: "",
+      descripcion: "",
+      unidad: "",
+      precio: "",
+    });
   };
 
-  const handleBlur = (e) => {
-    const value = e.target.value;
-    if (value.includes(".")) {
-      const [integerPart, decimalPart] = value.split(".");
-      if (decimalPart.length === 0) {
-        setCambioPu(`${integerPart}.00`);
-      } else if (decimalPart.length === 1) {
-        setCambioPu(`${integerPart}.${decimalPart}0`);
-      }
-    } else {
-      setCambioPu(`${value}.00`);
-    }
+  const handleAgregar = () => {
+    if (!formData.descripcion || !formData.precio) return;
+    setItems((prev) => [...prev, formData]); // agrega el nuevo item
+    setFormData({ cantidad: "", descripcion: "", unidad: "", precio: "" }); // limpia
+    onClose();
   };
 
   return (
@@ -30,7 +46,7 @@ function ModalAgregaritem({ isOpen, onClose }) {
       isOpen={isOpen}
       onRequestClose={onClose}
       ariaHideApp={false}
-      className="bg-white w-1/2  p-6 rounded-md shadow-md max-w-md mx-auto mt-15"
+      className="p-6 rounded-md shadow-md flex justify-center items-center mt-32"
       overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start"
       style={{
         overlay: {
@@ -38,122 +54,63 @@ function ModalAgregaritem({ isOpen, onClose }) {
         },
       }}
     >
-      <div className=" flex justify-between gap-2">
-        <div></div>
+      <div className="bg-white p-6 rounded-md shadow-md w-full md:w-1/3">
+        <h2 className="text-xl font-bold mb-4 flex justify-center text-sky-700">
+          Agregar nuevo item
+        </h2>
+        <input
+          name="cantidad"
+          placeholder="Cantidad"
+          className="border-0 bg-gray-200 text-black p-2 w-full mb-2 rounded-md"
+          value={formData.cantidad}
+          onChange={handleChange}
+        />
+        <input
+          name="descripcion"
+          placeholder="Almanaque"
+          className="border-0 bg-gray-200 text-black p-2 w-full mb-2 rounded-md"
+          value={formData.descripcion}
+          onChange={handleChange}
+        />
         <select
-          className="text-lg font-semibold mb-4"
-          value={operacionSelect}
-          onChange={manejadorCambio}
+          name="unidad"
+          placeholder="Unidad"
+          className="border-0 bg-gray-200 text-black p-2 w-full mb-2 rounded-md"
+          value={formData.unidad}
+          onChange={handleChange}
         >
-          <option value="Ope. Gravada"> Operacion Grabada</option>
-          <option value="Exportación"> Exportación</option>
+          {dbUnidad ? (
+            dbUnidad.map((unid) => (
+              <option key={unid.id} value={unid.descripcion}>
+                {unid.descripcion}
+              </option>
+            ))
+          ) : (
+            <option disabled>Selecciona una Opcion</option>
+          )}
         </select>
-        <button
-          onClick={onClose}
-          className="bg-white w-fit h-fit scale-120 rounded hover:bg-gray-200 flex cursor-pointer justify-end "
-        >
-          <IoIosClose />
-        </button>
-      </div>
-      <div className=" flex flex-col gap-2 ">
-        <div className="flex flex-col md:flex-col gap-2 pb-2">
-          <select name="unidad" id="unidad" className="p-2 w-full md:w-1/2">
-            <option value="unidades">Unidad</option>
-            <option value="unidades">Servicios</option>
-            <option value="unidades">Baldes</option>
-          </select>
-          <input
-            type="text"
-            placeholder="Codigo (Opcional)"
-            className="p-2 w-full bg-gray-200 rounded-lg"
-          />
+        <input
+          name="precio"
+          placeholder="Precio"
+          type="number"
+          className="border-0 bg-gray-200 text-black p-2 w-full mb-2 rounded-md"
+          value={formData.precio}
+          onChange={handleChange}
+        />
+        <div className="flex justify-end gap-2">
+          <button
+            onClick={handlereset}
+            className="p-2 bg-gray-300 cursor-pointer rounded-md"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={handleAgregar}
+            className="p-2 bg-sky-700 text-white cursor-pointer rounded-md"
+          >
+            Agregar
+          </button>
         </div>
-      </div>
-      <div className="flex">
-        <div className=" w-full flex justify-end flex-col gap-2">
-          <input
-            type="text"
-            placeholder="Descripcion"
-            className="p-2 bg-gray-200 rounded-lg"
-          />
-          <div className="flex flex-col md:flex-row">
-            <div className="p-2 w-full md:w-1/2 text-right">Valor Unitario</div>
-            <input
-              type="text"
-              placeholder="Valor Unitario"
-              className=" w-full p-2 bg-gray-200 rounded-lg text-right"
-              value={(cambioPu / 1.18).toFixed([3])}
-            />
-          </div>
-
-          <div className="flex flex-col md:flex-row">
-            <div className="p-2 w-full md:w-1/2 text-right">IGV 18%</div>
-            <input
-              className="w-full p-2 text-right bg-gray-200 rounded-lg"
-              type="text"
-              disabled
-              value={((cambioPu / 1.18) * 0.18).toFixed([3])}
-            />
-          </div>
-          <div className="flex flex-col md:flex-row">
-            <div className="p-2 w-full md:w-1/2 text-right">
-              Precio Unitario
-            </div>
-            <input
-              type="text"
-              placeholder="Precio unitario"
-              className=" w-full p-2 bg-gray-200 rounded-lg text-right"
-              onChange={changecambioPu}
-              onBlur={handleBlur}
-            />
-          </div>
-        </div>
-      </div>
-      <hr className="my-3 h-0.5 border-t-0 bg-gray-200" />
-      <div className="w-full gap-2 flex flex-col">
-        <div className="flex flex-col md:flex-row items-end md:items-center">
-          <label className="w-1/2 text-right pr-2">
-            {operacionSelect ? operacionSelect : "Ope. Gravada"}
-          </label>
-          <input
-            type="text"
-            disabled
-            className="p-2 w-full text-right bg-gray-200 rounded-lg"
-            value={(cambioPu / 1.18).toFixed([2])}
-          />
-        </div>
-        <div className="flex flex-col md:flex-row items-end md:items-center">
-          <label className="w-1/2 text-right pr-2"> IGV</label>
-          <input
-            disabled
-            type="text"
-            className="p-2 w-full text-right bg-gray-200 rounded-lg"
-            value={((cambioPu / 1.18) * 0.18).toFixed([2])}
-          />
-        </div>
-        <div className="flex flex-col md:flex-row items-end md:items-center">
-          <label className="w-1/2 text-right pr-2"> Importe Total</label>
-          <input
-            disabled
-            type="text"
-            className="p-2 w-full text-right bg-gray-200 rounded-lg"
-            value={cambioPu}
-          />
-        </div>
-      </div>
-      <div className="flex flex-col-reverse md:flex-row pt-2 gap-2">
-        <button
-          onClick={() => {
-            onClose();
-            setCambioPu("0");
-          }}
-          className="p-2 w-full md:w-1/2 bg-red-400 rounded-md text-white cursor-pointer"
-        >
-          Cancelar
-        </button>
-        <button className="p-2 w-full md:w-1/2 bg-sky-700 rounded-md text-white cursor-pointer">
-          Agregar
-        </button>
       </div>
     </Modal>
   );
