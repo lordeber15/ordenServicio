@@ -3,7 +3,7 @@ import { useState } from "react";
 import Modal from "react-modal";
 import { getUnidades } from "../request/unidades";
 
-function ModalAgregaritem({ isOpen, onClose, setItems }) {
+function ModalEditaritem({ isOpen, onClose, setItems }) {
   const { data: dbUnidad } = useQuery({
     queryKey: ["unidades"],
     queryFn: getUnidades,
@@ -81,7 +81,7 @@ function ModalAgregaritem({ isOpen, onClose, setItems }) {
           name="unidad"
           placeholder="Unidad"
           className="border-0 bg-gray-200 text-black p-2 w-full mb-2 rounded-md"
-          value={formData.unidad}
+          defaultValue={formData.unidad || "Unidades"}
           onChange={handleChange}
         >
           {dbUnidad ? (
@@ -121,4 +121,4 @@ function ModalAgregaritem({ isOpen, onClose, setItems }) {
   );
 }
 
-export default ModalAgregaritem;
+export default ModalEditaritem;

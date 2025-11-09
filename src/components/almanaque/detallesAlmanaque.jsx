@@ -1,121 +1,113 @@
-import Drawer from "../../components/drawer";
-import DatosEmpresa from "../../components/datosEmpresa";
+import { useState, useEffect, useMemo } from "react";
+import Drawer from "../drawer";
 import { CiSearch } from "react-icons/ci";
-import TablaProductos from "../../components/tablaProductos";
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { getReniec } from "../../request/reniec";
-import AgregarItemTabla from "../../components/agregarItemTabla";
-import AgregarItemsTabla from "../../components/agregarItemsTabla";
-import { useMemo } from "react";
-import ImporteLetras from "./numeroAletra";
-import { createAlmanaque } from "../../request/almanaques";
+import DatosEmpresa from "../datosEmpresa";
+import AgregarItemTabla from "../agregarItemTabla";
+import AgregarItemsTabla from "../agregarItemsTabla";
+import ImporteLetras from "../../pages/Almanaques/numeroAletra";
+import { useParams } from "react-router";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getAlmanaqueById, updateAlmanaque } from "../../request/almanaques";
+import TablaDetalleAlmanaque from "./tabladetallealmanque";
 import toast from "react-hot-toast";
 
-function Almanaques() {
-  const [items, setItems] = useState([]);
-
+function DetallesAlmanaque() {
   const [requestAlmanaque, setRequestAlmanaque] = useState("");
   const [selectDocumento, setSelectDocumento] = useState("");
   const [nombreAlmanaque, setNombreAlmanaque] = useState("");
-  const [acuentaAlmanaque, setAcuentaAlmanaque] = useState(0);
-  const [direccionAlmanaque, setdireccionAlmanaque] = useState("");
-  console.log(nombreAlmanaque);
-  console.log(direccionAlmanaque);
-
-  const handleEmitir = async () => {
-    try {
-      if (!nombreAlmanaque || items.length === 0) {
-        toast.error("Debes ingresar un cliente y al menos un ítem.");
-        return;
-      }
-
-      const payload = {
-        cliente: nombreAlmanaque,
-        tipoDocumento: selectDocumento || "Sin Documento",
-        numeroDocumento: requestAlmanaque || "",
-        direccion: "", // si tienes este dato, agrégalo
-        fechaEmision: new Date().toISOString(),
-        precioTotal: totales.total.toFixed(2),
-        aCuenta: acuentaAlmanaque.toFixed(2) || 0,
-        detalles: items.map((item) => ({
-          cantidad: item.cantidad,
-          descripcion: item.almanaque || item.descripcion,
-          unidad: item.unidad || "UND",
-          precioUnitario: item.precioUnitario,
-        })),
-      };
-
-      // muestra un "loading" mientras se guarda
-      const toastId = toast.loading("Guardando ticket...");
-
-      const data = await createAlmanaque(payload);
-
-      toast.success("Ticket emitido correctamente 🎉", { id: toastId });
-      console.log("✅ Respuesta del servidor:", data);
-
-      // limpia los datos del formulario
-      setItems([]);
-      setNombreAlmanaque("");
-      setSelectDocumento("");
-      setRequestAlmanaque("");
-      setdireccionAlmanaque("");
-      setAcuentaAlmanaque("");
-    } catch (error) {
-      console.error("❌ Error al emitir ticket de Almanaque:", error);
-      toast.error("No se pudo guardar el ticket de Almanaque 😞");
-    }
-  };
+  const [items, setItems] = useState([]);
+  const [fechaEmision, setFechaEmision] = useState("");
+  const [aCuenta, setACuenta] = useState(0);
+  const { id } = useParams();
+  const queryClient = useQueryClient();
+  const {
+    data: dataAlmanaque,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["almanaque", id],
+    queryFn: () => getAlmanaqueById(id),
+    enabled: !!id, // solo ejecuta la consulta si hay id
+  });
 
   const totales = useMemo(() => {
-    console.log("🔄 Recalculando totales...");
-
-    // 1️⃣ Sumar todos los precios (importe total)
     const total = items.reduce(
-      (acc, item) => acc + Number(item.precioUnitario * item.cantidad || 0),
+      (acc, item) =>
+        acc + Number(item.precioUnitario || 0) * Number(item.cantidad || 0),
       0
     );
 
-    // 2️⃣ Calcular operación gravada
     const opeGravada = total / 1.18;
-
-    // 3️⃣ Calcular IGV
     const igv = opeGravada * 0.18;
-
-    const saldo = total - acuentaAlmanaque;
+    const saldo = total - aCuenta;
 
     return { opeGravada, igv, total, saldo };
-  }, [items, acuentaAlmanaque]);
+  }, [items, aCuenta]);
 
-  const {
-    data: dataReniec,
-    refetch,
-    isFetching,
-  } = useQuery({
-    queryKey: ["reniec"],
-    queryFn: () => getReniec(requestAlmanaque), // usa el estado actual
-    enabled: false, // no se ejecuta automáticamente
-    onSuccess: (data) => {
-      if (!data) return;
-      const nombreCompleto =
-        `${dataReniec.nombres} ${dataReniec.apellidoPaterno} ${dataReniec.apellidoMaterno}`.trim();
-      setNombreAlmanaque(nombreCompleto);
+  const mutation = useMutation({
+    mutationFn: ({ id, data }) => updateAlmanaque(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["almanaque", id]);
+      toast.success("✅ Almanaque actualizado correctamente");
+    },
+    onError: (error) => {
+      console.error("❌ Error al actualizar:", error);
+      console.error("📦 Response:", error?.response?.data);
+      toast.error("❌ Error al actualizar el almanaque");
     },
   });
-  const handleBuscarAlmanaque = () => {
-    if (requestAlmanaque.trim().length > 0) {
-      refetch();
-    }
-  };
 
-  const handleaCuenta = (e) => {
-    const value = e.target.value;
-    setAcuentaAlmanaque(value === "" ? 0 : Number(value));
-  };
   const handleSelectDcument = (e) => {
     setSelectDocumento(e.target.value);
   };
+  const handleBuscarAlmanaque = () => {};
 
+  useEffect(() => {
+    if (dataAlmanaque) {
+      setNombreAlmanaque(dataAlmanaque.cliente);
+      setSelectDocumento(dataAlmanaque.tipoDocumento);
+      setRequestAlmanaque(dataAlmanaque.numeroDocumento);
+      setFechaEmision(dataAlmanaque.fechaEmision?.split("T")[0] || "");
+      setItems(
+        (dataAlmanaque.detalles || []).map((d) => ({
+          ...d,
+          cantidad: Number(d.cantidad || 0),
+          precioUnitario: Number(d.precioUnitario || 0),
+        }))
+      );
+      setACuenta(Number(dataAlmanaque.aCuenta || 0));
+    }
+  }, [dataAlmanaque]);
+  if (isLoading) return <p className="p-4">Cargando almanaque...</p>;
+  if (error) return <p className="p-4 text-red-500">Error al cargar datos</p>;
+
+  const handleActualizar = () => {
+    if (!id) {
+      toast.error("No se encontró el ID del almanaque");
+      return;
+    }
+    const payload = {
+      cliente: nombreAlmanaque,
+      tipoDocumento: selectDocumento || "Sin Documento",
+      numeroDocumento: requestAlmanaque || "",
+      fechaEmision,
+      subtotal: totales.opeGravada.toFixed(2),
+      igv: totales.igv.toFixed(2),
+      precioTotal: totales.total.toFixed(2),
+      aCuenta: aCuenta.toFixed(2),
+      detalles: items.map((item) => ({
+        // 👇 mantenemos TODO lo que traía el backend
+        ...item,
+        cantidad: Number(item.cantidad || 0),
+        precioUnitario: Number(item.precioUnitario || 0),
+        subtotal: (
+          Number(item.cantidad || 0) * Number(item.precioUnitario || 0)
+        ).toFixed(2),
+      })),
+    };
+    console.log("📤 Payload UPDATE:", payload);
+    mutation.mutate({ id, data: payload });
+  };
   return (
     <div className="w-screen">
       <div className="px-12 py-4 ">
@@ -134,7 +126,12 @@ function Almanaques() {
               <div className="flex  px-2 gap-2 items-center">
                 <p>NPA</p>
                 -
-                <input type="number" className="p-2 w-full" disabled />
+                <input
+                  type="number"
+                  className="p-2 w-full"
+                  disabled
+                  value={id}
+                />
               </div>
             </div>
           </div>
@@ -151,7 +148,7 @@ function Almanaques() {
             <div className="w-full md:w-1/2 flex flex-row">
               <select
                 onChange={handleSelectDcument}
-                defaultValue="DNI"
+                value={selectDocumento || "DNI"}
                 className="p-2 mr-2 w-1/2"
               >
                 <option value="Sin Documento">Sin Documento</option>
@@ -183,7 +180,7 @@ function Almanaques() {
                 onClick={handleBuscarAlmanaque}
                 className="w-fit cursor-pointer bg-gray-200 rounded-r-md p-2"
               >
-                {isFetching ? "Buscando..." : <CiSearch />}
+                <CiSearch />
               </button>
             </div>
           </div>
@@ -200,6 +197,8 @@ function Almanaques() {
               <input
                 type="date"
                 className="p-2 bg-gray-200 rounded-md w-full text-gray-500"
+                value={fechaEmision}
+                onChange={(e) => setFechaEmision(e.target.value)}
               />
             </div>
           </div>
@@ -209,12 +208,12 @@ function Almanaques() {
               <AgregarItemTabla setItems={setItems} />
             ) : (
               <div>
-                <TablaProductos data={items} setItems={setItems} />
+                <TablaDetalleAlmanaque data={items} setItems={setItems} />
                 <AgregarItemsTabla setItems={setItems} />
               </div>
             )}
           </div>
-          <div className="flex gap-2 flex-wrap justify-end">
+          <div className="flex flex-wrap gap-2 justify-end">
             <div className="flex justify-end">
               <div className="flex items-center pr-2">Sub Total</div>
               <input
@@ -243,13 +242,15 @@ function Almanaques() {
               />
             </div>
           </div>
-          <div className="flex justify-end flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 justify-end">
             <div className="flex justify-end">
               <div className="flex items-center pr-2">A cuenta</div>
               <input
                 type="number"
-                value={acuentaAlmanaque}
-                onChange={handleaCuenta}
+                value={aCuenta}
+                onChange={(e) =>
+                  setACuenta(e.target.value === "" ? 0 : Number(e.target.value))
+                }
                 className="bg-gray-200 rounded-md p-2"
               />
             </div>
@@ -267,10 +268,10 @@ function Almanaques() {
           <ImporteLetras letras={totales.total} />
           <div className="flex justify-end">
             <button
-              onClick={handleEmitir}
+              onClick={handleActualizar}
               className="bg-sky-700 rounded-md p-2 w-1/3 md:w-1/5 text-white cursor-pointer"
             >
-              Emitir
+              {mutation.isLoading ? "Actualizando..." : "Actualizar"}
             </button>
           </div>
         </div>
@@ -279,4 +280,4 @@ function Almanaques() {
   );
 }
 
-export default Almanaques;
+export default DetallesAlmanaque;

@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { HiOutlineArchive } from "react-icons/hi";
 import { FaPlus } from "react-icons/fa";
-import ModalAgregaritem from "./modalAgregaritem";
+import ModalEditaritem from "./modalEditaritem";
 
 export default function AgregarItemsTabla({ setItems }) {
   const [openModalI, setOpenModalI] = useState(false);
@@ -20,7 +19,7 @@ export default function AgregarItemsTabla({ setItems }) {
           Agregar un item
         </div>
       </button>
-      <ModalAgregaritem
+      <ModalEditaritem
         isOpen={openModalI}
         onClose={handleCloseModal}
         setItems={setItems}

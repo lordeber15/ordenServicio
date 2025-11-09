@@ -15,6 +15,8 @@ import ProtectedRoutes from "./components/protectedRoutes";
 import { Toaster } from "react-hot-toast";
 import Ticket from "./pages/facturacion/ticket";
 import Almanaque from "./pages/Almanaques/almanaques";
+import ListaAlmanaque from "./components/almanaque/listaAlmanaque";
+import DetallesAlmanaque from "./components/almanaque/detallesAlmanaque";
 
 function App() {
   const storedUserData = JSON.parse(localStorage.getItem("userData")) || null;
@@ -36,7 +38,9 @@ function App() {
           <Route path="/ticket" element={<Ticket />} />
           <Route path="/ingresos" element={<Ingresos />} />
           <Route path="/reportes" element={<Reportes />} />
-          <Route path="/almanaque" element={<Almanaque />} />
+          <Route path="/almanaque/new" element={<Almanaque />} />
+          <Route path="/almanaque" element={<ListaAlmanaque />} />
+          <Route path="/almanaque/:id" element={<DetallesAlmanaque />} />
         </Route>
       </Routes>
     </div>

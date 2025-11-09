@@ -1,7 +1,7 @@
 import { MdDeleteOutline } from "react-icons/md";
 import Modal from "react-modal";
 
-export default function TablaProductos({ data, unidades, setItems }) {
+function tabladetallealmanque({ data, unidades, setItems }) {
   const getUnidadNombre = (id) => {
     const unidad = unidades?.find((u) => u.id === id);
     return unidad ? unidad.nombre : id;
@@ -77,3 +77,5 @@ export default function TablaProductos({ data, unidades, setItems }) {
     </div>
   );
 }
+
+export default tabladetallealmanque;
