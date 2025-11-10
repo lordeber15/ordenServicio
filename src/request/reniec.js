@@ -1,7 +1,8 @@
 import axios from "axios";
 
 const reniecApi = axios.create({
-  baseURL: "https://api.impalexander.store/api/api/reniec/",
+  baseURL:
+    import.meta.env.RENIEC_API_URL || "https://localhost:3000/api/reniec/",
 });
 export const getReniec = async (dni) => {
   const token = "apis-token-16299.1l9ndIMxkIIiHfeLTQiTF8cxGNvDoFkt";
