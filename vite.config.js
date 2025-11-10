@@ -5,9 +5,9 @@ import tailwindcss from "@tailwindcss/vite";
 // https://vite.dev/config/
 export default defineConfig({
   server: {
-    //host: "0.0.0.0", // Permite acceso desde red externa
+    host: "0.0.0.0", // Permite acceso desde red externa
     port: 5173, // Puerto donde corre Vite
-    //https: false,
+    https: false,
     allowedHosts: ["localhost", "impalexander.store", "www.impalexander.store"],
     fs: {
       allow: ["src"],
