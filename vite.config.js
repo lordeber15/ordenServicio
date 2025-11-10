@@ -12,11 +12,11 @@ export default defineConfig({
     fs: {
       allow: ["src"],
     },
-    // hmr: {
-    //   protocol: "wss", // o 'wss' si usas HTTPS
-    //   host: "impalexander.store",
-    //   port: 5173, // 👈 importante si Nginx está en el puerto 80
-    // },
+    hmr: false,
   },
   plugins: [react(), tailwindcss()],
 });
+
+//   protocol: "wss", // o 'wss' si usas HTTPS
+//   host: "impalexander.store",
+//   port: 5173, // 👈 importante si Nginx está en el puerto 80
