@@ -31,6 +31,10 @@ const TIPO_DOC_MAP = {
 function Ticket() {
   const navigate = useNavigate();
 
+  // ── Rol del usuario ──
+  const userData = useMemo(() => JSON.parse(localStorage.getItem("userData") || "null"), []);
+  const isAdmin = userData?.cargo === "Administrador";
+
   // ── Estado del formulario ──
   const [cliente, setCliente] = useState("");
   const [tipoDoc, setTipoDoc] = useState("Sin Documento");
@@ -359,12 +363,14 @@ function Ticket() {
                 </div>
               </div>
             </div>
-            <button
-              onClick={() => { refetchCaja(); setShowCerrarModal(true); }}
-              className="bg-rose-600 hover:bg-rose-500 text-white rounded-lg px-4 py-2 cursor-pointer transition-all text-xs font-black uppercase tracking-widest shadow-md hover:scale-105 active:scale-95"
-            >
-              Cerrar Caja
-            </button>
+            {isAdmin && (
+              <button
+                onClick={() => { refetchCaja(); setShowCerrarModal(true); }}
+                className="bg-rose-600 hover:bg-rose-500 text-white rounded-lg px-4 py-2 cursor-pointer transition-all text-xs font-black uppercase tracking-widest shadow-md hover:scale-105 active:scale-95"
+              >
+                Cerrar Caja
+              </button>
+            )}
           </div>
         ) : (
           <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 mb-6 shadow-sm transition-colors">
@@ -374,15 +380,19 @@ function Ticket() {
               </div>
               <div className="flex flex-col">
                 <span className="text-slate-800 dark:text-slate-200 font-black uppercase tracking-widest text-sm">Caja Cerrada</span>
-                <span className="text-slate-500 dark:text-slate-500 text-xs font-bold">Abra la caja para iniciar operaciones</span>
+                <span className="text-slate-500 dark:text-slate-500 text-xs font-bold">
+                  {isAdmin ? "Abra la caja para iniciar operaciones" : "Solicite al administrador abrir la caja"}
+                </span>
               </div>
             </div>
-            <button
-              onClick={() => setShowAbrirModal(true)}
-              className="bg-sky-700 hover:bg-sky-600 dark:bg-slate-800 dark:hover:bg-slate-700 text-white rounded-lg px-4 py-2 cursor-pointer transition-all text-xs font-black uppercase tracking-widest shadow-md hover:scale-105"
-            >
-              Abrir Caja
-            </button>
+            {isAdmin && (
+              <button
+                onClick={() => setShowAbrirModal(true)}
+                className="bg-sky-700 hover:bg-sky-600 dark:bg-slate-800 dark:hover:bg-slate-700 text-white rounded-lg px-4 py-2 cursor-pointer transition-all text-xs font-black uppercase tracking-widest shadow-md hover:scale-105"
+              >
+                Abrir Caja
+              </button>
+            )}
           </div>
         )
 }
@@ -694,8 +704,8 @@ function Ticket() {
         </div>
       </div>
 
-      {/* ── Modal Abrir Caja ── */}
-      {showAbrirModal && (
+      {/* ── Modal Abrir Caja (solo Admin) ── */}
+      {isAdmin && showAbrirModal && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade animate-duration-300">
           <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl p-8 w-full max-w-sm border dark:border-slate-800">
             <div className="flex flex-col items-center mb-6">
@@ -737,8 +747,8 @@ function Ticket() {
         </div>
       )}
 
-      {/* ── Modal Cerrar Caja ── */}
-      {showCerrarModal && caja && (
+      {/* ── Modal Cerrar Caja (solo Admin) ── */}
+      {isAdmin && showCerrarModal && caja && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade animate-duration-300">
           <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl p-8 w-full max-w-md border dark:border-slate-800">
             <div className="flex flex-col items-center mb-6">

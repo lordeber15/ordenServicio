@@ -151,6 +151,16 @@ function Navbar() {
               Dashboard
             </Link>
             
+            {/* OPCIÓN: Ventas del Día */}
+            <Link
+              to={"/ventas"}
+              onClick={() => setOpen(false)}
+              className="px-4 py-2 cursor-pointer hover:bg-sky-500 dark:hover:bg-slate-800 text-white w-full text-left flex flex-row gap-2 justify-start items-center hover:text-white transition-colors"
+            >
+              <FaReceipt className="text-white" />
+              Ventas
+            </Link>
+
             {/* OPCIÓN: Reportes */}
             <Link
               to={"/reportes"}
@@ -160,7 +170,7 @@ function Navbar() {
               <HiOutlineDocumentReport className="text-white" />
               Reportes
             </Link>
-            
+
             {/* OPCIÓN: Cerrar sesión */}
             <Link
               to={"/"}

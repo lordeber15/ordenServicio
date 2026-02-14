@@ -10,6 +10,7 @@ function Ventas() {
   const hoy = new Date().toISOString().split("T")[0];
   const [fecha, setFecha] = useState(hoy);
   const [tipo, setTipo] = useState("all");
+  const [openPdfMenu, setOpenPdfMenu] = useState(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ["ventasDia", fecha, tipo],
@@ -19,10 +20,10 @@ function Ventas() {
   const ventas = data?.ventas || [];
   const totales = data?.totales || { tickets: 0, boletas: 0, facturas: 0, general: 0 };
 
-  const handleVerPdf = async (venta) => {
+  const handleVerPdf = async (venta, format = "80mm") => {
     if (venta.tipo === "ticket") {
       try {
-        const res = await getTicketPdf(venta.id, "80mm");
+        const res = await getTicketPdf(venta.id, format);
         const url = URL.createObjectURL(new Blob([res.data], { type: "application/pdf" }));
         window.open(url, "_blank");
       } catch {
@@ -31,6 +32,7 @@ function Ventas() {
     } else {
       window.open(getPdfUrl(venta.id), "_blank");
     }
+    setOpenPdfMenu(null);
   };
 
   const badgeClasses = {
@@ -164,12 +166,39 @@ function Ventas() {
                       )}
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <button
-                        onClick={() => handleVerPdf(v)}
-                        className="text-sky-600 hover:text-sky-800 dark:text-sky-400 dark:hover:text-sky-200 text-xs font-medium cursor-pointer"
-                      >
-                        Ver PDF
-                      </button>
+                      {v.tipo === "ticket" ? (
+                        <div className="relative inline-block">
+                          <button
+                            onClick={() => setOpenPdfMenu(openPdfMenu === `${v.tipo}-${v.id}` ? null : `${v.tipo}-${v.id}`)}
+                            className="text-sky-600 hover:text-sky-800 dark:text-sky-400 dark:hover:text-sky-200 text-xs font-medium cursor-pointer"
+                          >
+                            Reimprimir ▾
+                          </button>
+                          {openPdfMenu === `${v.tipo}-${v.id}` && (
+                            <div className="absolute right-0 mt-1 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg z-20 min-w-28 overflow-hidden">
+                              <button
+                                onClick={() => handleVerPdf(v, "80mm")}
+                                className="w-full text-left px-3 py-2 text-xs hover:bg-sky-50 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200 cursor-pointer transition-colors"
+                              >
+                                Ticket 80mm
+                              </button>
+                              <button
+                                onClick={() => handleVerPdf(v, "a5")}
+                                className="w-full text-left px-3 py-2 text-xs hover:bg-sky-50 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200 cursor-pointer border-t border-gray-100 dark:border-slate-700 transition-colors"
+                              >
+                                Ticket A5
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => handleVerPdf(v)}
+                          className="text-sky-600 hover:text-sky-800 dark:text-sky-400 dark:hover:text-sky-200 text-xs font-medium cursor-pointer"
+                        >
+                          Ver PDF
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}
