@@ -1,5 +1,5 @@
 import Modal from "react-modal";
-import moment from "moment/moment";
+import dayjs from "dayjs";
 import { useNavigate } from "react-router";
 function TablaAlmanaque({ data }) {
   let navigate = useNavigate();
@@ -8,48 +8,42 @@ function TablaAlmanaque({ data }) {
   }
   return (
     <div className="w-full">
-      <div className="overflow-x-auto rounded-t-md">
-        <table className="min-w-full border border-sky-700 divide-y divide-sky-700">
-          <thead className="bg-sky-700 text-white">
+      <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm transition-colors">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-800">
+          <thead className="bg-slate-50 dark:bg-slate-900/50">
             <tr>
-              <th className="px-4 py-2 text-center text-sm font-semibold">
-                Numero
+              <th className="px-6 py-4 text-center text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                N° Orden
               </th>
-              <th className="px-4 py-2 text-left text-sm font-semibold">
+              <th className="px-6 py-4 text-left text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
                 Cliente
               </th>
-              <th className="px-4 py-2 text-left text-sm font-semibold">
-                Fecha
+              <th className="px-6 py-4 text-center text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                Fecha Emisión
               </th>
-              {/* <th className="px-4 py-2 text-left text-sm font-semibold">
-                A cuenta
-              </th> */}
-              <th className="px-4 py-2 text-left text-sm font-semibold">
-                Saldo
+              <th className="px-6 py-4 text-right text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                Saldo Pendiente
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="bg-white dark:bg-slate-950 divide-y divide-gray-100 dark:divide-slate-900">
             {data?.map((item, index) => (
               <tr
                 key={index}
-                className="hover:bg-gray-50 cursor-pointer"
+                className="hover:bg-sky-50 dark:hover:bg-slate-900 cursor-pointer transition-all group"
                 onClick={() => routeChange(item.id)}
               >
-                <td className="text-center px-4 py-2 text-sm text-gray-800">
-                  {item.id}
+                <td className="text-center px-6 py-4 text-sm font-mono font-black text-sky-700 dark:text-slate-400">
+                  {item.id.toString().padStart(5, '0')}
                 </td>
-                <td className="px-4 py-2 text-sm text-gray-800">
+                <td className="px-6 py-4 text-sm font-bold text-slate-800 dark:text-slate-100 group-hover:text-sky-800 dark:group-hover:text-sky-400">
                   {item.cliente}
                 </td>
-                <td className="px-4 py-2 text-sm text-gray-800">
-                  {moment(item.fechaEmision).format("DD/MM/YYYY")}
+                <td className="text-center px-6 py-4 text-sm font-mono font-bold text-slate-500 dark:text-slate-400">
+                  {dayjs(item.fechaEmision).format("DD/MM/YYYY")}
                 </td>
-                {/* <td className="px-4 py-2 text-sm text-gray-800">
-                  S/{Number(item.aCuenta || 0).toFixed(2)}
-                </td> */}
-                <td className="px-4 py-2 text-sm text-gray-800">
-                  S/{Number(item.precioTotal - item.aCuenta || 0).toFixed(2)}
+                <td className="px-6 py-4 text-right text-sm font-mono font-black text-rose-700 dark:text-rose-400">
+                  S/ {Number(item.precioTotal - item.aCuenta || 0).toFixed(2)}
                 </td>
               </tr>
             ))}

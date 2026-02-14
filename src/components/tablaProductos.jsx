@@ -1,79 +1,83 @@
+import { CiEdit } from "react-icons/ci";
 import { MdDeleteOutline } from "react-icons/md";
-import Modal from "react-modal";
 
-export default function TablaProductos({ data, unidades, setItems }) {
-  const getUnidadNombre = (id) => {
-    const unidad = unidades?.find((u) => u.id === id);
-    return unidad ? unidad.nombre : id;
-  };
+const TIPO_LABEL = {
+  "10": "Gravado",
+  "20": "Exonerado",
+  "30": "Inafecto",
+};
 
-  // 🧹 Función para eliminar un ítem
-  const handleDelete = (index) => {
-    const confirmar = window.confirm("¿Deseas eliminar este producto?");
-    if (!confirmar) return;
+function precioDisplay(p) {
+  return parseFloat(p.valor_unitario || 0);
+}
 
-    setItems((prevItems) => prevItems.filter((_, i) => i !== index));
-  };
+function TablaProductos({ data, unidades = [], onEdit, onDelete }) {
+  const getUnidadNombre = (id) =>
+    unidades.find((u) => u.id === id)?.descripcion || id || "—";
 
   return (
-    <div className="w-full">
-      <div className="overflow-x-auto rounded-t-md">
-        <table className="min-w-full border border-sky-700 divide-y divide-sky-700">
-          <thead className="bg-sky-700 text-white">
+    <div className="overflow-x-auto rounded-lg border border-sky-700 dark:border-slate-800 transition-colors">
+      <table className="min-w-full text-left text-sm">
+        <thead className="bg-sky-700 dark:bg-slate-900 text-white">
+          <tr>
+            <th className="px-4 py-3">Nombre</th>
+            <th className="px-4 py-3 text-right">Precio c/IGV</th>
+            <th className="px-4 py-3 text-center">Stock</th>
+            <th className="px-4 py-3">Unidad</th>
+            <th className="px-4 py-3">Tipo IGV</th>
+            <th className="px-4 py-3 text-center">Acciones</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-sky-100 dark:divide-slate-800 text-sky-900 dark:text-slate-200 bg-white dark:bg-slate-950">
+          {(!data || data.length === 0) && (
             <tr>
-              <th className="px-4 py-2 text-center text-sm font-semibold">
-                Cant
-              </th>
-              <th className="px-4 py-2 text-left text-sm font-semibold">
-                Descripción
-              </th>
-              <th className="px-4 py-2 text-left text-sm font-semibold">
-                Unidad
-              </th>
-              <th className="px-4 py-2 text-left text-sm font-semibold">
-                Precio Unitario
-              </th>
-              <th className="px-4 py-2 text-left text-sm font-semibold">
-                Sub Total
-              </th>
-              <th className="px-4 py-2 text-left text-sm font-semibold">
-                Acciones
-              </th>
+              <td colSpan={6} className="text-center py-8 text-gray-400 text-sm">
+                No hay productos — haz clic en "Agregar Producto" para comenzar
+              </td>
             </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {data?.map((item, index) => (
-              <tr key={index} className="hover:bg-gray-50">
-                <td className="text-center px-4 py-2 text-sm text-gray-800">
-                  {item.cantidad}
-                </td>
-                <td className="px-4 py-2 text-sm text-gray-800">
-                  {item.descripcion}
-                </td>
-                <td className="px-4 py-2 text-sm text-gray-800">
-                  {getUnidadNombre(item.unidad)}
-                </td>
-                <td className="px-4 py-2 text-sm text-gray-800">
-                  S/{Number(item.precioUnitario || 0).toFixed(2)}
-                </td>
-                <td className="px-4 py-2 text-sm text-gray-800">
-                  S/
-                  {Number(item.precioUnitario * item.cantidad || 0).toFixed(2)}
-                </td>
-                <td className="flex justify-center p-2">
+          )}
+          {(data || []).map((p) => (
+            <tr key={p.id} className="hover:bg-sky-50 dark:hover:bg-slate-900 transition-colors">
+              <td className="px-4 py-3 font-medium">{p.nombre}</td>
+              <td className="px-4 py-3 text-right font-mono">
+                S/ {precioDisplay(p).toFixed(2)}
+              </td>
+              <td className="px-4 py-3 text-center">
+                {p.es_servicio
+                  ? <span className="px-2 py-1 rounded-full text-xs font-semibold text-white bg-indigo-500">Servicio</span>
+                  : <span className={`px-2 py-1 rounded-full text-xs font-semibold text-white ${
+                      (p.stock ?? 0) > 0 ? "bg-green-500" : "bg-red-500"
+                    }`}>{p.stock ?? 0}</span>
+                }
+              </td>
+              <td className="px-4 py-3">{getUnidadNombre(p.unidad_id)}</td>
+              <td className="px-4 py-3 text-gray-600 dark:text-slate-400">
+                {TIPO_LABEL[p.tipo_afectacion_id] || p.tipo_afectacion_id || "—"}
+              </td>
+              <td className="px-4 py-3">
+                <div className="flex justify-center gap-2">
                   <button
-                    onClick={() => handleDelete(index)}
-                    className="bg-red-400 text-white p-2 rounded text-xs hover:bg-red-600"
+                    onClick={() => onEdit(p)}
+                    className="p-1.5 bg-sky-700 dark:bg-slate-800 hover:bg-sky-600 dark:hover:bg-slate-700 text-white rounded cursor-pointer border dark:border-slate-700 transition-colors"
+                    title="Editar"
                   >
-                    <MdDeleteOutline className="h-5 w-5" />
+                    <CiEdit className="w-4 h-4" />
                   </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <Modal isOpen={false} />
+                  <button
+                    onClick={() => onDelete(p.id)}
+                    className="p-1.5 bg-red-600 hover:bg-red-700 text-white rounded cursor-pointer"
+                    title="Eliminar"
+                  >
+                    <MdDeleteOutline className="w-4 h-4" />
+                  </button>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
+
+export default TablaProductos;

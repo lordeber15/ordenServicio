@@ -1,29 +1,18 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, memo, useMemo } from "react";
 import { FaCaretUp } from "react-icons/fa";
 import { CiEdit } from "react-icons/ci";
 import { MdDelete } from "react-icons/md";
 
 const ITEMS_PER_PAGE = 7;
-function Pagination({ data, activeTab, onEdit, onDelete }) {
+
+const Pagination = memo(({ data, activeTab, onEdit, onDelete }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [open, setOpen] = useState(null);
-  const [userData, setUserData] = useState("");
-  const [admin, setIsAdmin] = useState(false);
   const dropdownRef = useRef(null);
 
-  useEffect(() => {
-    const storedUserData = localStorage.getItem("userData");
-    if (storedUserData) {
-      setUserData(JSON.parse(storedUserData));
-    }
-  }, []);
-  useEffect(() => {
-    if (userData && userData.cargo === "Administrador") {
-      setIsAdmin(true);
-    } else {
-      setIsAdmin(false);
-    }
-  }, [userData]);
+  const userData = useMemo(() => JSON.parse(localStorage.getItem("userData") || "null"), []);
+  const admin = userData?.cargo === "Administrador";
+
   useEffect(() => {
     setCurrentPage(1);
   }, [activeTab]);
@@ -41,17 +30,21 @@ function Pagination({ data, activeTab, onEdit, onDelete }) {
     };
   }, []);
 
-  const filteredData = data.filter((item) => {
-    if (activeTab === "Todos") return true;
-    return item.estado.toLowerCase() === activeTab.toLowerCase();
-  });
+  const filteredData = useMemo(() => {
+    return data.filter((item) => {
+      if (activeTab === "Todos") return true;
+      return item.estado.toLowerCase() === activeTab.toLowerCase();
+    });
+  }, [data, activeTab]);
 
   const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const paginatedData = filteredData.slice(
-    startIndex,
-    startIndex + ITEMS_PER_PAGE
-  );
+  const paginatedData = useMemo(() => {
+    return filteredData.slice(
+      startIndex,
+      startIndex + ITEMS_PER_PAGE
+    );
+  }, [filteredData, startIndex]);
 
   const handlePrev = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
   const handleNext = () =>
@@ -60,8 +53,8 @@ function Pagination({ data, activeTab, onEdit, onDelete }) {
   return (
     <div className="w-full ">
       <div className="overflow-x-auto pb-16 border-0 rounded-lg">
-        <table className=" min-w-full text-left text-sm font-light rounded-md shadow-lg border border-sky-700">
-          <thead className="border-b font-medium bg-sky-700 text-white rounded-t-lg">
+        <table className=" min-w-full text-left text-sm font-light rounded-md shadow-lg border border-sky-700 dark:border-slate-800">
+          <thead className="border-b dark:border-slate-800 font-medium bg-sky-700 dark:bg-slate-900 text-white rounded-t-lg">
             <tr>
               <th className="px-3 py-4">N°</th>
               <th className="px-3 py-4 ">Nombre Cliente</th>
@@ -79,9 +72,9 @@ function Pagination({ data, activeTab, onEdit, onDelete }) {
               <th className="px-3 py-4">Editar</th>
             </tr>
           </thead>
-          <tbody className="rounded-b-lg text-sky-900 ">
-            {paginatedData.map((cont, i) => (
-              <tr key={i} className="border-b border-sky-700 ">
+          <tbody className="rounded-b-lg text-sky-900 dark:text-slate-100 bg-white dark:bg-slate-950">
+            {paginatedData.map((cont) => (
+              <tr key={cont.id} className="border-b border-sky-700 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-900 transition-colors">
                 <td className="whitespace-nowrap px-3 py-4 font-medium">
                   {cont.id}
                 </td>
@@ -131,7 +124,7 @@ function Pagination({ data, activeTab, onEdit, onDelete }) {
                 <td className="relative whitespace-nowrap px-6 py-4">
                   <button
                     onClick={() => setOpen(open === cont.id ? null : cont.id)}
-                    className="rounded-md w-10 h-10 bg-sky-700 text-white hover:text-sky-700 flex items-center justify-center cursor-pointer hover:bg-sky-500"
+                    className="rounded-md w-10 h-10 bg-sky-700 dark:bg-slate-800 text-white hover:bg-sky-500 dark:hover:bg-slate-700 transition-colors flex items-center justify-center cursor-pointer border dark:border-slate-700"
                   >
                     <FaCaretUp />
                   </button>
@@ -139,14 +132,14 @@ function Pagination({ data, activeTab, onEdit, onDelete }) {
                   {open === cont.id && (
                     <div
                       ref={dropdownRef}
-                      className=" absolute flex flex-col z-50 top-14 right-6 lg:right-10 bg-white border border-gray-200 rounded-md shadow-lg w-36 text-sm animate-fade-down animate-duration-100 animate-ease-in"
+                      className=" absolute flex flex-col z-50 top-14 right-6 lg:right-10 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-md shadow-lg w-36 text-sm animate-fade-down animate-duration-100 animate-ease-in overflow-hidden"
                     >
                       <button
                         onClick={() => {
-                          onEdit(cont.id); // Reemplaza con tu lógica de edición
+                          onEdit(cont.id);
                           setOpen(null);
                         }}
-                        className="w-full text-left text-md px-4 py-2 hover:bg-sky-100 text-sky-700 flex gap-2 items-center "
+                        className="w-full text-left text-md px-4 py-2 hover:bg-sky-100 dark:hover:bg-slate-800 text-sky-700 dark:text-slate-200 flex gap-2 items-center cursor-pointer transition-colors"
                       >
                         <CiEdit className="w-5 h-5" />
                         Editar
@@ -158,7 +151,7 @@ function Pagination({ data, activeTab, onEdit, onDelete }) {
                             onDelete(cont.id);
                             setOpen(null);
                           }}
-                          className="w-full text-left text-md  px-4 py-2 hover:bg-rose-100 text-red-600 flex gap-2 items-center"
+                          className="w-full text-left text-md  px-4 py-2 hover:bg-rose-100 dark:hover:bg-rose-950/40 text-red-600 dark:text-red-400 flex gap-2 items-center cursor-pointer transition-colors"
                         >
                           <MdDelete className="w-5 h-5" />
                           Eliminar
@@ -172,21 +165,20 @@ function Pagination({ data, activeTab, onEdit, onDelete }) {
           </tbody>
         </table>
 
-        {/* Paginación */}
         {totalPages > 1 && (
           <div className="flex justify-center items-center mt-4 gap-4">
             <button
-              className="px-4 py-1 bg-sky-700 text-white rounded disabled:opacity-50"
+              className="px-4 py-1 bg-sky-700 dark:bg-slate-800 text-white rounded disabled:opacity-50 cursor-pointer hover:bg-sky-600 dark:hover:bg-slate-700 transition-all font-bold border dark:border-slate-700"
               onClick={handlePrev}
               disabled={currentPage === 1}
             >
               Anterior
             </button>
-            <span className="text-sky-700 font-bold">
+            <span className="text-sky-700 dark:text-slate-100 font-bold">
               Página {currentPage} de {totalPages}
             </span>
             <button
-              className="px-4 py-1 bg-sky-700 text-white rounded disabled:opacity-50"
+              className="px-4 py-1 bg-sky-700 dark:bg-slate-800 text-white rounded disabled:opacity-50 cursor-pointer hover:bg-sky-600 dark:hover:bg-slate-700 transition-all font-bold border dark:border-slate-700"
               onClick={handleNext}
               disabled={currentPage === totalPages}
             >
@@ -197,6 +189,6 @@ function Pagination({ data, activeTab, onEdit, onDelete }) {
       </div>
     </div>
   );
-}
+});
 
 export default Pagination;

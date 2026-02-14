@@ -1,15 +1,15 @@
-import Drawer from "../components/drawer";
-import { FaPlus } from "react-icons/fa6";
-import TablaProductos from "../components/tablaProductos";
-import Search from "../components/search";
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
+import { FaPlus } from "react-icons/fa6";
+import Drawer from "../components/drawer";
+import TablaProductos from "../components/tablaProductos";
 import ModalAgregaritem from "../components/modalAgregaritem";
-import { useQuery } from "@tanstack/react-query";
-import { getProducto } from "../request/productos";
+import { getProducto, deleteProducto } from "../request/productos";
 import { getUnidades } from "../request/unidades";
 
 function Inventario() {
-  const { data: dataProducto } = useQuery({
+  const { data: dataProducto, isLoading } = useQuery({
     queryKey: ["producto"],
     queryFn: getProducto,
   });
@@ -18,29 +18,86 @@ function Inventario() {
     queryFn: getUnidades,
   });
 
-  const [openModalI, setOpenModalI] = useState(false);
-  const handleOpenModal = () => setOpenModalI(true);
-  const handleCloseModal = () => setOpenModalI(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  const queryClient = useQueryClient();
+
+  const deleteMutation = useMutation({
+    mutationFn: (id) =>
+      toast.promise(deleteProducto(id), {
+        loading: "Eliminando...",
+        success: "Producto eliminado ✅",
+        error: "Error al eliminar ❌",
+      }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["producto"] }),
+  });
+
+  const filtered = (dataProducto || []).filter((p) =>
+    p.nombre?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleAbrirCrear = () => {
+    setEditingProduct(null);
+    setModalOpen(true);
+  };
+
+  const handleEdit = (p) => {
+    setEditingProduct(p);
+    setModalOpen(true);
+  };
+
+  const handleDelete = (id) => {
+    if (window.confirm("¿Eliminar este producto?")) {
+      deleteMutation.mutate(id);
+    }
+  };
+
   return (
     <div className="h-full">
       <div className="flex justify-between items-center px-10 py-4">
         <Drawer />
         <div className="text-2xl font-bold">Inventario</div>
         <button
-          onClick={handleOpenModal}
-          className="flex items-center gap-2 p-2 shadow-xs hover:text-white hover:bg-sky-700 rounded-md transition ease-in duration-300"
+          onClick={handleAbrirCrear}
+          className="flex items-center gap-2 p-2 shadow-xs hover:text-white hover:bg-sky-700 rounded-md transition ease-in duration-300 cursor-pointer"
         >
           <FaPlus />
-          Agregar Item
+          Agregar Producto
         </button>
       </div>
-      <div className="px-8 w-full flex justify-end">
-        <Search />
+
+      <div className="px-10 flex justify-end mb-2">
+        <input
+          type="text"
+          placeholder="Buscar por nombre..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="border border-gray-300 px-3 py-2 rounded-lg w-64 text-sm focus:outline-none focus:border-sky-500"
+        />
       </div>
+
       <div className="px-10">
-        <TablaProductos data={dataProducto} unidades={dataUnidades} />
+        {isLoading ? (
+          <div className="text-center py-10 text-sky-700 text-sm">
+            Cargando productos...
+          </div>
+        ) : (
+          <TablaProductos
+            data={filtered}
+            unidades={dataUnidades}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
+        )}
       </div>
-      <ModalAgregaritem isOpen={openModalI} onClose={handleCloseModal} />
+
+      <ModalAgregaritem
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        producto={editingProduct}
+      />
     </div>
   );
 }

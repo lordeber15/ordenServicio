@@ -41,40 +41,44 @@ function CardsReports({ data, titulo }) {
     "Diciembre",
   ];
   return (
-    <div className="rounded-lg mx-2 w-full px-8 py-2 shadow-[0px_0px_10px_-1px_rgba(0,_0,_0,_0.15)] bg-green-100 hover:scale-105 transition-all">
+    <div className={`rounded-xl mx-2 w-full px-8 py-6 shadow-lg transition-all hover:scale-[1.02] border ${
+      esMayor 
+        ? "bg-green-50 dark:bg-emerald-950/30 border-green-100 dark:border-emerald-800/50" 
+        : "bg-rose-50 dark:bg-rose-950/30 border-rose-100 dark:border-rose-800/50"
+    }`}>
       <div>
         <div className="flex flex-col animate-fade animate-once animate-duration-300">
           <div
-            className={`flex justify-end font-bold text-2xl ${
-              esMayor ? "text-green-700" : "text-red-600"
+            className={`flex justify-end font-black text-2xl tracking-tight ${
+              esMayor ? "text-green-700 dark:text-emerald-400" : "text-red-600 dark:text-rose-400"
             }`}
           >
             {titulo}
           </div>
           <div
-            className={`flex justify-end text-lg  ${
-              esMayor ? "text-green-700" : "text-red-600"
+            className={`flex justify-end text-sm font-bold uppercase tracking-widest opacity-70 ${
+              esMayor ? "text-green-700 dark:text-emerald-400" : "text-red-600 dark:text-rose-400"
             }`}
           >
             {monthNames[month]}
           </div>
           <div
-            className={`flex justify-end text-3xl font-bold ${
-              esMayor ? "text-green-700" : "text-red-600"
+            className={`flex justify-end text-4xl font-black mt-2 ${
+              esMayor ? "text-green-800 dark:text-emerald-300" : "text-red-700 dark:text-rose-300"
             }`}
           >
-            {sumaMesActual.toFixed(2)}
+            S/ {sumaMesActual.toFixed(2)}
           </div>
           <div className="flex justify-end">
             {esMayor ? (
-              <div className="flex w-full justify-between py-1">
-                <FaCaretUp className="text-green-700 text-2xl flex justify-between" />
-                <FaArrowTrendUp className="text-green-700 text-2xl" />
+              <div className="flex w-full justify-between items-center py-2">
+                <FaCaretUp className="text-green-700 dark:text-emerald-400 text-3xl" />
+                <FaArrowTrendUp className="text-green-700 dark:text-emerald-400 text-2xl" />
               </div>
             ) : (
-              <div>
-                <FaCaretDown className="text-red-600 text-2xl" />
-                <FaArrowTrendDown className="text-red-600 text-2xl" />
+              <div className="flex w-full justify-between items-center py-2">
+                <FaCaretDown className="text-red-600 dark:text-rose-400 text-3xl" />
+                <FaArrowTrendDown className="text-red-600 dark:text-rose-400 text-2xl" />
               </div>
             )}
           </div>

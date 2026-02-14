@@ -18,3 +18,7 @@ export const updateTicket = (ticket) => {
 export const deleteTicket = (id) => {
   return axiosURL.delete(`/ticket/${id}`);
 };
+
+export const getTicketPdf = (id, format = "80mm") => {
+  return axiosURL.get(`/ticket/${id}/pdf?format=${format}`, { responseType: "blob" });
+};

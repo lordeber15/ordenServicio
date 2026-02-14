@@ -63,18 +63,18 @@ function ModalIngreso({ isOpen, onClose, titulo }) {
       isOpen={isOpen}
       onRequestClose={onClose}
       ariaHideApp={false}
-      className="bg-white w-1/2 p-6 rounded-md shadow-md max-w-md mx-auto mt-15"
-      overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start"
+      className="bg-white dark:bg-slate-900 w-1/2 p-6 rounded-md shadow-md max-w-md mx-auto mt-15 border dark:border-slate-800"
+      overlayClassName="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex justify-center items-start z-50 transition-opacity"
       style={{ overlay: { backgroundColor: "rgba(0, 0, 0, 0.5)" } }}
     >
       <div className="pb-2">
         <div className="flex justify-between p-2">
           <div></div>
-          <h2 className="text-2xl text-sky-800 font-bold">
+          <h2 className="text-2xl text-sky-800 dark:text-slate-100 font-bold">
             {titulo === "Ingreso" ? "Ingreso" : "Egreso"}
           </h2>
           <button
-            className="text-sky-800 hover:bg-gray-200 p-2 rounded-lg cursor-pointer"
+            className="text-sky-800 dark:text-slate-400 hover:bg-gray-200 dark:hover:bg-slate-800 p-2 rounded-lg cursor-pointer transition-colors"
             onClick={onClose}
           >
             <IoCloseSharp />
@@ -85,7 +85,7 @@ function ModalIngreso({ isOpen, onClose, titulo }) {
             type="text"
             placeholder="Descripción"
             value={valueDescripcion}
-            className="w-full p-2 text-sky-800 font-bold"
+            className="w-full p-2 text-sky-800 dark:text-slate-200 bg-white dark:bg-slate-950 border dark:border-slate-800 rounded-md font-bold focus:outline-none focus:border-sky-500 transition-colors"
             onChange={(e) => setValueDescricion(e.target.value)}
           />
           <div className="flex gap-2">
@@ -93,11 +93,11 @@ function ModalIngreso({ isOpen, onClose, titulo }) {
               type="number"
               placeholder="Monto"
               value={valueMonto}
-              className="w-full p-2 text-sky-800 font-bold"
+              className="w-full p-2 text-sky-800 dark:text-slate-200 bg-white dark:bg-slate-950 border dark:border-slate-800 rounded-md font-bold focus:outline-none focus:border-sky-500 transition-colors"
               onChange={(e) => setValueMonto(e.target.value)}
             />
             <select
-              className="w-full p-2 text-sky-800 font-bold"
+              className="w-full p-2 text-sky-800 dark:text-slate-200 bg-white dark:bg-slate-950 border dark:border-slate-800 rounded-md font-bold focus:outline-none focus:border-sky-500 transition-colors"
               value={valueMetodo}
               onChange={(e) => setValueMetodo(e.target.value)}
             >

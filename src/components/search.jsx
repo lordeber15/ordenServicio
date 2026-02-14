@@ -1,4 +1,11 @@
 import { FaSearch } from "react-icons/fa";
+
+/**
+ * COMPONENTE DE BÚSQUEDA
+ * 
+ * Interfaz simple con un campo de texto y un icono de búsqueda.
+ * Utilizado para filtrar listas de datos localmente.
+ */
 function Search() {
   return (
     <div>

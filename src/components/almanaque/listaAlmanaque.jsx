@@ -13,19 +13,21 @@ function ListaAlmanaque() {
 
   return (
     <div className="w-screen">
-      <div className="px-12 py-4 ">
-        <div className="flex justify-between gap-5 items-center ">
-          <Drawer />
-          <div className="text-2xl font-bold">Lista de Almanaques</div>
+      <div className="px-4 md:px-12 py-4">
+        <div className="flex flex-col md:flex-row justify-between gap-6 items-start md:items-center mb-8">
+          <div className="flex items-center gap-5">
+            <Drawer />
+            <h1 className="text-3xl font-black text-sky-800 dark:text-slate-100 tracking-tight transition-colors">Notas de Almanaque</h1>
+          </div>
           <Link
             to={"/almanaque/new"}
-            className="flex items-center gap-2 bg-sky-700 font-bold text-white py-2 px-3 hover:bg-sky-800 rounded-lg "
+            className="flex items-center gap-3 bg-sky-700 hover:bg-sky-600 dark:bg-slate-800 dark:hover:bg-slate-700 font-black text-white py-3 px-6 rounded-xl transition-all shadow-xl hover:scale-105 active:scale-95 uppercase tracking-widest text-xs"
           >
-            <FaPlus />
+            <FaPlus className="text-sm" />
             Nueva Nota
           </Link>
         </div>
-        <div className="pt-6">
+        <div className="pt-2">
           <TablaAlmanaque data={dataAlmanaque} />
         </div>
       </div>
