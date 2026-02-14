@@ -5,6 +5,10 @@ export const getEmisores = async () => {
   return res.data;
 };
 
+export const createEmisor = (data) => {
+  return axiosURL.post("/emisor", data);
+};
+
 export const updateEmisor = (id, data) => {
   return axiosURL.put(`/emisor/${id}`, data);
 };

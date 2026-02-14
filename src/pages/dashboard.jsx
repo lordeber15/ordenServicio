@@ -27,6 +27,7 @@ import {
 } from "../request/serviciosrequest";
 
 import Pagination from "../components/pagination";
+import Drawer from "../components/drawer";
 
 // Configuración de accesibilidad para react-modal
 Modal.setAppElement("#root");
@@ -220,7 +221,7 @@ function Dashboard() {
         <div className="min-w-full py-2 sm:px-6 lg:px-8">
           <div className="overflow-x-auto w-full px-10 py-4">
             <div className="font-bold flex py-4 justify-between transition-colors">
-              <div />
+              <Drawer />
               <div className="text-3xl text-sky-700 dark:text-slate-100">Lista de Trabajos</div>
               <button
                 onClick={() => {

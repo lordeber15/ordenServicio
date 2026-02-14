@@ -10,7 +10,7 @@ import {
 import logoDefault from "../assets/ALEXANDER.webp";
 import { useNavigate } from "react-router";
 import toast from "react-hot-toast";
-import { getEmisores, updateEmisor, uploadEmisorLogo } from "../request/emisores";
+import { getEmisores, createEmisor, updateEmisor, uploadEmisorLogo } from "../request/emisores";
 import {
   FaCamera,
   FaUser,
@@ -137,6 +137,7 @@ function Perfil() {
     if (emisor) setEmpresaForm({
       razon_social: emisor.razon_social || "",
       nombre_comercial: emisor.nombre_comercial || "",
+      descripcion: emisor.descripcion || "",
       ruc: emisor.ruc || "",
       direccion: emisor.direccion || "",
       departamento: emisor.departamento || "",
@@ -149,13 +150,13 @@ function Perfil() {
     });
   }, [emisor]);
 
-  const updateEmisorMutation = useMutation({
-    mutationFn: (data) => updateEmisor(emisor.id, data),
+  const saveEmisorMutation = useMutation({
+    mutationFn: (data) => emisor ? updateEmisor(emisor.id, data) : createEmisor(data),
     onSuccess: () => {
-      toast.success("Datos de empresa actualizados");
+      toast.success(emisor ? "Datos de empresa actualizados" : "Empresa creada correctamente");
       queryClient.invalidateQueries({ queryKey: ["emisor"] });
     },
-    onError: (err) => toast.error(err.response?.data?.message || "Error al actualizar"),
+    onError: (err) => toast.error(err.response?.data?.message || "Error al guardar"),
   });
 
   const logoInputRef = useRef(null);
@@ -421,7 +422,7 @@ function Perfil() {
           </div>
         )}
 
-        {activeTab === "empresa" && emisor && (
+        {activeTab === "empresa" && (
           <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 md:p-12 shadow-sm border border-gray-100 dark:border-slate-800 animate-fade-in">
             <div className="mb-10">
               <h1 className="text-3xl font-black text-gray-800 dark:text-slate-50 flex items-center gap-3">
@@ -435,9 +436,9 @@ function Perfil() {
             <div className="flex items-center gap-6 mb-8 pb-8 border-b border-gray-100 dark:border-slate-800">
               <div
                 className="w-28 h-28 rounded-2xl border-2 border-dashed border-gray-200 dark:border-slate-700 overflow-hidden bg-gray-50 dark:bg-slate-950 flex items-center justify-center cursor-pointer hover:border-sky-500 transition-all group relative"
-                onClick={() => logoInputRef.current?.click()}
+                onClick={() => emisor ? logoInputRef.current?.click() : toast.error("Primero guarda los datos de la empresa")}
               >
-                {emisor.logo_url ? (
+                {emisor?.logo_url ? (
                   <img src={`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}${emisor.logo_url}`} alt="Logo" className="w-full h-full object-contain" />
                 ) : (
                   <FaBuilding className="text-3xl text-gray-300 dark:text-slate-600" />
@@ -448,7 +449,7 @@ function Perfil() {
               </div>
               <div>
                 <h3 className="font-bold text-gray-700 dark:text-slate-200">Logo de la Empresa</h3>
-                <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">Haz clic para cambiar. Se usará en tickets y comprobantes.</p>
+                <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">{emisor ? "Haz clic para cambiar. Se usará en tickets y comprobantes." : "Guarda los datos primero para subir el logo."}</p>
                 {uploadLogoMutation.isPending && <p className="text-xs text-sky-500 font-bold mt-1">Subiendo...</p>}
               </div>
               <input type="file" ref={logoInputRef} className="hidden" accept="image/*" onChange={(e) => e.target.files[0] && uploadLogoMutation.mutate(e.target.files[0])} />
@@ -457,8 +458,9 @@ function Perfil() {
             {/* Campos */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-3xl">
               {[
-                { key: "razon_social", label: "Razón Social", placeholder: "Ej: Mi Empresa E.I.R.L.", span: 2 },
+                { key: "razon_social", label: "Razón Social *", placeholder: "Ej: Mi Empresa E.I.R.L.", span: 2 },
                 { key: "nombre_comercial", label: "Nombre Comercial", placeholder: "Ej: Imprenta Alexander", span: 2 },
+                { key: "descripcion", label: "Descripción / Giro", placeholder: "Ej: Diseño Gráfico y Publicidad", span: 2 },
                 { key: "ruc", label: "RUC", placeholder: "20XXXXXXXXX", maxLength: 11 },
                 { key: "telefono", label: "Teléfono", placeholder: "999-999-999" },
                 { key: "direccion", label: "Dirección", placeholder: "Av. Principal 123", span: 2 },
@@ -510,10 +512,16 @@ function Perfil() {
 
             <button
               className="w-full max-w-3xl py-5 bg-sky-700 hover:bg-sky-600 text-white rounded-2xl font-black text-lg shadow-xl shadow-sky-900/20 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 mt-8 cursor-pointer"
-              onClick={() => updateEmisorMutation.mutate(empresaForm)}
-              disabled={updateEmisorMutation.isPending}
+              onClick={() => {
+                if (!empresaForm.razon_social?.trim()) {
+                  toast.error("La Razón Social es obligatoria");
+                  return;
+                }
+                saveEmisorMutation.mutate(empresaForm);
+              }}
+              disabled={saveEmisorMutation.isPending}
             >
-              {updateEmisorMutation.isPending ? "Guardando..." : "Guardar Cambios"}
+              {saveEmisorMutation.isPending ? "Guardando..." : "Guardar Cambios"}
             </button>
           </div>
         )}

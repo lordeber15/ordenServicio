@@ -55,18 +55,18 @@ export default function Drawer() {
               Ticket
             </Link>
           </li>
-          <li>
-            <Link to="/boleta" onClick={() => setIsOpen(false)} className={linkClass}>
-              Boleta
-            </Link>
-          </li>
-          <li>
-            <Link to="/factura" onClick={() => setIsOpen(false)} className={linkClass}>
-              Factura
-            </Link>
-          </li>
           {isAdmin && (
             <>
+              <li>
+                <Link to="/boleta" onClick={() => setIsOpen(false)} className={linkClass}>
+                  Boleta
+                </Link>
+              </li>
+              <li>
+                <Link to="/factura" onClick={() => setIsOpen(false)} className={linkClass}>
+                  Factura
+                </Link>
+              </li>
               <li>
                 <Link to="/guiarem" onClick={() => setIsOpen(false)} className={linkClass}>
                   Guia de Remision
@@ -82,18 +82,18 @@ export default function Drawer() {
                   Ingresos y Egresos
                 </Link>
               </li>
+              <li>
+                <Link to="/ventas" onClick={() => setIsOpen(false)} className={linkClass}>
+                  Ventas del Dia
+                </Link>
+              </li>
+              <li>
+                <Link to="/almanaque" onClick={() => setIsOpen(false)} className={linkClass}>
+                  Almanaque
+                </Link>
+              </li>
             </>
           )}
-          <li>
-            <Link to="/ventas" onClick={() => setIsOpen(false)} className={linkClass}>
-              Ventas del Dia
-            </Link>
-          </li>
-          <li>
-            <Link to="/almanaque" onClick={() => setIsOpen(false)} className={linkClass}>
-              Almanaque
-            </Link>
-          </li>
         </ul>
       </div>
     </>

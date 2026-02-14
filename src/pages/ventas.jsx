@@ -11,6 +11,8 @@ function Ventas() {
   const [fecha, setFecha] = useState(hoy);
   const [tipo, setTipo] = useState("all");
   const [openPdfMenu, setOpenPdfMenu] = useState(null);
+  const [page, setPage] = useState(1);
+  const PER_PAGE = 8;
 
   const { data, isLoading } = useQuery({
     queryKey: ["ventasDia", fecha, tipo],
@@ -19,6 +21,8 @@ function Ventas() {
 
   const ventas = data?.ventas || [];
   const totales = data?.totales || { tickets: 0, boletas: 0, facturas: 0, general: 0 };
+  const totalPages = Math.ceil(ventas.length / PER_PAGE);
+  const paginatedVentas = ventas.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
   const handleVerPdf = async (venta, format = "80mm") => {
     if (venta.tipo === "ticket") {
@@ -72,7 +76,7 @@ function Ventas() {
           <input
             type="date"
             value={fecha}
-            onChange={(e) => setFecha(e.target.value)}
+            onChange={(e) => { setFecha(e.target.value); setPage(1); }}
             className="border border-gray-300 dark:border-slate-600 dark:bg-slate-800 dark:text-white px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-sky-500"
           />
         </div>
@@ -80,7 +84,7 @@ function Ventas() {
           <FaFilter className="text-gray-500 dark:text-gray-400" />
           <select
             value={tipo}
-            onChange={(e) => setTipo(e.target.value)}
+            onChange={(e) => { setTipo(e.target.value); setPage(1); }}
             className="border border-gray-300 dark:border-slate-600 dark:bg-slate-800 dark:text-white px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-sky-500"
           >
             <option value="all">Todos</option>
@@ -128,6 +132,7 @@ function Ventas() {
             No hay ventas para esta fecha
           </div>
         ) : (
+          <>
           <div className="overflow-x-auto rounded-lg shadow dark:shadow-slate-950/50">
             <table className="w-full text-sm">
               <thead>
@@ -142,7 +147,7 @@ function Ventas() {
                 </tr>
               </thead>
               <tbody>
-                {ventas.map((v, i) => (
+                {paginatedVentas.map((v, i) => (
                   <tr
                     key={`${v.tipo}-${v.id}`}
                     className={`border-b dark:border-slate-700 ${i % 2 === 0 ? "bg-white dark:bg-slate-800" : "bg-gray-50 dark:bg-slate-900"}`}
@@ -175,7 +180,7 @@ function Ventas() {
                             Reimprimir ▾
                           </button>
                           {openPdfMenu === `${v.tipo}-${v.id}` && (
-                            <div className="absolute right-0 mt-1 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg z-20 min-w-28 overflow-hidden">
+                            <div className={`absolute right-0 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg z-20 min-w-28 overflow-hidden ${i >= 4 ? "bottom-full mb-1" : "top-full mt-1"}`}>
                               <button
                                 onClick={() => handleVerPdf(v, "80mm")}
                                 className="w-full text-left px-3 py-2 text-xs hover:bg-sky-50 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200 cursor-pointer transition-colors"
@@ -205,6 +210,35 @@ function Ventas() {
               </tbody>
             </table>
           </div>
+
+          {/* Paginación */}
+          {totalPages > 1 && (
+            <div className="flex justify-between items-center mt-4">
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                {ventas.length} ventas en total
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-300 dark:border-slate-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                >
+                  Anterior
+                </button>
+                <span className="text-xs text-gray-600 dark:text-gray-300 font-medium">
+                  {page} / {totalPages}
+                </span>
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  className="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-300 dark:border-slate-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                >
+                  Siguiente
+                </button>
+              </div>
+            </div>
+          )}
+          </>
         )}
       </div>
     </div>
