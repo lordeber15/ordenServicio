@@ -58,7 +58,7 @@ function Ventas() {
   };
 
   return (
-    <div className="h-full">
+    <div className="h-full dark:bg-slate-900">
       <div className="flex justify-between items-center px-10 py-4">
         <Drawer />
         <div className="text-2xl font-bold dark:text-white">Ventas del Día</div>
@@ -128,10 +128,10 @@ function Ventas() {
             No hay ventas para esta fecha
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-lg shadow">
+          <div className="overflow-x-auto rounded-lg shadow dark:shadow-slate-950/50">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-sky-700 text-white">
+                <tr className="bg-sky-700 dark:bg-slate-950 text-white">
                   <th className="px-4 py-3 text-left">Tipo</th>
                   <th className="px-4 py-3 text-left">N° Documento</th>
                   <th className="px-4 py-3 text-left">Cliente</th>
@@ -145,7 +145,7 @@ function Ventas() {
                 {ventas.map((v, i) => (
                   <tr
                     key={`${v.tipo}-${v.id}`}
-                    className={`border-b dark:border-slate-700 ${i % 2 === 0 ? "bg-white dark:bg-slate-800" : "bg-gray-50 dark:bg-slate-850"}`}
+                    className={`border-b dark:border-slate-700 ${i % 2 === 0 ? "bg-white dark:bg-slate-800" : "bg-gray-50 dark:bg-slate-900"}`}
                   >
                     <td className="px-4 py-3">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${badgeClasses[v.tipo]}`}>
