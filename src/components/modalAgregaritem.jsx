@@ -183,7 +183,7 @@ function ModalAgregaritem({ isOpen, onClose, producto }) {
           >
             {unidades.map((u) => (
               <option key={u.id} value={u.id}>
-                {u.id} — {u.descripcion}
+                {u.descripcion}
               </option>
             ))}
           </select>
