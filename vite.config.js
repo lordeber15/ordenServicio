@@ -22,16 +22,16 @@ export default defineConfig({
    * Estas opciones permiten configurar el servidor de desarrollo para
    * acceso desde red externa o configuración con proxy reverso (Nginx).
    */
-  // server: {
-  //   host: "0.0.0.0", // Permite acceso desde cualquier IP de la red (no solo localhost)
-  //   port: 5173, // Puerto donde corre el servidor de desarrollo
-  //   https: false, // Cambiar a true si se usa certificado SSL
-  //   allowedHosts: ["localhost", "impalexander.store", "www.impalexander.store"], // Hosts permitidos
-  //   fs: {
-  //     allow: ["src"], // Directorios permitidos para servir archivos
-  //   },
-  //   hmr: false, // Hot Module Replacement - false si hay problemas con proxy
-  // },
+  server: {
+    host: "0.0.0.0", // Permite acceso desde cualquier IP de la red (no solo localhost)
+    port: 5173, // Puerto donde corre el servidor de desarrollo
+    https: false, // Cambiar a true si se usa certificado SSL
+    allowedHosts: ["localhost", "impalexander.store", "www.impalexander.store"], // Hosts permitidos
+    fs: {
+      allow: ["src"], // Directorios permitidos para servir archivos
+    },
+    hmr: false, // Hot Module Replacement - false si hay problemas con proxy
+  },
 
   /**
    * PLUGINS
