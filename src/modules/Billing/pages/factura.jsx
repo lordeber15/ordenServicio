@@ -22,6 +22,13 @@ import axiosURL from "../../../core/api/axiosURL";
 const IGV_RATE = 0.18;
 const HOY = new Date().toLocaleDateString('en-CA');
 
+/**
+ * Convierte un monto numérico a su representación en letras (Soles).
+ * Utilizado para la leyenda del comprobante fiscal.
+ * 
+ * @param {number} monto - El monto total a convertir.
+ * @returns {string} Texto en mayúsculas (ej: "CIEN CON 00/100 SOLES").
+ */
 function numeroALetras(monto) {
   const entero = Math.floor(monto);
   const decimales = Math.round((monto - entero) * 100);
@@ -115,6 +122,14 @@ function ItemForm({ unidades, onAgregar, onCancelar }) {
   );
 }
 
+/**
+ * Página de Emisión de Facturas Electrónicas.
+ * 
+ * Diferencias con Boleta:
+ * - Requiere RUC válido del cliente.
+ * - Desglosa explícitamente el IGV en la vista previa.
+ * - Permite deducción de crédito fiscal para el cliente.
+ */
 function Factura() {
   const { state } = useLocation();
   const fromTicket = state?.fromTicket || null;

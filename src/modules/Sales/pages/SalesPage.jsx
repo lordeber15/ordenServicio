@@ -6,8 +6,17 @@ import { getPdfUrl } from "../../Billing/services/comprobantes";
 import Drawer from "../../../shared/components/drawer";
 import { FaReceipt, FaFileInvoice, FaFileLines, FaFilter } from "react-icons/fa6";
 
+/**
+ * Módulo de Gestión de Ventas y Servicios (Dashboard)
+ * 
+ * Este componente es el núcleo operativo de la imprenta. Permite:
+ * - Visualizar órdenes de servicio filtradas por fecha y estado.
+ * - Crear nuevas órdenes de trabajo.
+ * - Cambiar el estado de las órdenes (Pendiente -> Diseño -> Impresión -> etc).
+ * - Imprimir tickets y comprobantes asociados.
+ */
 function Ventas() {
-  const hoy = new Date().toISOString().split("T")[0];
+  const hoy = new Date().toLocaleDateString("en-CA");
   const [fecha, setFecha] = useState(hoy);
   const [tipo, setTipo] = useState("all");
   const [openPdfMenu, setOpenPdfMenu] = useState(null);
@@ -24,6 +33,12 @@ function Ventas() {
   const totalPages = Math.ceil(ventas.length / PER_PAGE);
   const paginatedVentas = ventas.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
+  /**
+   * Manejador para visualizar el PDF del comprobante/ticket.
+   * 
+   * @param {Object} venta - Objeto de la venta seleccionada.
+   * @param {string} format - Formato de impresión ('80mm' o 'A4').
+   */
   const handleVerPdf = async (venta, format = "80mm") => {
     if (venta.tipo === "ticket") {
       try {

@@ -29,6 +29,14 @@ import {
 
 const INITIAL_FORM = { usuario: "", password: "", confirmPassword: "", cargo: "Usuario" };
 
+/**
+ * Módulo de Gestión de Perfil y Usuarios.
+ * 
+ * Roles:
+ * - Usuario: Puede cambiar su contraseña y foto de perfil.
+ * - Administrador: Acceso total. Puede crear/editar/eliminar otros usuarios
+ *   y configurar los datos de la empresa emisora (RUC, Logo, Certificado).
+ */
 function Perfil() {
   const [userData, setUserData] = useState(null);
   const [activeTab, setActiveTab] = useState("seguridad"); // 'seguridad' | 'gestion' | 'empresa'

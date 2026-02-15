@@ -34,66 +34,38 @@ Sistema de gestión integral para imprenta, que cubre órdenes de servicio, fact
 
 ## Estructura del Proyecto
 
-```
 Desarrollo/
 ├── ordenServicio/                    # Frontend React
 │   ├── src/
 │   │   ├── assets/                   # Imágenes y recursos estáticos
-│   │   ├── components/               # Componentes reutilizables
-│   │   │   ├── almanaque/            # Componentes de almanaques
-│   │   │   ├── ingresos y egresos/   # Control financiero
-│   │   │   ├── Reports/              # Tarjetas de reportes
-│   │   │   ├── navbar.jsx            # Barra de navegación
-│   │   │   ├── drawer.jsx            # Panel lateral
-│   │   │   ├── pagination.jsx        # Paginación de tablas
-│   │   │   ├── protectedRoutes.jsx   # Guard de rutas privadas
-│   │   │   ├── search.jsx            # Buscador
-│   │   │   ├── tablaProductos.jsx    # Tabla de productos
-│   │   │   ├── modalAgregaritem.jsx  # Modal agregar ítem
-│   │   │   └── modalEditaritem.jsx   # Modal editar ítem
-│   │   ├── pages/                    # Páginas de la app
-│   │   │   ├── facturacion/          # Boleta, Factura, Guía, Nota de Crédito, Ticket
-│   │   │   ├── Almanaques/           # Creación y listado
-│   │   │   ├── dashboard.jsx         # Lista de trabajos/órdenes
-│   │   │   ├── inventario.jsx        # Gestión de productos
-│   │   │   ├── login.jsx             # Autenticación
-│   │   │   ├── perfil.jsx            # Gestión de usuarios
-│   │   │   └── reportes.jsx          # Reportes y estadísticas
-│   │   ├── request/                  # Módulos de peticiones HTTP
-│   │   │   ├── axiosURL.js           # Instancia base de Axios
-│   │   │   ├── serviciosrequest.js   # API de servicios/trabajos
-│   │   │   ├── loginrequest.js       # API de autenticación
-│   │   │   ├── productos.js          # API de inventario
-│   │   │   ├── ingresosrequest.js    # API de ingresos
-│   │   │   ├── egresosrequest.js     # API de egresos
-│   │   │   ├── almanaques.js         # API de almanaques
-│   │   │   ├── ticket.js             # API de tickets
-│   │   │   ├── unidades.js           # API de unidades
-│   │   │   └── reniec.js             # API externa RENIEC
+│   │   ├── core/                     # Núcleo de la aplicación
+│   │   │   ├── api/                  # Configuración de Axios
+│   │   │   ├── context/              # Contextos globales (Theme, Auth)
+│   │   │   └── router/               # Configuración de rutas
+│   │   ├── modules/                  # Módulos Funcionales (Arquitectura Modular)
+│   │   │   ├── Almanaque/            # Módulo de Almanaques
+│   │   │   │   ├── pages/            # Páginas
+│   │   │   │   └── services/         # Servicios API específicos
+│   │   │   ├── Auth/                 # Módulo de Autenticación
+│   │   │   │   ├── pages/            # Login, Perfil
+│   │   │   │   └── services/         # Servicios de auth
+│   │   │   ├── Billing/              # Módulo de Facturación (Boleta, Factura, etc.)
+│   │   │   │   ├── pages/            # Páginas de emisión
+│   │   │   │   └── services/         # Servicios de comprobantes (comprobantes.js, etc.)
+│   │   │   ├── Dashboard/            # Módulo de Dashboard
+│   │   │   ├── Inventory/            # Módulo de Inventario
+│   │   │   ├── Reports/              # Módulo de Reportes
+│   │   │   └── Sales/                # Módulo de Ventas/Servicios
+│   │   ├── shared/                   # Recursos compartidos
+│   │   │   ├── components/           # Componentes reutilizables (Navbar, Drawer, tablas)
+│   │   │   ├── services/             # Servicios transversales (clientes, reniec, caja)
+│   │   │   └── hooks/                # Custom hooks compartidos
 │   │   ├── App.jsx                   # Router principal
 │   │   └── main.jsx                  # Entry point
 │   ├── .env                          # Variables de entorno (no commitear)
 │   └── vite.config.js                # Configuración de Vite
 │
 └── Backend_servicios_imprenta/       # Backend Node.js
-    ├── src/
-    │   ├── controllers/              # Lógica de negocio por módulo
-    │   │   ├── facturacion/          # 14 controladores de facturación
-    │   │   ├── Tickets/              # Controlador de tickets
-    │   │   ├── almanaque/            # Controlador de almanaques
-    │   │   ├── ingresosyegresos/     # Ingresos y egresos
-    │   │   ├── login.controller.js   # Autenticación
-    │   │   ├── reniec.controller.js  # Consulta DNI RENIEC
-    │   │   └── servicios.controller.js # Órdenes de servicio
-    │   ├── models/                   # Modelos Sequelize
-    │   │   └── facturacion/asociation.js # Relaciones entre modelos
-    │   ├── routes/                   # Definición de rutas Express
-    │   ├── database/
-    │   │   └── database.js           # Configuración Sequelize + PostgreSQL
-    │   ├── app.js                    # Express: middlewares y rutas
-    │   └── server.js                 # Servidor HTTP
-    └── index.js                      # Entry point + sync de BD
-```
 
 ---
 
@@ -286,11 +258,11 @@ Proceso específico para la campaña de fin de año.
 ## Flujo de Datos (Frontend ↔ Backend)
 
 ```
-Componente React
+Componente React (Pages/Components)
     │
     ▼
-Request Module (src/request/*.js)   ← axiosURL.js (baseURL desde .env)
-    │
+Modules/Services (src/modules/*/services/*.js) o Shared/Services
+    │  (Usan instancia de Axios configurada en src/core/api/axiosURL.js)
     ▼
 Express API (localhost:3000)
     │

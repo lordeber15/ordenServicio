@@ -22,6 +22,13 @@ import { getReniec } from "../../../shared/services/reniec";
 const IGV_RATE = 0.18;
 const HOY = new Date().toLocaleDateString('en-CA');
 
+/**
+ * Convierte un monto numérico a su representación en letras (Soles).
+ * Utilizado para la leyenda del comprobante fiscal.
+ * 
+ * @param {number} monto - El monto total a convertir.
+ * @returns {string} Texto en mayúsculas (ej: "CIEN CON 00/100 SOLES").
+ */
 function numeroALetras(monto) {
   const entero = Math.floor(monto);
   const decimales = Math.round((monto - entero) * 100);
@@ -115,6 +122,15 @@ function ItemForm({ unidades, onAgregar, onCancelar }) {
   );
 }
 
+/**
+ * Página de Emisión de Boletas de Venta Electrónica.
+ * 
+ * Permite:
+ * - Buscar clientes por DNI/RUC (integración RENIEC/SUNAT).
+ * - Agregar ítems desde el inventario.
+ * - Calcular totales (Gravada, IGV, Total).
+ * - Emitir el comprobante y generar PDF/XML.
+ */
 function Boleta() {
   const { state } = useLocation();
   const fromTicket = state?.fromTicket || null;
