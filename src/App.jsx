@@ -11,7 +11,7 @@
  * - Rutas protegidas: Todas las demás (requieren autenticación)
  */
 
-import { lazy, Suspense, useMemo } from "react";
+import { lazy, Suspense } from "react";
 import "./App.css";
 
 // Páginas (Lazy Loaded) - Modulares
@@ -58,12 +58,7 @@ const LoadingFallback = () => (
  * @returns {JSX.Element} Estructura principal de la aplicación con rutas
  */
 function App() {
-  /**
-   * Memoiza los datos del usuario para evitar parsear el JSON en cada renderizado
-   */
-  const storedUserData = useMemo(() => 
-    JSON.parse(localStorage.getItem("userData") || "null"), 
-  []);
+  const storedUserData = JSON.parse(localStorage.getItem("userData") || "null");
   
   /**
    * Hook para obtener la ubicación actual (pathname)
