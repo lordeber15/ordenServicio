@@ -18,7 +18,7 @@ import { BrowserRouter } from "react-router";
 import "./index.css"; // Estilos globales (Tailwind CSS)
 import App from "./App.jsx";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ThemeProvider } from "./context/ThemeContext";
+import { ThemeProvider } from "./core/context/ThemeContext";
 
 /**
  * CONFIGURACIÓN DE TANSTACK QUERY

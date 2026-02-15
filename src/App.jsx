@@ -14,30 +14,30 @@
 import { lazy, Suspense, useMemo } from "react";
 import "./App.css";
 
-// Páginas (Lazy Loaded)
-const Login = lazy(() => import("./pages/login"));
-const Dashboard = lazy(() => import("./pages/dashboard"));
-const Perfil = lazy(() => import("./pages/perfil"));
-const Inventario = lazy(() => import("./pages/inventario"));
-const Reportes = lazy(() => import("./pages/reportes"));
-const Ventas = lazy(() => import("./pages/ventas"));
+// Páginas (Lazy Loaded) - Modulares
+const Login = lazy(() => import("./modules/Auth/pages/LoginPage"));
+const Dashboard = lazy(() => import("./modules/Dashboard/pages/DashboardPage"));
+const Perfil = lazy(() => import("./modules/Auth/pages/ProfilePage"));
+const Inventario = lazy(() => import("./modules/Inventory/pages/InventoryPage"));
+const Reportes = lazy(() => import("./modules/Reports/pages/ReportsPage"));
+const Ventas = lazy(() => import("./modules/Sales/pages/SalesPage"));
 
 // Páginas de Facturación (Lazy Loaded)
-const Boleta = lazy(() => import("./pages/facturacion/boleta"));
-const Factura = lazy(() => import("./pages/facturacion/factura"));
-const Guiarem = lazy(() => import("./pages/facturacion/guiaremision"));
-const Notacredito = lazy(() => import("./pages/facturacion/notadecredito"));
-const Ticket = lazy(() => import("./pages/facturacion/ticket"));
+const Boleta = lazy(() => import("./modules/Billing/pages/boleta"));
+const Factura = lazy(() => import("./modules/Billing/pages/factura"));
+const Guiarem = lazy(() => import("./modules/Billing/pages/guiaremision"));
+const Notacredito = lazy(() => import("./modules/Billing/pages/notadecredito"));
+const Ticket = lazy(() => import("./modules/Billing/pages/ticket"));
 
 // Páginas de Almanaques (Lazy Loaded)
-const Almanaque = lazy(() => import("./pages/Almanaques/almanaques"));
-const ListaAlmanaque = lazy(() => import("./components/almanaque/listaAlmanaque"));
-const DetallesAlmanaque = lazy(() => import("./components/almanaque/detallesAlmanaque"));
+const Almanaque = lazy(() => import("./modules/Almanaque/pages/almanaques"));
+const ListaAlmanaque = lazy(() => import("./shared/components/almanaque/listaAlmanaque"));
+const DetallesAlmanaque = lazy(() => import("./shared/components/almanaque/detallesAlmanaque"));
 
 // Componentes
-import NavBar from "./components/navbar";
-import Ingresos from "./components/ingresosEgresos/ingresos";
-import ProtectedRoutes from "./components/protectedRoutes";
+import NavBar from "./shared/components/navbar";
+import Ingresos from "./shared/components/ingresosEgresos/ingresos";
+import ProtectedRoutes from "./shared/components/protectedRoutes";
 
 // Librerías
 import { Route, Routes, useLocation } from "react-router";
