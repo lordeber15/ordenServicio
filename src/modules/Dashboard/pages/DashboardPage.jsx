@@ -415,7 +415,7 @@ Estado:</label>
                 ¿Confirmar Eliminación?
               </h2>
               <p className="text-gray-700 dark:text-slate-300 mb-6 font-medium">
-                ¿Deseas eliminar permanentemente el servicio de <span className="text-red-700 dark:text-red-500 font-bold underline">{dataServicios?.find((item) => item.id === idToDelete)?.nombre}</span>?
+                ¿Deseas eliminar permanentemente el servicio de <span className="text-red-700 dark:text-red-500 font-bold underline">{servicios?.find((item) => item.id === idToDelete)?.nombre}</span>?
               </p>
               <div className="flex justify-end gap-4">
                 <button
