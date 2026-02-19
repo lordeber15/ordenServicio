@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "react-router";
 import toast from "react-hot-toast";
 import { CiSearch } from "react-icons/ci";
-import { FaPlus, FaTrash, FaFilePdf, FaFileCode } from "react-icons/fa6";
+import { FaPlus, FaTrash, FaFileCode, FaPrint, FaFileLines } from "react-icons/fa6";
 import Drawer from "../../../shared/components/drawer";
 import DatosEmpresa from "../../../shared/components/datosEmpresa";
 import { getEmisores } from "../services/emisores";
@@ -241,6 +241,8 @@ function Boleta() {
         await createDetalle({
           comprobante_id: comprobanteId,
           item: i + 1,
+          descripcion: it.descripcion,
+          unidad_id: it.unidad_id || "NIU",
           cantidad: it.cantidad,
           valor_unitario: it.valor_unitario.toFixed(6),
           precio_unitario: it.precio_unitario.toFixed(6),
@@ -428,13 +430,17 @@ function Boleta() {
             </div>
             <div className="text-gray-600 dark:text-slate-400 font-medium">SUNAT: <span className="font-bold">{resultado.codigo_sunat}</span> — {resultado.mensaje_sunat}</div>
             {resultado.success && (
-              <div className="flex gap-3 mt-4">
-                <a href={getPdfUrl(resultado.comprobante_id)} target="_blank" rel="noreferrer"
-                  className="flex items-center gap-2 bg-rose-600 hover:bg-rose-500 text-white px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all shadow-md">
-                  <FaFilePdf className="text-base" /> PDF
+              <div className="flex gap-3 mt-4 flex-wrap">
+                <a href={`${getPdfUrl(resultado.comprobante_id)}?format=ticket`} target="_blank" rel="noreferrer"
+                  className="flex items-center gap-2 bg-emerald-700 hover:bg-emerald-600 text-white px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all shadow-md">
+                  <FaPrint className="text-base" /> Imprimir Ticket
+                </a>
+                <a href={`${getPdfUrl(resultado.comprobante_id)}?format=a5`} target="_blank" rel="noreferrer"
+                  className="flex items-center gap-2 bg-sky-700 hover:bg-sky-600 text-white px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all shadow-md">
+                  <FaFileLines className="text-base" /> Imprimir A5
                 </a>
                 <a href={getXmlUrl(resultado.comprobante_id)} target="_blank" rel="noreferrer"
-                  className="flex items-center gap-2 bg-sky-800 hover:bg-sky-700 text-white px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all shadow-md">
+                  className="flex items-center gap-2 bg-slate-600 hover:bg-slate-500 text-white px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all shadow-md">
                   <FaFileCode className="text-base" /> XML
                 </a>
               </div>

@@ -4,7 +4,7 @@ import { getVentasDia } from "../../../shared/services/caja";
 import { getTicketPdf } from "../../../shared/services/ticket";
 import { getPdfUrl } from "../../Billing/services/comprobantes";
 import Drawer from "../../../shared/components/drawer";
-import { FaReceipt, FaFileInvoice, FaFileLines, FaFilter } from "react-icons/fa6";
+import { FaReceipt, FaFileInvoice, FaFileLines, FaFilter, FaCircleCheck, FaCircleXmark, FaClock, FaSpinner, FaBan } from "react-icons/fa6";
 
 /**
  * Módulo de Gestión de Ventas y Servicios (Dashboard)
@@ -49,7 +49,7 @@ function Ventas() {
         // PDF no disponible
       }
     } else {
-      window.open(getPdfUrl(venta.id), "_blank");
+      window.open(`${getPdfUrl(venta.id)}?format=${format}`, "_blank");
     }
     setOpenPdfMenu(null);
   };
@@ -60,20 +60,12 @@ function Ventas() {
     factura: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-200",
   };
 
-  const estadoLabel = {
-    PE: "Pendiente",
-    EN: "En proceso",
-    AC: "Aceptado",
-    RR: "Rechazado",
-    AN: "Anulado",
-  };
-
-  const estadoColor = {
-    PE: "text-yellow-600",
-    EN: "text-blue-600",
-    AC: "text-green-600",
-    RR: "text-red-600",
-    AN: "text-gray-500",
+  const estadoConfig = {
+    AC: { icon: FaCircleCheck, label: "Aceptado SUNAT", color: "text-green-500", bg: "bg-green-50 dark:bg-green-950/30" },
+    RR: { icon: FaCircleXmark, label: "Rechazado SUNAT", color: "text-red-500", bg: "bg-red-50 dark:bg-red-950/30" },
+    PE: { icon: FaClock, label: "Pendiente envío", color: "text-yellow-500", bg: "bg-yellow-50 dark:bg-yellow-950/30" },
+    EN: { icon: FaSpinner, label: "En proceso", color: "text-blue-500", bg: "bg-blue-50 dark:bg-blue-950/30" },
+    AN: { icon: FaBan, label: "Anulado", color: "text-gray-400", bg: "bg-gray-50 dark:bg-gray-800" },
   };
 
   return (
@@ -177,48 +169,44 @@ function Ventas() {
                     <td className="px-4 py-3 dark:text-gray-300">{v.documento || "—"}</td>
                     <td className="px-4 py-3 text-right font-semibold dark:text-white">S/ {v.total.toFixed(2)}</td>
                     <td className="px-4 py-3 text-center">
-                      {v.estado ? (
-                        <span className={`text-xs font-medium ${estadoColor[v.estado] || "text-gray-500"}`}>
-                          {estadoLabel[v.estado] || v.estado}
-                        </span>
-                      ) : (
+                      {v.estado && estadoConfig[v.estado] ? (() => {
+                        const cfg = estadoConfig[v.estado];
+                        const Icon = cfg.icon;
+                        return (
+                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${cfg.bg} ${cfg.color}`} title={cfg.label}>
+                            <Icon className="text-sm" />
+                            {cfg.label}
+                          </span>
+                        );
+                      })() : (
                         <span className="text-xs text-gray-400">—</span>
                       )}
                     </td>
                     <td className="px-4 py-3 text-center">
-                      {v.tipo === "ticket" ? (
-                        <div className="relative inline-block">
-                          <button
-                            onClick={() => setOpenPdfMenu(openPdfMenu === `${v.tipo}-${v.id}` ? null : `${v.tipo}-${v.id}`)}
-                            className="text-sky-600 hover:text-sky-800 dark:text-sky-400 dark:hover:text-sky-200 text-xs font-medium cursor-pointer"
-                          >
-                            Reimprimir ▾
-                          </button>
-                          {openPdfMenu === `${v.tipo}-${v.id}` && (
-                            <div className={`absolute right-0 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg z-20 min-w-28 overflow-hidden ${i >= 4 ? "bottom-full mb-1" : "top-full mt-1"}`}>
-                              <button
-                                onClick={() => handleVerPdf(v, "80mm")}
-                                className="w-full text-left px-3 py-2 text-xs hover:bg-sky-50 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200 cursor-pointer transition-colors"
-                              >
-                                Ticket 80mm
-                              </button>
-                              <button
-                                onClick={() => handleVerPdf(v, "a5")}
-                                className="w-full text-left px-3 py-2 text-xs hover:bg-sky-50 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200 cursor-pointer border-t border-gray-100 dark:border-slate-700 transition-colors"
-                              >
-                                Ticket A5
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      ) : (
+                      <div className="relative inline-block">
                         <button
-                          onClick={() => handleVerPdf(v)}
+                          onClick={() => setOpenPdfMenu(openPdfMenu === `${v.tipo}-${v.id}` ? null : `${v.tipo}-${v.id}`)}
                           className="text-sky-600 hover:text-sky-800 dark:text-sky-400 dark:hover:text-sky-200 text-xs font-medium cursor-pointer"
                         >
-                          Ver PDF
+                          Imprimir ▾
                         </button>
-                      )}
+                        {openPdfMenu === `${v.tipo}-${v.id}` && (
+                          <div className={`absolute right-0 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg z-20 min-w-28 overflow-hidden ${i >= 4 ? "bottom-full mb-1" : "top-full mt-1"}`}>
+                            <button
+                              onClick={() => handleVerPdf(v, v.tipo === "ticket" ? "80mm" : "ticket")}
+                              className="w-full text-left px-3 py-2 text-xs hover:bg-sky-50 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200 cursor-pointer transition-colors"
+                            >
+                              Ticket 80mm
+                            </button>
+                            <button
+                              onClick={() => handleVerPdf(v, "a5")}
+                              className="w-full text-left px-3 py-2 text-xs hover:bg-sky-50 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200 cursor-pointer border-t border-gray-100 dark:border-slate-700 transition-colors"
+                            >
+                              A5
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
