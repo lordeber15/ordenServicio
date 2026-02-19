@@ -14,7 +14,7 @@
  * 2. Soporta búsqueda en tiempo real por nombre de cliente
  * 3. Implementa paginación local para manejar grandes volúmenes de datos
  */
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import Modal from "react-modal";
 import { FaPlus } from "react-icons/fa6";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
@@ -41,24 +41,56 @@ const FORM_INITIAL = {
   acuenta: 0.0,    // Pago adelantado
 };
 
+function useDebounce(value, delay) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+
 function Dashboard() {
   const queryClient = useQueryClient();
-
-  // query: fetcher de servicios desde el backend
-  const { data: dataServicios, isLoading } = useQuery({
-    queryKey: ["servicios"],
-    queryFn: getServicios,
-  });
 
   // ESTADOS LOCALES DE UI
   const [modalIsOpen, setModalIsOpen] = useState(false);       
   const [selectedItem, setSelectedItem] = useState(null);       
   const [editServiciosId, setEditServiciosId] = useState(null); 
-  const [activeTab, setActiveTab] = useState("pendiente");      
+  const [activeTab, setActiveTab] = useState("pendiente");
+  const [page, setPage] = useState(1);
+  const [limit] = useState(7);      
   const [confirmModalOpen, setConfirmModalOpen] = useState(false); 
   const [idToDelete, setIdToDelete] = useState(null);           
-  const [searchTerm, setSearchTerm] = useState("");             
-  const [form, setForm] = useState(FORM_INITIAL);               
+  const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);             
+  const [form, setForm] = useState(FORM_INITIAL);
+
+  // query: fetcher de servicios desde el backend con paginación y filtros
+  const { data: dataResponse, isLoading } = useQuery({
+    queryKey: ["servicios", page, limit, activeTab, debouncedSearchTerm],
+    queryFn: () => getServicios(page, limit, { 
+        nombre: debouncedSearchTerm, 
+        estado: activeTab === "Todos" ? undefined : activeTab 
+    }),
+    keepPreviousData: true, // Mantiene la data anterior mientras carga la nueva
+  });
+
+  const servicios = dataResponse?.data || [];
+  const totalPages = dataResponse?.totalPages || 0;
+  const currentPage = dataResponse?.currentPage || 1;
+
+  // Reset page when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [activeTab, debouncedSearchTerm]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -146,7 +178,7 @@ function Dashboard() {
 
   const handleEditServicios = useCallback((id) => {
     setEditServiciosId(id);
-    const servicio = dataServicios?.find((s) => s.id === id);
+    const servicio = servicios?.find((s) => s.id === id);
     if (servicio) {
       setForm({
         nombre: servicio.nombre,
@@ -157,8 +189,11 @@ function Dashboard() {
         acuenta: servicio.acuenta,
       });
       openModal({});
+    } else {
+        // Fallback if not found in current page (unlikely if triggered from UI)
+        toast.error("Servicio no encontrado en la página actual");
     }
-  }, [dataServicios, openModal]);
+  }, [servicios, openModal]);
 
   const handlerUpdateServicios = () => {
     if (
@@ -206,12 +241,6 @@ function Dashboard() {
     setIdToDelete(null);
     setConfirmModalOpen(false);
   };
-
-  const filteredServicios = useMemo(() => {
-    return (dataServicios || []).filter((servicio) =>
-      servicio.nombre.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [dataServicios, searchTerm]);
 
   const TABS = ["Todos", "pendiente", "Diseño", "Impresión", "Terminado", "Entregado"];
 
@@ -265,8 +294,10 @@ function Dashboard() {
               <div className="text-center py-10 text-sky-700 dark:text-slate-400 text-sm italic">Cargando trabajos...</div>
             ) : (
               <Pagination
-                data={filteredServicios}
-                activeTab={activeTab}
+                data={servicios}
+                totalPages={totalPages}
+                currentPage={currentPage}
+                onPageChange={setPage}
                 onEdit={handleEditServicios}
                 onDelete={handleDeleteServicios}
               />

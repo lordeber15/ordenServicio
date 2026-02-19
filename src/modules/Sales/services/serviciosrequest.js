@@ -34,8 +34,25 @@ import axiosURL from "../../../core/api/axiosURL";
  * const servicios = await getServicios();
  * console.log(servicios); // [{ id: 1, nombre: "Juan", ... }, ...]
  */
-export const getServicios = async () => {
-  const res = await axiosURL.get("/servicios");
+/**
+ * Obtener todos los servicios/trabajos
+ * 
+ * Retorna la lista completa de trabajos registrados en el sistema.
+ * soporta paginación opcional y filtros.
+ * 
+ * @param {number} [page] - Número de página
+ * @param {number} [limit] - Límite de items por página
+ * @param {Object} [filters] - Filtros opcionales (nombre, estado)
+ * @returns {Promise<Object>} Objeto con data y metadata de paginación
+ */
+export const getServicios = async (page, limit, filters = {}) => {
+  const params = {};
+  if (page) params.page = page;
+  if (limit) params.limit = limit;
+  if (filters.nombre) params.nombre = filters.nombre;
+  if (filters.estado) params.estado = filters.estado;
+  
+  const res = await axiosURL.get("/servicios", { params });
   return res.data;
 };
 

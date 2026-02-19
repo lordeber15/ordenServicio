@@ -3,19 +3,12 @@ import { FaCaretUp } from "react-icons/fa";
 import { CiEdit } from "react-icons/ci";
 import { MdDelete } from "react-icons/md";
 
-const ITEMS_PER_PAGE = 7;
-
-const Pagination = memo(({ data, activeTab, onEdit, onDelete }) => {
-  const [currentPage, setCurrentPage] = useState(1);
+const Pagination = memo(({ data, totalPages, currentPage, onPageChange, onEdit, onDelete }) => {
   const [open, setOpen] = useState(null);
   const dropdownRef = useRef(null);
 
   const userData = useMemo(() => JSON.parse(localStorage.getItem("userData") || "null"), []);
   const admin = userData?.cargo === "Administrador";
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [activeTab]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -30,25 +23,8 @@ const Pagination = memo(({ data, activeTab, onEdit, onDelete }) => {
     };
   }, []);
 
-  const filteredData = useMemo(() => {
-    return data.filter((item) => {
-      if (activeTab === "Todos") return true;
-      return item.estado.toLowerCase() === activeTab.toLowerCase();
-    });
-  }, [data, activeTab]);
-
-  const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const paginatedData = useMemo(() => {
-    return filteredData.slice(
-      startIndex,
-      startIndex + ITEMS_PER_PAGE
-    );
-  }, [filteredData, startIndex]);
-
-  const handlePrev = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
-  const handleNext = () =>
-    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+  const handlePrev = () => onPageChange(Math.max(currentPage - 1, 1));
+  const handleNext = () => onPageChange(Math.min(currentPage + 1, totalPages));
 
   return (
     <div className="w-full ">
@@ -73,7 +49,7 @@ const Pagination = memo(({ data, activeTab, onEdit, onDelete }) => {
             </tr>
           </thead>
           <tbody className="rounded-b-lg text-sky-900 dark:text-slate-100 bg-white dark:bg-slate-950">
-            {paginatedData.map((cont) => (
+            {data.map((cont) => (
               <tr key={cont.id} className="border-b border-sky-700 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-900 transition-colors">
                 <td className="whitespace-nowrap px-3 py-4 font-medium">
                   {cont.id}
