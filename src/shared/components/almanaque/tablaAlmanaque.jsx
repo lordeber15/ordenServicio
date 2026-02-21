@@ -13,7 +13,7 @@ function TablaAlmanaque({ data }) {
           <thead className="bg-slate-50 dark:bg-slate-900/50">
             <tr>
               <th className="px-6 py-4 text-center text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
-                N° Orden
+                N° Cotización
               </th>
               <th className="px-6 py-4 text-left text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
                 Cliente
@@ -22,7 +22,7 @@ function TablaAlmanaque({ data }) {
                 Fecha Emisión
               </th>
               <th className="px-6 py-4 text-right text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
-                Saldo Pendiente
+                Total
               </th>
             </tr>
           </thead>
@@ -42,8 +42,8 @@ function TablaAlmanaque({ data }) {
                 <td className="text-center px-6 py-4 text-sm font-mono font-bold text-slate-500 dark:text-slate-400">
                   {dayjs(item.fechaEmision).format("DD/MM/YYYY")}
                 </td>
-                <td className="px-6 py-4 text-right text-sm font-mono font-black text-rose-700 dark:text-rose-400">
-                  S/ {Number(item.precioTotal - item.aCuenta || 0).toFixed(2)}
+                <td className="px-6 py-4 text-right text-sm font-mono font-black text-sky-700 dark:text-sky-400">
+                  S/ {Number(item.precioTotal || 0).toFixed(2)}
                 </td>
               </tr>
             ))}

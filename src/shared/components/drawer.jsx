@@ -73,6 +73,11 @@ export default function Drawer() {
                 </Link>
               </li>
               <li>
+                <Link to="/guiatransp" onClick={() => setIsOpen(false)} className={linkClass}>
+                  Guia Transportista
+                </Link>
+              </li>
+              <li>
                 <Link to="/notacredito" onClick={() => setIsOpen(false)} className={linkClass}>
                   Nota de Credito
                 </Link>
@@ -89,7 +94,7 @@ export default function Drawer() {
               </li>
               <li>
                 <Link to="/almanaque" onClick={() => setIsOpen(false)} className={linkClass}>
-                  Almanaque
+                  Cotización
                 </Link>
               </li>
             </>

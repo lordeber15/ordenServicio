@@ -57,3 +57,9 @@ export const getXmlUrl = (id) => {
   const base = import.meta.env.VITE_API_URL || "http://localhost:3000/";
   return `${base}comprobante/${id}/xml`;
 };
+
+/**
+ * Obtiene el PDF del comprobante como blob (para impresión directa via iframe).
+ */
+export const getComprobantePdf = (id, format = "a5") =>
+  axiosURL.get(`/comprobante/${id}/pdf?format=${format}`, { responseType: "blob" });

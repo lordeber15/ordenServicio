@@ -16,6 +16,19 @@ import { getUnidades } from "../services/unidades";
 // ─── Constantes ───────────────────────────────────────────────────────────────
 const today = new Date().toLocaleDateString('en-CA');
 
+// ─── Helper: impresión directa via iframe oculto ─────────────────────────────
+const printPdfBlob = (blob) => {
+  const url = URL.createObjectURL(new Blob([blob], { type: "application/pdf" }));
+  const iframe = document.createElement("iframe");
+  iframe.style.display = "none";
+  iframe.src = url;
+  document.body.appendChild(iframe);
+  iframe.onload = () => {
+    iframe.contentWindow.print();
+    setTimeout(() => { document.body.removeChild(iframe); URL.revokeObjectURL(url); }, 1000);
+  };
+};
+
 const TIPO_DOC_MAP = {
   "Sin Documento": "0",
   "DNI": "1",
@@ -143,6 +156,7 @@ function Ticket() {
         precioUnitario: parseFloat(precio.toFixed(2)),
         subtotal: parseFloat(precio.toFixed(2)),
         _unidad: unidadMap[p.unidad_id] || p.unidad_id || "",
+        _unidad_id: p.unidad_id || "NIU",
       }];
     });
   }, [unidadMap]);
@@ -194,6 +208,7 @@ function Ticket() {
       precioUnitario: parseFloat(precio.toFixed(2)),
       subtotal: parseFloat((cant * precio).toFixed(2)),
       _unidad: prod ? (unidadMap[prod.unidad_id] || prod.unidad_id || "") : "",
+      _unidad_id: prod?.unidad_id || "NIU",
     }]);
     setManualDesc(""); setManualCant(1); setManualPrecio(""); setManualPid(null);
     setShowManualRow(false); setShowSuggestions(false);
@@ -235,8 +250,7 @@ function Ticket() {
     if (savedTicket) {
       try {
         const res = await getTicketPdf(savedTicket.id, format);
-        const url = URL.createObjectURL(new Blob([res.data], { type: "application/pdf" }));
-        window.open(url, "_blank");
+        printPdfBlob(res.data);
       } catch (err) {
         toast.error("Error al generar PDF");
       }
@@ -250,8 +264,7 @@ function Ticket() {
         refetchCaja();
         try {
           const pdfRes = await getTicketPdf(res.data.id, format);
-          const url = URL.createObjectURL(new Blob([pdfRes.data], { type: "application/pdf" }));
-          window.open(url, "_blank");
+          printPdfBlob(pdfRes.data);
         } catch (_) { /* PDF opcional */ }
         handleNuevaVenta();
         return `Ticket N° ${String(res.data.id).padStart(6, "0")} guardado`;
@@ -281,8 +294,8 @@ function Ticket() {
           doc: nroDoc,
           tipoDocCodigo: TIPO_DOC_MAP[tipoDoc] || "0",
           direccion,
-          items: items.map(({ _pid, descripcion, cantidad, precioUnitario }) => ({
-            descripcion, cantidad, precioConIgv: precioUnitario,
+          items: items.map(({ _pid, descripcion, cantidad, precioUnitario, _unidad_id }) => ({
+            descripcion, cantidad, precioConIgv: precioUnitario, unidad_id: _unidad_id || "NIU",
           })),
         },
       },

@@ -1,262 +1,558 @@
-import Drawer from "../../../shared/components/drawer";
-import DatosEmpresa from "../../../shared/components/datosEmpresa";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import {
+  FaTrash, FaPrint, FaBarcode, FaPlus, FaRotateLeft,
+} from "react-icons/fa6";
 import { CiSearch } from "react-icons/ci";
-import TablaProductos from "../../../shared/components/tablaProductos";
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { getReniec } from "../../../shared/services/reniec";
-import AgregarItemTabla from "../../../shared/components/agregarItemTabla";
-import AgregarItemsTabla from "../../../shared/components/agregarItemsTabla";
-import { useMemo } from "react";
-import ImporteLetras from "./numeroAletra";
-import { createAlmanaque } from "../services/almanaques";
 import toast from "react-hot-toast";
+import { getProducto } from "../../Inventory/services/productos";
+import { getReniec } from "../../../shared/services/reniec";
+import { createAlmanaque, getCotizacionPdf } from "../services/almanaques";
+import { getUnidades } from "../../Billing/services/unidades";
+import logo from "../../../assets/ALEXANDER.webp";
 
-function Almanaques() {
+// ─── Constantes ───────────────────────────────────────────────────────────────
+const today = new Date().toLocaleDateString('en-CA');
+
+// ─── Helper: impresión directa via iframe oculto ─────────────────────────────
+const printPdfBlob = (blob) => {
+  const url = URL.createObjectURL(new Blob([blob], { type: "application/pdf" }));
+  const iframe = document.createElement("iframe");
+  iframe.style.display = "none";
+  iframe.src = url;
+  document.body.appendChild(iframe);
+  iframe.onload = () => {
+    iframe.contentWindow.print();
+    setTimeout(() => {
+      document.body.removeChild(iframe);
+      URL.revokeObjectURL(url);
+    }, 1000);
+  };
+};
+
+// ─────────────────────────────────────────────────────────────────
+// Componente principal
+// ─────────────────────────────────────────────────────────────────
+function Cotizacion() {
+  // ── Estado del formulario ──
+  const [cliente, setCliente] = useState("");
+  const [tipoDoc, setTipoDoc] = useState("Sin Documento");
+  const [nroDoc, setNroDoc] = useState("");
+  const [direccion, setDireccion] = useState("");
+  const [telefono, setTelefono] = useState("");
+  const [fechaEmision, setFechaEmision] = useState(today);
   const [items, setItems] = useState([]);
 
-  const [requestAlmanaque, setRequestAlmanaque] = useState("");
-  const [selectDocumento, setSelectDocumento] = useState("");
-  const [nombreAlmanaque, setNombreAlmanaque] = useState("");
-  const [acuentaAlmanaque, setAcuentaAlmanaque] = useState(0);
-  const [direccionAlmanaque, setdireccionAlmanaque] = useState("");
-  console.log(nombreAlmanaque);
-  console.log(direccionAlmanaque);
+  // ── Estado del lector de barras ──
+  const [barcodeInput, setBarcodeInput] = useState("");
 
-  const handleEmitir = async () => {
-    try {
-      if (!nombreAlmanaque || items.length === 0) {
-        toast.error("Debes ingresar un cliente y al menos un ítem.");
-        return;
-      }
+  // ── Estado de la fila manual ──
+  const [showManualRow, setShowManualRow] = useState(false);
+  const [manualDesc, setManualDesc] = useState("");
+  const [manualCant, setManualCant] = useState(1);
+  const [manualPrecio, setManualPrecio] = useState("");
+  const [manualPid, setManualPid] = useState(null);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
-      const payload = {
-        cliente: nombreAlmanaque,
-        tipoDocumento: selectDocumento || "Sin Documento",
-        numeroDocumento: requestAlmanaque || "",
-        direccion: "", // si tienes este dato, agrégalo
-        fechaEmision: new Date().toLocaleDateString('en-CA'),
-        precioTotal: totales.total.toFixed(2),
-        aCuenta: acuentaAlmanaque.toFixed(2) || 0,
-        detalles: items.map((item) => ({
-          cantidad: item.cantidad,
-          descripcion: item.almanaque || item.descripcion,
-          unidad: item.unidad || "UND",
-          precioUnitario: item.precioUnitario,
-        })),
-      };
+  // ── Estado de guardado ──
+  const [savedCotizacion, setSavedCotizacion] = useState(null);
 
-      // muestra un "loading" mientras se guarda
-      const toastId = toast.loading("Guardando ticket...");
+  const barcodeRef = useRef(null);
+  const manualDescRef = useRef(null);
+  const manualPrecioRef = useRef(null);
 
-      const data = await createAlmanaque(payload);
-
-      toast.success("Ticket emitido correctamente 🎉", { id: toastId });
-      console.log("✅ Respuesta del servidor:", data);
-
-      // limpia los datos del formulario
-      setItems([]);
-      setNombreAlmanaque("");
-      setSelectDocumento("");
-      setRequestAlmanaque("");
-      setdireccionAlmanaque("");
-      setAcuentaAlmanaque("");
-    } catch (error) {
-      console.error("❌ Error al emitir ticket de Almanaque:", error);
-      toast.error("No se pudo guardar el ticket de Almanaque 😞");
-    }
-  };
-
-  const totales = useMemo(() => {
-    console.log("🔄 Recalculando totales...");
-
-    // 1️⃣ Sumar todos los precios (importe total)
-    const total = items.reduce(
-      (acc, item) => acc + Number(item.precioUnitario * item.cantidad || 0),
-      0
-    );
-
-    // 2️⃣ Calcular operación gravada
-    const opeGravada = total / 1.18;
-
-    // 3️⃣ Calcular IGV
-    const igv = opeGravada * 0.18;
-
-    const saldo = total - acuentaAlmanaque;
-
-    return { opeGravada, igv, total, saldo };
-  }, [items, acuentaAlmanaque]);
-
-  const {
-    data: dataReniec,
-    refetch,
-    isFetching,
-  } = useQuery({
-    queryKey: ["reniec"],
-    queryFn: () => getReniec(requestAlmanaque), // usa el estado actual
-    enabled: false, // no se ejecuta automáticamente
-    onSuccess: (data) => {
-      if (!data) return;
-      const nombreCompleto =
-        `${dataReniec.nombres} ${dataReniec.apellidoPaterno} ${dataReniec.apellidoMaterno}`.trim();
-      setNombreAlmanaque(nombreCompleto);
-    },
+  // ── Queries ──
+  const { data: productos = [] } = useQuery({
+    queryKey: ["productos"],
+    queryFn: getProducto,
   });
-  const handleBuscarAlmanaque = () => {
-    if (requestAlmanaque.trim().length > 0) {
-      refetch();
+  const { data: unidades = [] } = useQuery({
+    queryKey: ["unidades"],
+    queryFn: getUnidades,
+  });
+  const unidadMap = useMemo(() => Object.fromEntries(unidades.map((u) => [u.id, u.descripcion || u.nombre || u.id])), [unidades]);
+
+  // ── RENIEC ──
+  const { data: reniecData, refetch: buscarReniec } = useQuery({
+    queryKey: ["reniec", nroDoc],
+    queryFn: () => getReniec(nroDoc),
+    enabled: false,
+  });
+  useEffect(() => {
+    if (reniecData) {
+      setCliente([reniecData.nombres, reniecData.apellidoPaterno, reniecData.apellidoMaterno].filter(Boolean).join(" "));
     }
+  }, [reniecData]);
+
+  // ── Mutación ──
+  const cotizacionMutation = useMutation({ mutationFn: createAlmanaque });
+
+  // ── Totales ──
+  const total = items.reduce((s, i) => s + i.subtotal, 0);
+  const opGravada = total / 1.18;
+  const igv = total - opGravada;
+
+  // ── Sugerencias de inventario para ítem manual ──
+  const suggestions = useMemo(() => {
+    if (!manualDesc.trim() || manualDesc.length < 2) return [];
+    return productos
+      .filter((p) => p.nombre.toLowerCase().includes(manualDesc.toLowerCase()))
+      .slice(0, 6);
+  }, [manualDesc, productos]);
+
+  // ── Helper: agregar/incrementar producto ──
+  const addProductToItems = useCallback((p) => {
+    const precio = parseFloat(p.valor_unitario || p.precio || 0);
+    setItems((prev) => {
+      const exists = prev.findIndex((i) => i._pid === p.id);
+      if (exists >= 0) {
+        return prev.map((i, idx) =>
+          idx === exists
+            ? { ...i, cantidad: i.cantidad + 1, subtotal: parseFloat(((i.cantidad + 1) * i.precioUnitario).toFixed(2)) }
+            : i
+        );
+      }
+      return [...prev, {
+        _pid: p.id,
+        descripcion: p.nombre,
+        cantidad: 1,
+        precioUnitario: parseFloat(precio.toFixed(2)),
+        subtotal: parseFloat(precio.toFixed(2)),
+        _unidad: unidadMap[p.unidad_id] || p.unidad_id || "",
+      }];
+    });
+  }, [unidadMap]);
+
+  // ── Lector de barras ──
+  const handleBarcodeKey = (e) => {
+    if (e.key !== "Enter") return;
+    e.preventDefault();
+    const code = barcodeInput.trim();
+    if (!code) return;
+    const found = productos.find(
+      (p) => p.codigo_sunat === code || p.nombre?.toLowerCase() === code.toLowerCase()
+    );
+    if (found) { addProductToItems(found); toast.success(`"${found.nombre}" agregado`); }
+    else toast.error(`Producto "${code}" no encontrado`);
+    setBarcodeInput("");
+    barcodeRef.current?.focus();
   };
 
-  const handleaCuenta = (e) => {
-    const value = e.target.value;
-    setAcuentaAlmanaque(value === "" ? 0 : Number(value));
+  // ── Seleccionar sugerencia en ítem manual ──
+  const handleSelectSuggestion = (p) => {
+    const precio = parseFloat(parseFloat(p.valor_unitario || 0).toFixed(2));
+    const cant = parseInt(manualCant) || 1;
+    setItems((prev) => [...prev, {
+      _pid: p.id,
+      descripcion: p.nombre,
+      cantidad: cant,
+      precioUnitario: precio,
+      subtotal: parseFloat((cant * precio).toFixed(2)),
+      _unidad: unidadMap[p.unidad_id] || p.unidad_id || "",
+    }]);
+    setManualDesc(""); setManualCant(1); setManualPrecio(""); setManualPid(null);
+    setShowManualRow(false); setShowSuggestions(false);
+    barcodeRef.current?.focus();
+    toast.success(`"${p.nombre}" agregado`);
   };
-  const handleSelectDcument = (e) => {
-    setSelectDocumento(e.target.value);
+
+  // ── Agregar ítem manual ──
+  const handleAddManual = () => {
+    if (!manualDesc.trim()) return toast.error("Ingrese una descripción");
+    const precio = parseFloat(manualPrecio);
+    if (isNaN(precio) || precio <= 0) return toast.error("Precio inválido");
+    const cant = parseInt(manualCant) || 1;
+    const prod = manualPid ? productos.find((p) => p.id === manualPid) : null;
+    setItems((prev) => [...prev, {
+      _pid: manualPid,
+      descripcion: manualDesc.trim(),
+      cantidad: cant,
+      precioUnitario: parseFloat(precio.toFixed(2)),
+      subtotal: parseFloat((cant * precio).toFixed(2)),
+      _unidad: prod ? (unidadMap[prod.unidad_id] || prod.unidad_id || "") : "",
+    }]);
+    setManualDesc(""); setManualCant(1); setManualPrecio(""); setManualPid(null);
+    setShowManualRow(false); setShowSuggestions(false);
+    barcodeRef.current?.focus();
   };
+
+  // ── Editar cantidad inline ──
+  const handleCantChange = (idx, val) => {
+    const cant = parseInt(val) || 1;
+    setItems((prev) => prev.map((i, k) =>
+      k === idx ? { ...i, cantidad: cant, subtotal: parseFloat((cant * i.precioUnitario).toFixed(2)) } : i
+    ));
+  };
+
+  // ── Eliminar ítem ──
+  const handleRemoveItem = (idx) => setItems((prev) => prev.filter((_, k) => k !== idx));
+
+  // ── Construir payload ──
+  const buildPayload = () => ({
+    cliente: cliente || "Sin nombre",
+    tipoDocumento: tipoDoc,
+    numeroDocumento: nroDoc || "00000000",
+    direccion,
+    fechaEmision,
+    precioTotal: parseFloat(total.toFixed(2)),
+    aCuenta: 0,
+    detalles: items.map(({ _pid, descripcion, cantidad, precioUnitario, _unidad }) => ({
+      descripcion, cantidad, precioUnitario,
+      unidad: _unidad || "UND",
+    })),
+  });
+
+  // ── Guardar + imprimir (PDF directo) ──
+  const handleSaveAndPrint = async (format) => {
+    if (items.length === 0) { toast.error("Agrega al menos un ítem"); return; }
+
+    if (savedCotizacion) {
+      try {
+        const res = await getCotizacionPdf(savedCotizacion.id, format);
+        printPdfBlob(res.data);
+      } catch (err) {
+        toast.error("Error al generar PDF");
+      }
+      return;
+    }
+
+    toast.promise(cotizacionMutation.mutateAsync(buildPayload()), {
+      loading: "Guardando cotización...",
+      success: async (res) => {
+        setSavedCotizacion(res.data);
+        try {
+          const pdfRes = await getCotizacionPdf(res.data.id, format);
+          printPdfBlob(pdfRes.data);
+        } catch (_) { /* PDF opcional */ }
+        handleNuevaCotizacion();
+        return `Cotización N° ${String(res.data.id).padStart(6, "0")} guardada`;
+      },
+      error: (err) => `Error: ${err?.response?.data?.message || err.message}`,
+    });
+  };
+
+  // ── Nueva Cotización ──
+  const handleNuevaCotizacion = () => {
+    setCliente(""); setTipoDoc("Sin Documento"); setNroDoc(""); setDireccion(""); setTelefono("");
+    setFechaEmision(today); setItems([]); setBarcodeInput("");
+    setShowManualRow(false); setSavedCotizacion(null);
+    setTimeout(() => barcodeRef.current?.focus(), 100);
+  };
+
+  // ── Autofoco al montar ──
+  useEffect(() => { barcodeRef.current?.focus(); }, []);
 
   return (
-    <div className="w-full">
-      <div className="px-4 md:px-12 py-4">
-        <div className="flex justify-start gap-5 items-center mb-6">
-          <Drawer />
-          <div className="text-3xl font-black text-sky-800 dark:text-slate-100 transition-colors tracking-tight">Almanaque</div>
-        </div>
-        <div className="flex justify-center items-center w-full p-2 mt-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 w-full gap-6">
-            <DatosEmpresa />
-            <div className="p-6 flex justify-center items-center flex-col border-2 border-dashed border-gray-300 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 transition-colors shadow-sm">
-              <div className="text-xl font-black text-gray-800 dark:text-slate-100">RUC: 20608582011</div>
-              <div className="font-black text-2xl py-2 text-center text-sky-800 dark:text-slate-100 uppercase tracking-tighter">
-                Notas de Pedido Almanaque
-              </div>
-              <div className="flex px-4 py-2 bg-slate-100 dark:bg-slate-950 rounded-lg items-center mt-3 border dark:border-slate-800">
-                <p className="text-sky-800 dark:text-slate-300 font-mono font-bold tracking-widest mr-2">NPA</p>
-                <span className="text-gray-400 mr-2">-</span>
-                <input type="number" className="bg-transparent w-full text-gray-400 font-mono font-bold" disabled placeholder="Correlativo" />
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="py-2 flex gap-4 flex-col mt-4">
-          <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input
-              type="text"
-              className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-gray-800 dark:text-slate-100 rounded-lg p-3 text-sm focus:outline-none focus:border-sky-500 transition-colors shadow-sm font-bold"
-              placeholder="Nombre o Razón Social del Cliente"
-              value={nombreAlmanaque}
-              onChange={(e) => setNombreAlmanaque(e.target.value)}
-            />
-            <div className="flex flex-row gap-2">
-              <select
-                onChange={handleSelectDcument}
-                defaultValue="DNI"
-                className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-gray-800 dark:text-slate-100 p-3 rounded-lg text-xs font-black uppercase tracking-widest shadow-sm focus:outline-none focus:border-sky-500 transition-colors w-1/2"
-              >
-                <option value="Sin Documento">Sin Documento</option>
-                <option value="DNI">DNI</option>
-                <option value="RUC">RUC</option>
-                <option value="Pasaporte">Pasaporte</option>
-                <option value="Canet de Extranjeria">Canet de Extranjeria</option>
-                <option value="Cedula Diplomatica">Cedula Diplomatica</option>
-              </select>
-              <div className="relative flex-1">
-                <input
-                  type="text"
-                  disabled={selectDocumento == "Sin Documento" ? true : false}
-                  className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-gray-800 dark:text-slate-100 rounded-lg p-3 w-full text-sm focus:outline-none focus:border-sky-500 transition-colors shadow-sm font-mono font-bold disabled:opacity-50"
-                  placeholder="Número de Documento"
-                  value={requestAlmanaque}
-                  onChange={(e) => setRequestAlmanaque(e.target.value)}
-                />
-                <button
-                  onClick={handleBuscarAlmanaque}
-                  className="absolute right-2 top-2 p-1.5 bg-sky-700 hover:bg-sky-600 text-white rounded-md cursor-pointer disabled:opacity-50 transition-colors"
-                >
-                  {isFetching ? <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" /> : <CiSearch className="w-5 h-5" />}
-                </button>
-              </div>
-            </div>
-          </div>
-          <div className="flex-col md:flex-row flex gap-4">
-            <input
-              type="text"
-              className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-gray-800 dark:text-slate-100 rounded-lg p-3 w-full md:w-1/2 text-sm focus:outline-none focus:border-sky-500 transition-colors shadow-sm font-bold"
-              placeholder="Dirección (Opcional)"
-            />
-            <div className="flex w-full md:w-1/2 items-center gap-3 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg p-1 px-3 shadow-sm transition-colors">
-              <label className="whitespace-nowrap text-xs font-black uppercase text-gray-500 dark:text-slate-500 tracking-widest">
-                Emisión
-              </label>
-              <input
-                type="date"
-                className="p-2 bg-transparent w-full text-gray-700 dark:text-slate-200 text-sm focus:outline-none font-bold"
-              />
+    <div className="px-4 md:px-12 py-4 w-full max-w-screen-xl mx-auto">
+
+      {/* ── Header empresa + cotización ── */}
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 p-5 mb-6 shadow-sm transition-colors">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+          {/* Izquierda: Logo + Datos empresa */}
+          <div className="flex items-center gap-4">
+            <img src={logo} alt="Logo" className="h-20 w-20 object-contain" />
+            <div className="flex flex-col">
+              <h2 className="text-lg font-black text-gray-800 dark:text-slate-100 leading-tight">Distribuidora Imprenta Alexander E.I.R.L.</h2>
+              <p className="text-xs font-bold text-gray-500 dark:text-slate-400">Jr.Bellido 579 Huamanga - Ayacucho - Huamanga</p>
+              <p className="text-[11px] text-gray-400 dark:text-slate-500">Impresiones Offet, Diseño Publicitario, Afiches, Revistas, Tripticos, Etiquetas, Almanaques.</p>
+              <p className="text-xs font-black text-gray-600 dark:text-slate-300">CEL: 927840716</p>
             </div>
           </div>
 
-          <div className=" overflow-x-auto">
-            {items.length == 0 ? (
-              <AgregarItemTabla setItems={setItems} />
-            ) : (
-              <div>
-                <TablaProductos data={items} setItems={setItems} />
-                <AgregarItemsTabla setItems={setItems} />
-              </div>
+          {/* Derecha: Bloque RUC + Cotización + Correlativo */}
+          <div className="flex flex-col items-center border-2 border-sky-700 dark:border-slate-700 rounded-xl px-8 py-4 min-w-[200px]">
+            <span className="text-sm font-black text-gray-800 dark:text-slate-100">RUC: 20608582011</span>
+            <span className="text-xl font-black text-sky-800 dark:text-sky-400 uppercase tracking-wider mt-1">Cotización</span>
+            <div className="flex items-center gap-2 mt-2 bg-slate-100 dark:bg-slate-950 rounded-lg px-4 py-1.5 border dark:border-slate-800">
+              <span className="text-sky-800 dark:text-slate-300 font-mono font-bold tracking-widest text-sm">COT -</span>
+              <span className="font-mono font-black text-lg text-slate-700 dark:text-slate-200">
+                {savedCotizacion ? String(savedCotizacion.id).padStart(6, "0") : "------"}
+              </span>
+            </div>
+            {savedCotizacion && (
+              <span className="mt-2 bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-800/50">
+                Guardada
+              </span>
             )}
           </div>
-          <div className="flex flex-col md:flex-row gap-4 justify-end mt-6">
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 w-full md:w-auto">
-              {[
-                ["Sub Total", totales.opeGravada.toFixed(2)],
-                ["IGV (18%)", totales.igv.toFixed(2)],
-                ["Total", totales.total.toFixed(2), true]
-              ].map(([label, val, highlighted]) => (
-                <div key={label} className="flex flex-col items-end">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">{label}</span>
-                  <div className={`bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg p-3 w-full md:w-36 text-right text-sm font-mono font-bold shadow-sm ${highlighted ? "text-sky-700 dark:text-sky-400 bg-sky-50/50 dark:bg-slate-800/50 border-sky-200 dark:border-sky-800" : "text-gray-700 dark:text-slate-200"}`}>
-                    S/ {val}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+        </div>
 
-          <div className="flex flex-col md:flex-row gap-4 justify-end">
-            <div className="grid grid-cols-2 gap-4 w-full md:w-auto mt-2">
-              <div className="flex flex-col items-end">
-                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-500 mb-1">A cuenta</span>
-                <input
-                  type="number"
-                  value={acuentaAlmanaque}
-                  onChange={handleaCuenta}
-                  className="bg-white dark:bg-slate-950 border-2 border-emerald-100 dark:border-emerald-900/50 rounded-lg p-3 w-full md:w-36 text-right text-sm font-mono font-black text-emerald-700 dark:text-emerald-400 focus:outline-none focus:border-emerald-500 transition-all shadow-sm"
-                />
-              </div>
-              <div className="flex flex-col items-end">
-                <span className="text-[10px] font-black uppercase tracking-widest text-rose-600 dark:text-rose-500 mb-1">Saldo</span>
-                <div className="bg-white dark:bg-slate-950 border-2 border-rose-100 dark:border-rose-900/50 rounded-lg p-3 w-full md:w-36 text-right text-sm font-mono font-black text-rose-700 dark:text-rose-400 shadow-sm">
-                  S/ {totales.saldo.toFixed(2)}
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="border-t border-gray-100 dark:border-slate-800 pt-6 mt-4">
-            <ImporteLetras letras={totales.total} />
-            <div className="flex justify-center md:justify-end mt-8">
-              <button
-                onClick={handleEmitir}
-                className="bg-sky-700 hover:bg-sky-600 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-xl p-4 w-full md:w-1/4 text-white cursor-pointer font-black uppercase tracking-[0.2em] shadow-xl transition-all hover:scale-105 active:scale-95"
-              >
-                Emitir Pedido
-              </button>
+        {/* Botón nueva cotización */}
+        <div className="flex justify-end mt-4 pt-3 border-t border-gray-100 dark:border-slate-800">
+          <button
+            onClick={handleNuevaCotizacion}
+            className="flex items-center gap-2 bg-sky-700 dark:bg-slate-800 hover:bg-sky-600 dark:hover:bg-slate-700 text-white rounded-lg px-5 py-2.5 cursor-pointer transition-all text-xs font-black uppercase tracking-widest shadow-md hover:scale-105 active:scale-95"
+          >
+            <FaRotateLeft className="text-sm" />
+            <span className="hidden md:inline">Nueva Cotización</span>
+          </button>
+        </div>
+      </div>
+
+      {/* ── Datos del cliente ── */}
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 p-5 mb-6 flex flex-col gap-4 shadow-sm transition-colors">
+        <div className="flex flex-col md:flex-row gap-4">
+          <input
+            type="text"
+            className="w-full md:w-1/2 bg-gray-50 dark:bg-slate-950 rounded-lg p-3 border border-gray-200 dark:border-slate-800 text-gray-800 dark:text-slate-100 text-sm focus:outline-none focus:border-sky-500 transition-all font-bold"
+            placeholder="Nombre o Razón Social del cliente"
+            value={cliente}
+            onChange={(e) => setCliente(e.target.value)}
+          />
+          <div className="w-full md:w-1/2 flex gap-3">
+            <select
+              value={tipoDoc}
+              onChange={(e) => { setTipoDoc(e.target.value); setNroDoc(""); }}
+              className="p-3 bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-lg w-2/5 text-gray-800 dark:text-slate-100 text-sm focus:outline-none focus:border-sky-500 transition-all font-bold"
+            >
+              <option value="Sin Documento">Sin Documento</option>
+              <option value="DNI">DNI</option>
+              <option value="RUC">RUC</option>
+              <option value="Pasaporte">Pasaporte</option>
+              <option value="Carnet de Extranjería">Carnet de Extranjería</option>
+              <option value="Cédula Diplomática">Cédula Diplomática</option>
+            </select>
+            <div className="relative flex-1">
+              <input
+                type="text"
+                disabled={tipoDoc === "Sin Documento"}
+                className="bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-lg p-3 w-full text-gray-800 dark:text-slate-100 text-sm focus:outline-none focus:border-sky-500 transition-all disabled:opacity-50 font-mono font-bold"
+                placeholder="Nro. Documento"
+                value={nroDoc}
+                onChange={(e) => setNroDoc(e.target.value)}
+                maxLength={tipoDoc === "DNI" ? 8 : tipoDoc === "RUC" ? 11 : 20}
+              />
+              {tipoDoc === "DNI" ? (
+                <button
+                  onClick={() => nroDoc.length === 8 && buscarReniec()}
+                  className="absolute right-2 top-2 p-1.5 bg-sky-700 hover:bg-sky-600 text-white rounded-md cursor-pointer transition-colors shadow-sm"
+                  title="Buscar en RENIEC"
+                >
+                  <CiSearch className="w-5 h-5" />
+                </button>
+              ) : (
+                <span className="absolute right-2 top-2 p-1.5 opacity-30 text-gray-500">
+                  <CiSearch />
+                </span>
+              )}
             </div>
           </div>
         </div>
+        <div className="flex flex-col md:flex-row gap-4">
+          <input
+            type="text"
+            className="w-full md:w-1/3 bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-lg p-3 text-gray-800 dark:text-slate-100 text-sm focus:outline-none focus:border-sky-500 transition-all font-bold"
+            placeholder="Dirección (opcional)"
+            value={direccion}
+            onChange={(e) => setDireccion(e.target.value)}
+          />
+          <input
+            type="text"
+            className="w-full md:w-1/3 bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-lg p-3 text-gray-800 dark:text-slate-100 text-sm focus:outline-none focus:border-sky-500 transition-all font-bold font-mono"
+            placeholder="Teléfono"
+            value={telefono}
+            onChange={(e) => setTelefono(e.target.value)}
+          />
+          <div className="w-full md:w-1/3 flex items-center gap-3 bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-lg p-1 px-3 shadow-sm transition-colors">
+            <label className="text-xs font-black uppercase tracking-widest text-gray-500 dark:text-slate-500 whitespace-nowrap">Emisión</label>
+            <input
+              type="date"
+              className="p-2 bg-transparent text-gray-700 dark:text-slate-200 text-sm focus:outline-none font-bold w-full"
+              value={fechaEmision}
+              onChange={(e) => setFechaEmision(e.target.value)}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* ── Lector de barras ── */}
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 p-4 mb-6 shadow-sm transition-colors">
+        <div className="flex items-center gap-4">
+          <div className="bg-sky-50 dark:bg-slate-800 p-2.5 rounded-lg border dark:border-slate-700">
+            <FaBarcode className="text-sky-700 dark:text-slate-300 text-2xl" />
+          </div>
+          <input
+            ref={barcodeRef}
+            type="text"
+            className="flex-1 bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-lg p-3 text-gray-800 dark:text-slate-100 text-sm focus:outline-none focus:border-sky-500 transition-all font-mono font-bold"
+            placeholder="Escanea el código de barras o escribe para buscar producto..."
+            value={barcodeInput}
+            onChange={(e) => setBarcodeInput(e.target.value)}
+            onKeyDown={handleBarcodeKey}
+          />
+          <button
+            onClick={() => { setShowManualRow(true); setTimeout(() => manualDescRef.current?.focus(), 50); }}
+            className="flex items-center gap-2 bg-white dark:bg-slate-900 border-2 border-dashed border-sky-700 dark:border-slate-800 text-sky-700 dark:text-slate-300 hover:bg-sky-50 dark:hover:bg-slate-800 rounded-lg px-5 py-2.5 cursor-pointer transition-all text-xs font-black uppercase tracking-widest whitespace-nowrap"
+          >
+            <FaPlus className="text-sm" />
+            <span className="hidden md:inline">Ítem manual</span>
+          </button>
+        </div>
+      </div>
+
+      {/* ── Tabla de ítems ── */}
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 mb-6 overflow-visible shadow-lg transition-colors">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="bg-sky-700 dark:bg-slate-950 text-white font-black uppercase tracking-widest text-xs">
+              <th className="p-4 text-left">Descripción</th>
+              <th className="p-4 text-center w-28">Unidad</th>
+              <th className="p-4 text-center w-28">Cantidad</th>
+              <th className="p-4 text-right w-32">P. Unit.</th>
+              <th className="p-4 text-right w-32">Subtotal</th>
+              <th className="p-4 w-14"></th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
+            {items.length === 0 && !showManualRow && (
+              <tr>
+                <td colSpan={6} className="p-10 text-center text-gray-400 dark:text-slate-600 font-bold italic">
+                  Sin ítems — escanea un producto o agrégalo manualmente
+                </td>
+              </tr>
+            )}
+            {items.map((item, idx) => (
+              <tr key={idx} className="hover:bg-sky-50 dark:hover:bg-slate-950 transition-colors">
+                <td className="p-4 font-bold text-gray-800 dark:text-slate-200">{item.descripcion}</td>
+                <td className="p-4 text-center text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">{item._unidad || "—"}</td>
+                <td className="p-4 text-center">
+                  <input
+                    type="number" min={1} value={item.cantidad}
+                    onChange={(e) => handleCantChange(idx, e.target.value)}
+                    className="w-20 text-center bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg p-1.5 text-gray-800 dark:text-slate-100 font-bold focus:outline-none focus:border-sky-500 transition-all font-mono"
+                  />
+                </td>
+                <td className="p-4 text-right dark:text-slate-300 font-mono">S/ {item.precioUnitario.toFixed(2)}</td>
+                <td className="p-4 text-right font-black text-sky-800 dark:text-slate-100 font-mono">S/ {item.subtotal.toFixed(2)}</td>
+                <td className="p-4 text-center">
+                  <button onClick={() => handleRemoveItem(idx)} className="text-rose-500 hover:text-rose-400 hover:scale-110 transition-all cursor-pointer">
+                    <FaTrash className="text-base" />
+                  </button>
+                </td>
+              </tr>
+            ))}
+
+            {/* Fila de ítem manual con autocomplete de inventario */}
+            {showManualRow && (
+              <tr className="bg-sky-50/50 dark:bg-slate-800/20 animate-fade-down animate-duration-300">
+                <td className="p-3">
+                  <div className="relative">
+                    <input
+                      ref={manualDescRef}
+                      type="text"
+                      className="w-full bg-white dark:bg-slate-950 border border-sky-300 dark:border-sky-800/50 rounded-lg p-2 text-sm font-bold text-gray-800 dark:text-slate-100 focus:outline-none focus:border-sky-500 transition-all"
+                      placeholder="Descripción — escribe para buscar producto"
+                      value={manualDesc}
+                      onChange={(e) => { setManualDesc(e.target.value); setShowSuggestions(true); }}
+                      onFocus={() => setShowSuggestions(true)}
+                      onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                      onKeyDown={(e) => {
+                        if (e.key !== "Enter") return;
+                        if (showSuggestions && suggestions.length > 0) {
+                          handleSelectSuggestion(suggestions[0]);
+                        } else {
+                          manualPrecioRef.current?.focus();
+                        }
+                      }}
+                    />
+                    {showSuggestions && suggestions.length > 0 && (
+                      <ul className="absolute left-0 right-0 top-full mt-2 bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-xl shadow-2xl z-50 max-h-56 overflow-hidden overflow-y-auto animate-fade-down animate-duration-200">
+                        {suggestions.map((p) => (
+                          <li
+                            key={p.id}
+                            onMouseDown={(e) => { e.preventDefault(); handleSelectSuggestion(p); }}
+                            className="px-5 py-3 hover:bg-sky-50 dark:hover:bg-slate-800 cursor-pointer flex justify-between items-center transition-colors border-b last:border-0 border-gray-50 dark:border-slate-800"
+                          >
+                            <div className="flex flex-col">
+                              <span className="font-bold text-gray-800 dark:text-slate-200 text-sm">{p.nombre}</span>
+                              <span className="text-[10px] uppercase font-black tracking-widest text-slate-400 dark:text-slate-500">
+                                {p.es_servicio ? "Servicio" : `Stock: ${p.stock ?? 0}`}
+                              </span>
+                            </div>
+                            <span className="text-sky-700 dark:text-sky-400 font-mono font-black text-sm">S/ {parseFloat(p.valor_unitario || 0).toFixed(2)}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </td>
+                <td className="p-3 text-center text-xs text-slate-400 italic">auto</td>
+                <td className="p-3">
+                  <input
+                    type="number" min={1}
+                    className="w-full text-center bg-white dark:bg-slate-950 border border-sky-300 dark:border-sky-800/50 rounded-lg p-2 text-sm font-bold text-gray-800 dark:text-slate-100 font-mono"
+                    value={manualCant}
+                    onChange={(e) => setManualCant(e.target.value)}
+                  />
+                </td>
+                <td className="p-3">
+                  <input
+                    ref={manualPrecioRef}
+                    type="number" min={0} step="0.01"
+                    className="w-full text-right bg-white dark:bg-slate-950 border border-sky-300 dark:border-sky-800/50 rounded-lg p-2 text-sm font-bold text-gray-800 dark:text-slate-100 font-mono"
+                    placeholder="0.00"
+                    value={manualPrecio}
+                    onChange={(e) => setManualPrecio(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleAddManual()}
+                  />
+                </td>
+                <td className="p-3 text-right text-gray-400 dark:text-slate-500 font-mono italic text-[11px]">
+                  S/ {(parseFloat(manualPrecio || 0) * (parseInt(manualCant) || 1)).toFixed(2)}
+                </td>
+                <td className="p-3">
+                  <div className="flex gap-2 justify-center">
+                    <button onClick={handleAddManual} className="bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg px-3 py-1.5 cursor-pointer text-[10px] font-black uppercase tracking-widest transition-all">OK</button>
+                    <button
+                      onClick={() => { setShowManualRow(false); setManualDesc(""); setManualCant(1); setManualPrecio(""); setShowSuggestions(false); }}
+                      className="bg-gray-200 dark:bg-slate-800 text-gray-600 dark:text-slate-400 rounded-lg px-3 py-1.5 cursor-pointer hover:bg-gray-300 dark:hover:bg-slate-700 text-[10px] font-black transition-all"
+                    >✕</button>
+                  </div>
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* ── Totales ── */}
+      <div className="flex justify-end mb-6">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 p-5 w-full md:w-72 shadow-lg transition-colors">
+          <div className="flex justify-between text-xs py-1.5 font-black uppercase tracking-widest text-slate-500">
+            <span>Op. Gravada</span>
+            <span className="font-mono text-sm text-slate-700 dark:text-slate-400">S/ {opGravada.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between text-xs py-1.5 font-black uppercase tracking-widest text-slate-500">
+            <span>IGV (18%)</span>
+            <span className="font-mono text-sm text-slate-700 dark:text-slate-400">S/ {igv.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between font-black border-t-2 border-gray-100 dark:border-slate-800 pt-4 mt-2">
+            <span className="text-slate-800 dark:text-slate-100 uppercase tracking-[0.1em]">Total</span>
+            <span className="text-sky-800 dark:text-sky-400 text-2xl font-mono">S/ {total.toFixed(2)}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Botones de acción ── */}
+      <div className="flex flex-col md:flex-row gap-4 justify-end mb-10">
+        <button
+          onClick={() => handleSaveAndPrint("a5")}
+          disabled={cotizacionMutation.isPending}
+          className="flex items-center justify-center gap-3 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white rounded-xl px-8 py-4 cursor-pointer transition-all font-black uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95 text-xs"
+        >
+          <FaPrint className="text-lg" />
+          {savedCotizacion ? "Reimprimir A5" : "Emitir Cotización A5"}
+        </button>
+        <button
+          onClick={() => handleSaveAndPrint("a4")}
+          disabled={cotizacionMutation.isPending}
+          className="flex items-center justify-center gap-3 bg-sky-800 hover:bg-sky-700 disabled:opacity-50 text-white rounded-xl px-8 py-4 cursor-pointer transition-all font-black uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95 text-xs"
+        >
+          <FaPrint className="text-lg" />
+          {savedCotizacion ? "Reimprimir A4" : "Emitir Cotización A4"}
+        </button>
       </div>
     </div>
   );
 }
 
-export default Almanaques;
+export default Cotizacion;

@@ -14,13 +14,35 @@ import {
   createComprobante,
   createDetalle,
   emitirComprobante,
-  getPdfUrl,
+  getComprobantePdf,
   getXmlUrl,
 } from "../services/comprobantes";
 import { getReniec } from "../../../shared/services/reniec";
 
 const IGV_RATE = 0.18;
 const HOY = new Date().toLocaleDateString('en-CA');
+
+// ─── Helper: impresión directa via iframe oculto ─────────────────────────────
+const printPdfBlob = (blob) => {
+  const url = URL.createObjectURL(new Blob([blob], { type: "application/pdf" }));
+  const iframe = document.createElement("iframe");
+  iframe.style.display = "none";
+  iframe.src = url;
+  document.body.appendChild(iframe);
+  iframe.onload = () => {
+    iframe.contentWindow.print();
+    setTimeout(() => { document.body.removeChild(iframe); URL.revokeObjectURL(url); }, 1000);
+  };
+};
+
+const handlePrintComprobante = async (id, format) => {
+  try {
+    const res = await getComprobantePdf(id, format);
+    printPdfBlob(res.data);
+  } catch {
+    toast.error("Error al generar PDF");
+  }
+};
 
 /**
  * Convierte un monto numérico a su representación en letras (Soles).
@@ -148,7 +170,7 @@ function Boleta() {
       const valorUnit = i.precioConIgv / (1 + IGV_RATE);
       return {
         descripcion: i.descripcion,
-        unidad_id: "NIU",
+        unidad_id: i.unidad_id || "NIU",
         cantidad: i.cantidad,
         precio_unitario: parseFloat(i.precioConIgv.toFixed(2)),
         valor_unitario: parseFloat(valorUnit.toFixed(6)),
@@ -431,14 +453,14 @@ function Boleta() {
             <div className="text-gray-600 dark:text-slate-400 font-medium">SUNAT: <span className="font-bold">{resultado.codigo_sunat}</span> — {resultado.mensaje_sunat}</div>
             {resultado.success && (
               <div className="flex gap-3 mt-4 flex-wrap">
-                <a href={`${getPdfUrl(resultado.comprobante_id)}?format=ticket`} target="_blank" rel="noreferrer"
-                  className="flex items-center gap-2 bg-emerald-700 hover:bg-emerald-600 text-white px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all shadow-md">
+                <button onClick={() => handlePrintComprobante(resultado.comprobante_id, "ticket")}
+                  className="flex items-center gap-2 bg-emerald-700 hover:bg-emerald-600 text-white px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all shadow-md cursor-pointer">
                   <FaPrint className="text-base" /> Imprimir Ticket
-                </a>
-                <a href={`${getPdfUrl(resultado.comprobante_id)}?format=a5`} target="_blank" rel="noreferrer"
-                  className="flex items-center gap-2 bg-sky-700 hover:bg-sky-600 text-white px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all shadow-md">
+                </button>
+                <button onClick={() => handlePrintComprobante(resultado.comprobante_id, "a5")}
+                  className="flex items-center gap-2 bg-sky-700 hover:bg-sky-600 text-white px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all shadow-md cursor-pointer">
                   <FaFileLines className="text-base" /> Imprimir A5
-                </a>
+                </button>
                 <a href={getXmlUrl(resultado.comprobante_id)} target="_blank" rel="noreferrer"
                   className="flex items-center gap-2 bg-slate-600 hover:bg-slate-500 text-white px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all shadow-md">
                   <FaFileCode className="text-base" /> XML

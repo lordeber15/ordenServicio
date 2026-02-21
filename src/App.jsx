@@ -26,13 +26,14 @@ const Ventas = lazy(() => import("./modules/Sales/pages/SalesPage"));
 const Boleta = lazy(() => import("./modules/Billing/pages/boleta"));
 const Factura = lazy(() => import("./modules/Billing/pages/factura"));
 const Guiarem = lazy(() => import("./modules/Billing/pages/guiaremision"));
+const Guiatransp = lazy(() => import("./modules/Billing/pages/guiatransportista"));
 const Notacredito = lazy(() => import("./modules/Billing/pages/notadecredito"));
 const Ticket = lazy(() => import("./modules/Billing/pages/ticket"));
 
-// Páginas de Almanaques (Lazy Loaded)
-const Almanaque = lazy(() => import("./modules/Almanaque/pages/almanaques"));
-const ListaAlmanaque = lazy(() => import("./shared/components/almanaque/listaAlmanaque"));
-const DetallesAlmanaque = lazy(() => import("./shared/components/almanaque/detallesAlmanaque"));
+// Páginas de Cotizaciones (Lazy Loaded)
+const Cotizacion = lazy(() => import("./modules/Almanaque/pages/almanaques"));
+const ListaCotizacion = lazy(() => import("./shared/components/almanaque/listaAlmanaque"));
+const DetalleCotizacion = lazy(() => import("./shared/components/almanaque/detallesAlmanaque"));
 
 // Componentes
 import NavBar from "./shared/components/navbar";
@@ -88,6 +89,7 @@ function App() {
             <Route path="/boleta" element={<Boleta />} />
             <Route path="/factura" element={<Factura />} />
             <Route path="/guiarem" element={<Guiarem />} />
+            <Route path="/guiatransp" element={<Guiatransp />} />
             <Route path="/notacredito" element={<Notacredito />} />
             <Route path="/ticket" element={<Ticket />} />
             
@@ -96,10 +98,10 @@ function App() {
             <Route path="/reportes" element={<Reportes />} />
             <Route path="/ventas" element={<Ventas />} />
 
-            {/* Almanaques */}
-            <Route path="/almanaque/new" element={<Almanaque />} />
-            <Route path="/almanaque" element={<ListaAlmanaque />} />
-            <Route path="/almanaque/:id" element={<DetallesAlmanaque />} />
+            {/* Cotizaciones */}
+            <Route path="/almanaque/new" element={<Cotizacion />} />
+            <Route path="/almanaque" element={<ListaCotizacion />} />
+            <Route path="/almanaque/:id" element={<DetalleCotizacion />} />
           </Route>
         </Routes>
       </Suspense>

@@ -28,3 +28,7 @@ export const updateAlmanaque = (id, almanaque) => {
 export const deleteAlmanaque = (id) => {
   return axiosURL.delete(`/almanaque/${id}`);
 };
+
+export const getCotizacionPdf = (id, format = "a5") => {
+  return axiosURL.get(`/almanaque/${id}/pdf?format=${format}`, { responseType: "blob" });
+};

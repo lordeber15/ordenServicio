@@ -2,9 +2,22 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getVentasDia } from "../../../shared/services/caja";
 import { getTicketPdf } from "../../../shared/services/ticket";
-import { getPdfUrl } from "../../Billing/services/comprobantes";
+import { getComprobantePdf } from "../../Billing/services/comprobantes";
 import Drawer from "../../../shared/components/drawer";
 import { FaReceipt, FaFileInvoice, FaFileLines, FaFilter, FaCircleCheck, FaCircleXmark, FaClock, FaSpinner, FaBan } from "react-icons/fa6";
+
+// ─── Helper: impresión directa via iframe oculto ─────────────────────────────
+const printPdfBlob = (blob) => {
+  const url = URL.createObjectURL(new Blob([blob], { type: "application/pdf" }));
+  const iframe = document.createElement("iframe");
+  iframe.style.display = "none";
+  iframe.src = url;
+  document.body.appendChild(iframe);
+  iframe.onload = () => {
+    iframe.contentWindow.print();
+    setTimeout(() => { document.body.removeChild(iframe); URL.revokeObjectURL(url); }, 1000);
+  };
+};
 
 /**
  * Módulo de Gestión de Ventas y Servicios (Dashboard)
@@ -40,16 +53,16 @@ function Ventas() {
    * @param {string} format - Formato de impresión ('80mm' o 'A4').
    */
   const handleVerPdf = async (venta, format = "80mm") => {
-    if (venta.tipo === "ticket") {
-      try {
+    try {
+      if (venta.tipo === "ticket") {
         const res = await getTicketPdf(venta.id, format);
-        const url = URL.createObjectURL(new Blob([res.data], { type: "application/pdf" }));
-        window.open(url, "_blank");
-      } catch {
-        // PDF no disponible
+        printPdfBlob(res.data);
+      } else {
+        const res = await getComprobantePdf(venta.id, format);
+        printPdfBlob(res.data);
       }
-    } else {
-      window.open(`${getPdfUrl(venta.id)}?format=${format}`, "_blank");
+    } catch {
+      // PDF no disponible
     }
     setOpenPdfMenu(null);
   };
