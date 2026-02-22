@@ -155,6 +155,8 @@ function Perfil() {
       telefono: emisor.telefono || "",
       usuario_sol: emisor.usuario_sol || "",
       clave_sol: emisor.clave_sol || "",
+      client_id: emisor.client_id || "",
+      client_secret: emisor.client_secret || "",
     });
   }, [emisor]);
 
@@ -512,6 +514,26 @@ function Perfil() {
                     placeholder="••••••••"
                     value={empresaForm.clave_sol || ""}
                     onChange={(e) => setEmpresaForm({ ...empresaForm, clave_sol: e.target.value })}
+                    className="w-full p-4 bg-white dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 outline-none transition-all text-gray-700 dark:text-slate-200 font-mono"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">Client ID (Guías REST)</label>
+                  <input
+                    type="text"
+                    placeholder="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+                    value={empresaForm.client_id || ""}
+                    onChange={(e) => setEmpresaForm({ ...empresaForm, client_id: e.target.value })}
+                    className="w-full p-4 bg-white dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 outline-none transition-all text-gray-700 dark:text-slate-200 font-mono"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">Client Secret (Guías REST)</label>
+                  <input
+                    type="password"
+                    placeholder="••••••••"
+                    value={empresaForm.client_secret || ""}
+                    onChange={(e) => setEmpresaForm({ ...empresaForm, client_secret: e.target.value })}
                     className="w-full p-4 bg-white dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 outline-none transition-all text-gray-700 dark:text-slate-200 font-mono"
                   />
                 </div>
