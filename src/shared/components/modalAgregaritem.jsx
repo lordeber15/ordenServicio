@@ -25,6 +25,7 @@ function ModalAgregaritem({ isOpen, onClose, producto }) {
   });
 
   const [nombre, setNombre] = useState("");
+  const [codigoBarras, setCodigoBarras] = useState("");
   const [precioConIgv, setPrecioConIgv] = useState("");
   const [stock, setStock] = useState("0");
   const [unidadId, setUnidadId] = useState("NIU");
@@ -37,6 +38,7 @@ function ModalAgregaritem({ isOpen, onClose, producto }) {
   useEffect(() => {
     if (producto) {
       setNombre(producto.nombre || "");
+      setCodigoBarras(producto.codigo_barras || "");
       const base = parseFloat(producto.valor_unitario || 0);
       setPrecioConIgv(base.toFixed(2));
       setStock(String(producto.stock ?? 0));
@@ -45,6 +47,7 @@ function ModalAgregaritem({ isOpen, onClose, producto }) {
       setEsServicio(producto.es_servicio || false);
     } else {
       setNombre("");
+      setCodigoBarras("");
       setPrecioConIgv("");
       setStock("0");
       setUnidadId(unidades[0]?.id || "NIU");
@@ -58,6 +61,7 @@ function ModalAgregaritem({ isOpen, onClose, producto }) {
     const valorUnitario = precio.toFixed(6);
     return {
       nombre: nombre.trim(),
+      codigo_barras: codigoBarras.trim() || null,
       valor_unitario: valorUnitario,
       stock: esServicio ? 0 : (parseInt(stock, 10) || 0),
       unidad_id: unidadId,
@@ -127,6 +131,17 @@ function ModalAgregaritem({ isOpen, onClose, producto }) {
             placeholder="Ej: Almanaque A4 full color"
             className="mt-1 border border-gray-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md p-2 w-full text-sm focus:outline-none focus:border-sky-500"
           />
+        </div>
+
+        <div>
+           <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Código de Barras (Opcional)</label>
+           <input
+             type="text"
+             value={codigoBarras}
+             onChange={(e) => setCodigoBarras(e.target.value)}
+             placeholder="Ej: 7751234567890"
+             className="mt-1 border border-gray-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md p-2 w-full text-sm font-mono focus:outline-none focus:border-sky-500"
+           />
         </div>
 
         <div>

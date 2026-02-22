@@ -17,6 +17,7 @@ import {
   getComprobantePdf,
   getXmlUrl,
 } from "../services/comprobantes";
+import { getProducto } from "../../Inventory/services/productos";
 import { getReniec } from "../../../shared/services/reniec";
 
 const IGV_RATE = 0.18;
@@ -82,11 +83,26 @@ function numeroALetras(monto) {
   return convertir(entero) + " CON " + String(decimales).padStart(2, "0") + "/100 SOLES";
 }
 
-function ItemForm({ unidades, onAgregar, onCancelar }) {
+function ItemForm({ unidades, productos = [], onAgregar, onCancelar }) {
   const [desc, setDesc] = useState("");
   const [unidadId, setUnidadId] = useState(unidades[0]?.id || "NIU");
   const [cantidad, setCantidad] = useState("1");
   const [precio, setPrecio] = useState("");
+  
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const suggestions = useMemo(() => {
+    if (!desc.trim() || desc.length < 2) return [];
+    return productos
+      .filter((p) => p.nombre.toLowerCase().includes(desc.toLowerCase()))
+      .slice(0, 6);
+  }, [desc, productos]);
+
+  const handleSelectSuggestion = (p) => {
+    setDesc(p.nombre);
+    setPrecio(parseFloat(p.valor_unitario || 0).toFixed(2));
+    setUnidadId(p.unidad_id || "NIU");
+    setShowSuggestions(false);
+  };
 
   const handleAgregar = () => {
     if (!desc.trim() || !precio || parseFloat(precio) <= 0) {
@@ -115,10 +131,35 @@ function ItemForm({ unidades, onAgregar, onCancelar }) {
           onChange={(e) => setCantidad(e.target.value)}
           className="w-16 bg-white dark:bg-slate-950 border border-sky-300 dark:border-slate-800 rounded p-1 text-sm text-gray-800 dark:text-slate-100 transition-colors" />
       </td>
-      <td className="px-2 py-1">
-        <input type="text" value={desc} onChange={(e) => setDesc(e.target.value)}
-          placeholder="Descripción del producto/servicio"
+      <td className="px-2 py-1 max-w-64 relative">
+        <input type="text" value={desc} onChange={(e) => { setDesc(e.target.value); setShowSuggestions(true); }}
+          onFocus={() => setShowSuggestions(true)}
+          onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && showSuggestions && suggestions.length > 0) {
+              handleSelectSuggestion(suggestions[0]);
+            }
+          }}
+          placeholder="Descripción completa para autocompletar"
           className="w-full bg-white dark:bg-slate-950 border border-sky-300 dark:border-slate-800 rounded p-1 text-sm text-gray-800 dark:text-slate-100 transition-colors" />
+        
+        {showSuggestions && suggestions.length > 0 && (
+          <ul className="absolute left-0 right-0 top-full mt-1 bg-white dark:bg-slate-900 border border-sky-200 dark:border-slate-800 rounded-lg shadow-xl z-50 max-h-48 overflow-auto">
+            {suggestions.map((p) => (
+              <li
+                key={p.id}
+                onMouseDown={(e) => { e.preventDefault(); handleSelectSuggestion(p); }}
+                className="px-4 py-2 hover:bg-sky-50 dark:hover:bg-slate-800 cursor-pointer flex justify-between items-center border-b last:border-0 border-gray-100 dark:border-slate-800"
+              >
+                <div className="flex flex-col">
+                  <span className="font-bold text-gray-800 dark:text-slate-200 text-xs">{p.nombre}</span>
+                  <span className="text-[9px] uppercase font-black text-slate-400">Stock: {p.stock ?? 0}</span>
+                </div>
+                <span className="text-sky-700 dark:text-sky-400 font-mono text-xs font-bold">S/ {parseFloat(p.valor_unitario || 0).toFixed(2)}</span>
+              </li>
+            ))}
+          </ul>
+        )}
       </td>
       <td className="px-2 py-1">
         <select value={unidadId} onChange={(e) => setUnidadId(e.target.value)}
@@ -160,6 +201,7 @@ function Boleta() {
   const { data: emisores = [] } = useQuery({ queryKey: ["emisores"], queryFn: getEmisores });
   const { data: series = [] } = useQuery({ queryKey: ["series", "03"], queryFn: () => getSeriesByTipo("03") });
   const { data: unidades = [] } = useQuery({ queryKey: ["unidades"], queryFn: getUnidades });
+  const { data: productos = [] } = useQuery({ queryKey: ["productos"], queryFn: getProducto });
 
   const emisor = emisores[0] || null;
   const serie = series[0] || null;
@@ -404,7 +446,7 @@ function Boleta() {
                 </tr>
               ))}
               {showItemForm && (
-                <ItemForm unidades={unidades} onAgregar={(item) => { setItems((p) => [...p, item]); setResultado(null); setShowItemForm(false); }} onCancelar={() => setShowItemForm(false)} />
+                <ItemForm unidades={unidades} productos={productos} onAgregar={(item) => { setItems((p) => [...p, item]); setResultado(null); setShowItemForm(false); }} onCancelar={() => setShowItemForm(false)} />
               )}
             </tbody>
           </table>

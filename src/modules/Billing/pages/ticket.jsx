@@ -168,7 +168,10 @@ function Ticket() {
     const code = barcodeInput.trim();
     if (!code) return;
     const found = productos.find(
-      (p) => p.codigo_sunat === code || p.nombre?.toLowerCase() === code.toLowerCase()
+      (p) => 
+        (p.codigo_barras && p.codigo_barras === code) || 
+        p.codigo_sunat === code || 
+        (p.nombre && p.nombre.toLowerCase() === code.toLowerCase())
     );
     if (found) { addProductToItems(found); toast.success(`"${found.nombre}" agregado`); }
     else toast.error(`Producto "${code}" no encontrado`);
