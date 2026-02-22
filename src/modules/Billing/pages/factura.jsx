@@ -11,6 +11,9 @@ import { getSeriesByTipo } from "../services/series";
 import { getUnidades } from "../services/unidades";
 import { findClienteByDoc, createCliente } from "../../../shared/services/clientes";
 import {
+  createComprobante,
+  createDetalle,
+  emitirComprobante,
   getComprobantePdf,
   getXmlUrl,
 } from "../services/comprobantes";
