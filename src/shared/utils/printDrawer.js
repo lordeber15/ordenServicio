@@ -1,56 +1,31 @@
-import qz from 'qz-tray';
-import axiosURL from '../../core/api/axiosURL';
-
-// ─── Configuración Global de Seguridad QZ Tray (Modo "Trusted") ────────────
-qz.security.setCertificatePromise((resolve, reject) => {
-  axiosURL.get('api/qz/certificate', { responseType: 'text' })
-    .then(res => resolve(res.data))
-    .catch(reject);
-});
-
-qz.security.setSignaturePromise((toSign) => {
-  return (resolve, reject) => {
-    axiosURL.post('api/qz/sign', { toSign }, { responseType: 'text' })
-      .then(res => resolve(res.data))
-      .catch(reject);
-  };
-});
+import qz from "./qzClient";
 
 /**
  * Utilidad para control de Impresora Térmica conectada vía QZ Tray.
  * Envía el pulso hexadecimal (ESC/POS) al RJ11 para expulsar la gaveta de dinero.
- * 
- * Requisito: Debe estar instalado y ejecutándose QZ Tray (https://qz.io) 
- * en la computadora física que tiene la impresora.
  */
 export const openCashDrawer = async () => {
   try {
     // 1. Conectar con el programa QZ Tray local (localhost) silenciosamente
     if (!qz.websocket.isActive()) {
-      await qz.websocket.connect({ retries: 2, delay: 1 });
+        await qz.websocket.connect();
     }
 
     // 2. Localizar la impresora térmica predeterminada en Windows/Mac
-    // Alternativamente se puede buscar una específica ej: qz.printers.find("POS-80")
-    const printerName = await qz.printers.getDefault();
-    console.log("QZ Tray localizó la impresora predeterminada:", printerName);
+    const printer = await qz.printers.getDefault();
+    console.log("QZ Tray localizó la impresora predeterminada:", printer);
 
-    const config = qz.configs.create(printerName);
+    const cfg = qz.configs.create(printer);
 
     // 3. Comando ESC/POS para la gaveta: ESC p m t1 t2
     // m=0 (pin 2), t1=25, t2=250
-    // En formato HEX de bytes
-    const pulseData = [
-      '\x1B' + '\x70' + '\x00' + '\x19' + '\xFA'
-    ];
+    const pulseData = ["\x1B\x70\x00\x19\xFA"];
 
     // 4. Enviar los datos directamente a la impresora
-    await qz.print(config, pulseData);
+    await qz.print(cfg, pulseData);
     console.log("Señal de gaveta enviada excitósamente mediante QZ Tray");
 
   } catch (error) {
     console.error("Error abriendo la gaveta con QZ Tray:", error);
-    // Recomendación: No desconectar el websocket si hay error o si se va a seguir usando con frecuencia, 
-    // QZ lo maneja solo.
   }
 };
