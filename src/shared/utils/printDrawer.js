@@ -3,21 +3,15 @@ import axiosURL from '../../core/api/axiosURL';
 
 // ─── Configuración Global de Seguridad QZ Tray (Modo "Trusted") ────────────
 qz.security.setCertificatePromise((resolve, reject) => {
-  fetch(`${axiosURL.defaults.baseURL}/qz/certificate`)
-    .then(res => res.text())
-    .then(resolve)
+  axiosURL.get('api/qz/certificate', { responseType: 'text' })
+    .then(res => resolve(res.data))
     .catch(reject);
 });
 
 qz.security.setSignaturePromise((toSign) => {
   return (resolve, reject) => {
-    fetch(`${axiosURL.defaults.baseURL}/qz/sign`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ toSign })
-    })
-      .then(res => res.text())
-      .then(resolve)
+    axiosURL.post('api/qz/sign', { toSign }, { responseType: 'text' })
+      .then(res => resolve(res.data))
       .catch(reject);
   };
 });
