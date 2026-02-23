@@ -1,4 +1,26 @@
 import qz from 'qz-tray';
+import axiosURL from '../../core/api/axiosURL';
+
+// ─── Configuración Global de Seguridad QZ Tray (Modo "Trusted") ────────────
+qz.security.setCertificatePromise((resolve, reject) => {
+  fetch(`${axiosURL.defaults.baseURL}/qz/certificate`)
+    .then(res => res.text())
+    .then(resolve)
+    .catch(reject);
+});
+
+qz.security.setSignaturePromise((toSign) => {
+  return (resolve, reject) => {
+    fetch(`${axiosURL.defaults.baseURL}/qz/sign`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ toSign })
+    })
+      .then(res => res.text())
+      .then(resolve)
+      .catch(reject);
+  };
+});
 
 /**
  * Utilidad para control de Impresora Térmica conectada vía QZ Tray.
