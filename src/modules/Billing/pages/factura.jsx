@@ -19,7 +19,7 @@ import {
 } from "../services/comprobantes";
 import { getProducto } from "../../Inventory/services/productos";
 import axiosURL from "../../../core/api/axiosURL";
-import { openCashDrawerWebUSB } from "../../../shared/utils/printDrawer";
+import { openCashDrawer } from "../../../shared/utils/printDrawer";
 
 const IGV_RATE = 0.18;
 const HOY = new Date().toLocaleDateString('en-CA');
@@ -526,11 +526,11 @@ function Factura() {
             <div className="text-gray-600 dark:text-slate-400 font-medium">SUNAT: <span className="font-bold">{resultado.codigo_sunat}</span> — {resultado.mensaje_sunat}</div>
             {resultado.success && (
               <div className="flex gap-3 mt-4 flex-wrap">
-                <button onClick={() => { handlePrintComprobante(resultado.comprobante_id, "ticket"); openCashDrawerWebUSB(); }}
+                <button onClick={() => { handlePrintComprobante(resultado.comprobante_id, "ticket"); openCashDrawer(); }}
                   className="flex items-center gap-2 bg-emerald-700 hover:bg-emerald-600 text-white px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all shadow-md cursor-pointer">
                   <FaPrint className="text-base" /> Imprimir Ticket
                 </button>
-                <button onClick={() => { handlePrintComprobante(resultado.comprobante_id, "a5"); openCashDrawerWebUSB(); }}
+                <button onClick={() => { handlePrintComprobante(resultado.comprobante_id, "a5"); openCashDrawer(); }}
                   className="flex items-center gap-2 bg-sky-700 hover:bg-sky-600 text-white px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all shadow-md cursor-pointer">
                   <FaFileLines className="text-base" /> Imprimir A5
                 </button>

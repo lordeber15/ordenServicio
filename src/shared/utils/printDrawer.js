@@ -1,74 +1,40 @@
+import qz from 'qz-tray';
+
 /**
- * Utilidad WebUSB para control de Impresora Térmica ESC/POS desde el Navegador.
- * Permite enviar bytes crudos a la impresora para abrir la gaveta RJ11.
+ * Utilidad para control de Impresora Térmica conectada vía QZ Tray.
+ * Envía el pulso hexadecimal (ESC/POS) al RJ11 para expulsar la gaveta de dinero.
  * 
- * Nota: Solo funciona en navegadores Chromium (Chrome, Edge, Opera) y 
- * requiere que la página se sirva bajo HTTPS o localhost.
+ * Requisito: Debe estar instalado y ejecutándose QZ Tray (https://qz.io) 
+ * en la computadora física que tiene la impresora.
  */
-
-export const openCashDrawerWebUSB = async () => {
+export const openCashDrawer = async () => {
   try {
-    // 1. Pedir al usuario que seleccione la impresora (muestra popup si es la 1ra vez)
-    // Filtramos por una clase común de impresoras pero se puede dejar vacío: { filters: [] }
-    const device = await navigator.usb.requestDevice({ filters: [] });
-
-    console.log("Impresora seleccionada:", device.productName);
-
-    // 2. Abrir conexión y reclamar la interfaz
-    await device.open();
-    
-    if (device.configuration === null) {
-      await device.selectConfiguration(1);
-    }
-    
-    // Asumimos la interfaz 0 (suele ser la de impresión)
-    await device.claimInterface(0);
-
-    // 3. Encontrar el Endpoint de salida (Output)
-    let endpointOut = null;
-    const interfaces = device.configuration.interfaces;
-    
-    // Buscamos el endpoint bulk hacia afuera (out)
-    for (const iface of interfaces) {
-      const alternates = iface.alternates;
-      for (const alt of alternates) {
-        for (const ep of alt.endpoints) {
-          if (ep.direction === "out" && ep.type === "bulk") {
-            endpointOut = ep.endpointNumber;
-            break;
-          }
-        }
-        if (endpointOut !== null) break;
-      }
-      if (endpointOut !== null) break;
+    // 1. Conectar con el programa QZ Tray local (localhost) silenciosamente
+    if (!qz.websocket.isActive()) {
+      await qz.websocket.connect({ retries: 2, delay: 1 });
     }
 
-    if (endpointOut === null) {
-      throw new Error("No se encontró un endpoint de salida USB (Bulk Out) en la impresora.");
-    }
+    // 2. Localizar la impresora térmica predeterminada en Windows/Mac
+    // Alternativamente se puede buscar una específica ej: qz.printers.find("POS-80")
+    const printerName = await qz.printers.getDefault();
+    console.log("QZ Tray localizó la impresora predeterminada:", printerName);
 
-    // 4. Secuencia ESC/POS para abrir gaveta
-    // Pin 2 o 5, variaciones comunes:
-    // ESC p m t1 t2 
-    // m=0 (pin 2), t1=25 (pulso de 50ms), t2=250 (descanso 500ms)
-    // 0x1B, 0x70, 0x00, 0x19, 0xFA
-    const pulseCommand = new Uint8Array([0x1B, 0x70, 0x00, 0x19, 0xFA]);
+    const config = qz.configs.create(printerName);
 
-    // 5. Enviar bytes
-    const result = await device.transferOut(endpointOut, pulseCommand);
-    
-    if (result.status === "ok") {
-      console.log("Señal de apertura enviada con éxito.");
-    }
-    
-    // 6. Cerrar limpio
-    await device.releaseInterface(0);
-    await device.close();
-    
-    return true;
+    // 3. Comando ESC/POS para la gaveta: ESC p m t1 t2
+    // m=0 (pin 2), t1=25, t2=250
+    // En formato HEX de bytes
+    const pulseData = [
+      '\x1B' + '\x70' + '\x00' + '\x19' + '\xFA'
+    ];
+
+    // 4. Enviar los datos directamente a la impresora
+    await qz.print(config, pulseData);
+    console.log("Señal de gaveta enviada excitósamente mediante QZ Tray");
+
   } catch (error) {
-    console.error("Error abriendo gaveta por WebUSB:", error);
-    // Errores típicos: El usuario cancela el popup, falta de permisos SO, dispositivo en uso por Windows
-    return false;
+    console.error("Error abriendo la gaveta con QZ Tray:", error);
+    // Recomendación: No desconectar el websocket si hay error o si se va a seguir usando con frecuencia, 
+    // QZ lo maneja solo.
   }
 };
