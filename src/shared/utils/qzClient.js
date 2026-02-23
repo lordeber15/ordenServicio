@@ -6,14 +6,14 @@ qz.security.setSignatureAlgorithm("SHA512");
 
 // 2. Promesa para obtener el certificado público
 qz.security.setCertificatePromise((resolve, reject) => {
-  axiosURL.get("/api/qz/certificate", { responseType: "text" })
+  axiosURL.get("/qz/certificate", { responseType: "text" })
     .then(r => resolve(String(r.data).trim())) // CRÍTICO: Eliminar espacios o saltos de línea al final
     .catch(reject);
 });
 
 // 3. Promesa para obtener la firma digital de la petición a enviar
 qz.security.setSignaturePromise((toSign) => (resolve, reject) => {
-  axiosURL.post("/api/qz/sign", { toSign }, { responseType: "text" })
+  axiosURL.post("/qz/sign", { toSign }, { responseType: "text" })
     .then(r => resolve(String(r.data).trim())) // CRÍTICO: Eliminar espacios o saltos de línea al final
     .catch(reject);
 });
