@@ -8,7 +8,7 @@ import {
 import { CiSearch } from "react-icons/ci";
 import toast from "react-hot-toast";
 import { getProducto } from "../../Inventory/services/productos";
-import { openCashDrawer } from "../../shared/utils/printDrawer";
+import { openCashDrawer } from "../../../shared/utils/printDrawer";
 import { createTicket, getTicketPdf } from "../../../shared/services/ticket";
 import { getCajaActual, abrirCaja, cerrarCaja } from "../../../shared/services/caja";
 import { getUnidades } from "../services/unidades";
