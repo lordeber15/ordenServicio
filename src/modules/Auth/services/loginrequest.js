@@ -107,3 +107,8 @@ export const uploadProfileImage = (id, file) => {
     },
   });
 };
+
+// Formatos por usuario
+export const getFormatos = () => axiosURL.get("/formatos");
+export const getUsuarioFormatos = (userId) => axiosURL.get(`/formatos/usuario/${userId}`);
+export const updateUsuarioFormatos = (userId, formatos) => axiosURL.put(`/formatos/usuario/${userId}`, { formatos });

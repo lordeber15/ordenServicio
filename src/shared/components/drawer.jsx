@@ -8,6 +8,8 @@ export default function Drawer() {
 
   const userData = useMemo(() => JSON.parse(localStorage.getItem("userData") || "null"), []);
   const isAdmin = userData?.cargo === "Administrador";
+  const formatos = userData?.formatos || [];
+  const canAccess = (key) => isAdmin || formatos.includes(key);
 
   const linkClass = "block cursor-pointer text-white hover:text-white p-2 rounded-md hover:bg-sky-600 dark:hover:bg-slate-700 transition-colors";
 
@@ -50,54 +52,68 @@ export default function Drawer() {
               </Link>
             </li>
           )}
-          <li>
-            <Link to="/ticket" onClick={() => setIsOpen(false)} className={linkClass}>
-              Ticket
-            </Link>
-          </li>
+          {canAccess("ticket") && (
+            <li>
+              <Link to="/ticket" onClick={() => setIsOpen(false)} className={linkClass}>
+                Ticket
+              </Link>
+            </li>
+          )}
+          {canAccess("boleta") && (
+            <li>
+              <Link to="/boleta" onClick={() => setIsOpen(false)} className={linkClass}>
+                Boleta
+              </Link>
+            </li>
+          )}
+          {canAccess("factura") && (
+            <li>
+              <Link to="/factura" onClick={() => setIsOpen(false)} className={linkClass}>
+                Factura
+              </Link>
+            </li>
+          )}
+          {canAccess("guiarem") && (
+            <li>
+              <Link to="/guiarem" onClick={() => setIsOpen(false)} className={linkClass}>
+                Guia de Remision
+              </Link>
+            </li>
+          )}
+          {canAccess("guiatransp") && (
+            <li>
+              <Link to="/guiatransp" onClick={() => setIsOpen(false)} className={linkClass}>
+                Guia Transportista
+              </Link>
+            </li>
+          )}
+          {canAccess("notacredito") && (
+            <li>
+              <Link to="/notacredito" onClick={() => setIsOpen(false)} className={linkClass}>
+                Nota de Credito
+              </Link>
+            </li>
+          )}
+          {canAccess("ingresos") && (
+            <li>
+              <Link to="/ingresos" onClick={() => setIsOpen(false)} className={linkClass}>
+                Ingresos y Egresos
+              </Link>
+            </li>
+          )}
           {isAdmin && (
-            <>
-              <li>
-                <Link to="/boleta" onClick={() => setIsOpen(false)} className={linkClass}>
-                  Boleta
-                </Link>
-              </li>
-              <li>
-                <Link to="/factura" onClick={() => setIsOpen(false)} className={linkClass}>
-                  Factura
-                </Link>
-              </li>
-              <li>
-                <Link to="/guiarem" onClick={() => setIsOpen(false)} className={linkClass}>
-                  Guia de Remision
-                </Link>
-              </li>
-              <li>
-                <Link to="/guiatransp" onClick={() => setIsOpen(false)} className={linkClass}>
-                  Guia Transportista
-                </Link>
-              </li>
-              <li>
-                <Link to="/notacredito" onClick={() => setIsOpen(false)} className={linkClass}>
-                  Nota de Credito
-                </Link>
-              </li>
-              <li>
-                <Link to="/ingresos" onClick={() => setIsOpen(false)} className={linkClass}>
-                  Ingresos y Egresos
-                </Link>
-              </li>
-              <li>
-                <Link to="/ventas" onClick={() => setIsOpen(false)} className={linkClass}>
-                  Ventas del Dia
-                </Link>
-              </li>
-              <li>
-                <Link to="/almanaque" onClick={() => setIsOpen(false)} className={linkClass}>
-                  Cotización
-                </Link>
-              </li>
-            </>
+            <li>
+              <Link to="/ventas" onClick={() => setIsOpen(false)} className={linkClass}>
+                Ventas del Dia
+              </Link>
+            </li>
+          )}
+          {canAccess("cotizacion") && (
+            <li>
+              <Link to="/almanaque" onClick={() => setIsOpen(false)} className={linkClass}>
+                Cotización
+              </Link>
+            </li>
           )}
         </ul>
       </div>

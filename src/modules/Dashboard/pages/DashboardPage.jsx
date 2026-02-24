@@ -64,7 +64,7 @@ function Dashboard() {
   const [modalIsOpen, setModalIsOpen] = useState(false);       
   const [selectedItem, setSelectedItem] = useState(null);       
   const [editServiciosId, setEditServiciosId] = useState(null); 
-  const [activeTab, setActiveTab] = useState("pendiente");
+  const [activeTab, setActiveTab] = useState("Pendiente");
   const [page, setPage] = useState(1);
   const [limit] = useState(7);      
   const [confirmModalOpen, setConfirmModalOpen] = useState(false); 
@@ -242,7 +242,7 @@ function Dashboard() {
     setConfirmModalOpen(false);
   };
 
-  const TABS = ["Todos", "pendiente", "Diseño", "Impresión", "Terminado", "Entregado"];
+  const TABS = ["Todos", "Pendiente", "Diseño", "Impresión", "Terminado", "Entregado"];
 
   return (
     <div>

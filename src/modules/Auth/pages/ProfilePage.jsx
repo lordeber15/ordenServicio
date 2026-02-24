@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query";
-import { 
-  updateLogin, 
-  uploadProfileImage, 
-  getLogins, 
-  createLogin, 
-  deleteLogin 
+import {
+  updateLogin,
+  uploadProfileImage,
+  getLogins,
+  createLogin,
+  deleteLogin,
+  getFormatos,
+  updateUsuarioFormatos
 } from "../services/loginrequest";
 import logoDefault from "../../../assets/ALEXANDER.webp";
 import { useNavigate } from "react-router";
@@ -50,6 +52,7 @@ function Perfil() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form, setForm] = useState(INITIAL_FORM);
+  const [selectedFormatos, setSelectedFormatos] = useState([]);
 
   const fileInputRef = useRef(null);
   const queryClient = useQueryClient();
@@ -131,6 +134,18 @@ function Perfil() {
     }
   });
 
+  // Query: Catálogo de formatos
+  const { data: catalogoFormatos = [] } = useQuery({
+    queryKey: ["formatos"],
+    queryFn: () => getFormatos().then((res) => res.data),
+    enabled: isAdmin,
+  });
+
+  // Mutación: Actualizar formatos de usuario
+  const updateFormatosMutation = useMutation({
+    mutationFn: ({ userId, formatos }) => updateUsuarioFormatos(userId, formatos),
+  });
+
   // Query: Emisor (Solo admin)
   const { data: emisorData } = useQuery({
     queryKey: ["emisor"],
@@ -202,18 +217,26 @@ function Perfil() {
     }
   };
 
-  const handleSaveUser = () => {
+  const handleSaveUser = async () => {
     if (!form.usuario || (activeTab === 'gestion' && !form.id && !form.password)) {
       return toast.error("Completa los campos obligatorios");
     }
 
     if (form.id) {
-      // Editar
+      // Editar usuario + formatos
       updateOtherUserMutation.mutate(form);
+      updateFormatosMutation.mutate({ userId: form.id, formatos: selectedFormatos });
     } else {
-      // Crear
+      // Crear usuario + asignar formatos después
       if (form.password !== form.confirmPassword) return toast.error("Las contraseñas no coinciden");
-      createMutation.mutate(form);
+      createMutation.mutate(form, {
+        onSuccess: (res) => {
+          const newUserId = res?.data?.id;
+          if (newUserId && selectedFormatos.length > 0) {
+            updateFormatosMutation.mutate({ userId: newUserId, formatos: selectedFormatos });
+          }
+        },
+      });
     }
   };
 
@@ -222,15 +245,17 @@ function Perfil() {
       id: user.id,
       usuario: user.usuario,
       cargo: user.cargo,
-      password: "", // Opcional en edición
+      password: "",
       confirmPassword: ""
     });
+    setSelectedFormatos(user.formatos || []);
     setIsModalOpen(true);
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
     setForm(INITIAL_FORM);
+    setSelectedFormatos([]);
   };
 
   const filteredUsers = useMemo(() => {
@@ -594,7 +619,7 @@ function Perfil() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">Password {form.id && "(Opcional)"}</label>
-                  <input 
+                  <input
                     type="password"
                     placeholder="••••"
                     className="w-full p-4 bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 outline-none text-gray-800 dark:text-slate-100"
@@ -604,7 +629,7 @@ function Perfil() {
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">Confirmar</label>
-                  <input 
+                  <input
                     type="password"
                     placeholder="••••"
                     className="w-full p-4 bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 outline-none text-gray-800 dark:text-slate-100"
@@ -613,6 +638,39 @@ function Perfil() {
                   />
                 </div>
               </div>
+
+              {/* Formatos Habilitados */}
+              {catalogoFormatos.length > 0 && (
+                <div className="space-y-2 pt-2">
+                  <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">Formatos Habilitados</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {catalogoFormatos.map((fmt) => (
+                      <label
+                        key={fmt.key}
+                        className={`flex items-center gap-2 p-3 rounded-xl border cursor-pointer transition-all ${
+                          selectedFormatos.includes(fmt.key)
+                            ? "bg-sky-50 dark:bg-sky-900/20 border-sky-300 dark:border-sky-700"
+                            : "bg-gray-50 dark:bg-slate-950 border-gray-100 dark:border-slate-800 hover:border-gray-200 dark:hover:border-slate-700"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedFormatos.includes(fmt.key)}
+                          onChange={() =>
+                            setSelectedFormatos((prev) =>
+                              prev.includes(fmt.key)
+                                ? prev.filter((k) => k !== fmt.key)
+                                : [...prev, fmt.key]
+                            )
+                          }
+                          className="accent-sky-600 w-4 h-4"
+                        />
+                        <span className="text-sm font-medium text-gray-700 dark:text-slate-200">{fmt.nombre}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="flex gap-4 pt-4">
                 <button 

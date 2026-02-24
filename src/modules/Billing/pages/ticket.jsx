@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo, Fragment } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
 import {
@@ -65,6 +65,7 @@ function Ticket() {
   const [manualCant, setManualCant] = useState(1);
   const [manualPrecio, setManualPrecio] = useState("");
   const [manualPid, setManualPid] = useState(null);
+  const [manualUnidad, setManualUnidad] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   // ── Estado de impresión / guardado ──
@@ -157,6 +158,8 @@ function Ticket() {
         subtotal: parseFloat(precio.toFixed(2)),
         _unidad: unidadMap[p.unidad_id] || p.unidad_id || "",
         _unidad_id: p.unidad_id || "NIU",
+        _es_servicio: p.es_servicio || false,
+        _adelanto: 0,
       }];
     });
   }, [unidadMap]);
@@ -190,8 +193,11 @@ function Ticket() {
       precioUnitario: precio,
       subtotal: parseFloat((cant * precio).toFixed(2)),
       _unidad: unidadMap[p.unidad_id] || p.unidad_id || "",
+      _unidad_id: p.unidad_id || "NIU",
+      _es_servicio: p.es_servicio || false,
+      _adelanto: 0,
     }]);
-    setManualDesc(""); setManualCant(1); setManualPrecio(""); setManualPid(null);
+    setManualDesc(""); setManualCant(1); setManualPrecio(""); setManualPid(null); setManualUnidad("");
     setShowManualRow(false); setShowSuggestions(false);
     barcodeRef.current?.focus();
     toast.success(`"${p.nombre}" agregado`);
@@ -210,10 +216,12 @@ function Ticket() {
       cantidad: cant,
       precioUnitario: parseFloat(precio.toFixed(2)),
       subtotal: parseFloat((cant * precio).toFixed(2)),
-      _unidad: prod ? (unidadMap[prod.unidad_id] || prod.unidad_id || "") : "",
-      _unidad_id: prod?.unidad_id || "NIU",
+      _unidad: prod ? (unidadMap[prod.unidad_id] || prod.unidad_id || "") : (unidadMap[manualUnidad] || manualUnidad || ""),
+      _unidad_id: prod?.unidad_id || manualUnidad || "NIU",
+      _es_servicio: prod?.es_servicio || false,
+      _adelanto: 0,
     }]);
-    setManualDesc(""); setManualCant(1); setManualPrecio(""); setManualPid(null);
+    setManualDesc(""); setManualCant(1); setManualPrecio(""); setManualPid(null); setManualUnidad("");
     setShowManualRow(false); setShowSuggestions(false);
     barcodeRef.current?.focus();
   };
@@ -223,6 +231,14 @@ function Ticket() {
     const cant = parseInt(val) || 1;
     setItems((prev) => prev.map((i, k) =>
       k === idx ? { ...i, cantidad: cant, subtotal: parseFloat((cant * i.precioUnitario).toFixed(2)) } : i
+    ));
+  };
+
+  // ── Actualizar adelanto de servicio ──
+  const handleAdelantoChange = (idx, val) => {
+    const adelanto = parseFloat(val) || 0;
+    setItems((prev) => prev.map((i, k) =>
+      k === idx ? { ...i, _adelanto: adelanto } : i
     ));
   };
 
@@ -237,9 +253,11 @@ function Ticket() {
     direccion,
     fechaEmision,
     precioTotal: parseFloat(total.toFixed(2)),
-    detalles: items.map(({ _pid, descripcion, cantidad, precioUnitario, subtotal }) => ({
+    detalles: items.map(({ _pid, descripcion, cantidad, precioUnitario, subtotal, _es_servicio, _adelanto }) => ({
       descripcion, cantidad, precioUnitario, subtotal,
       producto_id: _pid || null,
+      es_servicio: _es_servicio || false,
+      adelanto: _es_servicio ? parseFloat(_adelanto || 0) : 0,
     })),
   });
 
@@ -581,24 +599,50 @@ function Ticket() {
                 </tr>
               )}
               {items.map((item, idx) => (
-                <tr key={idx} className="hover:bg-sky-50 dark:hover:bg-slate-950 transition-colors">
-                  <td className="p-4 font-bold text-gray-800 dark:text-slate-200">{item.descripcion}</td>
-                  <td className="p-4 text-center text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">{item._unidad || "—"}</td>
-                  <td className="p-4 text-center">
-                    <input
-                      type="number" min={1} value={item.cantidad}
-                      onChange={(e) => handleCantChange(idx, e.target.value)}
-                      className="w-20 text-center bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg p-1.5 text-gray-800 dark:text-slate-100 font-bold focus:outline-none focus:border-sky-500 transition-all font-mono"
-                    />
-                  </td>
-                  <td className="p-4 text-right dark:text-slate-300 font-mono">S/ {item.precioUnitario.toFixed(2)}</td>
-                  <td className="p-4 text-right font-black text-sky-800 dark:text-slate-100 font-mono">S/ {item.subtotal.toFixed(2)}</td>
-                  <td className="p-4 text-center">
-                    <button onClick={() => handleRemoveItem(idx)} className="text-rose-500 hover:text-rose-400 hover:scale-110 transition-all cursor-pointer">
-                      <FaTrash className="text-base" />
-                    </button>
-                  </td>
-                </tr>
+                <Fragment key={idx}>
+                  <tr className="hover:bg-sky-50 dark:hover:bg-slate-950 transition-colors">
+                    <td className="p-4 font-bold text-gray-800 dark:text-slate-200">
+                      {item.descripcion}
+                      {item._es_servicio && (
+                        <span className="ml-2 inline-block bg-violet-100 dark:bg-violet-950/40 text-violet-700 dark:text-violet-300 text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border border-violet-200 dark:border-violet-800/50">
+                          Servicio
+                        </span>
+                      )}
+                    </td>
+                    <td className="p-4 text-center text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">{item._unidad || "—"}</td>
+                    <td className="p-4 text-center">
+                      <input
+                        type="number" min={1} value={item.cantidad}
+                        onChange={(e) => handleCantChange(idx, e.target.value)}
+                        className="w-20 text-center bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg p-1.5 text-gray-800 dark:text-slate-100 font-bold focus:outline-none focus:border-sky-500 transition-all font-mono"
+                      />
+                    </td>
+                    <td className="p-4 text-right dark:text-slate-300 font-mono">S/ {item.precioUnitario.toFixed(2)}</td>
+                    <td className="p-4 text-right font-black text-sky-800 dark:text-slate-100 font-mono">S/ {item.subtotal.toFixed(2)}</td>
+                    <td className="p-4 text-center">
+                      <button onClick={() => handleRemoveItem(idx)} className="text-rose-500 hover:text-rose-400 hover:scale-110 transition-all cursor-pointer">
+                        <FaTrash className="text-base" />
+                      </button>
+                    </td>
+                  </tr>
+                  {item._es_servicio && (
+                    <tr className="bg-violet-50/50 dark:bg-violet-950/10 border-b border-violet-100 dark:border-violet-900/30">
+                      <td colSpan={6} className="px-4 py-2.5">
+                        <div className="flex items-center gap-3">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-violet-600 dark:text-violet-400">Adelanto S/</span>
+                          <input
+                            type="number" min={0} step="0.01"
+                            value={item._adelanto || ""}
+                            onChange={(e) => handleAdelantoChange(idx, e.target.value)}
+                            placeholder="0.00"
+                            className="w-36 bg-white dark:bg-slate-950 border border-violet-300 dark:border-violet-800/50 rounded-lg px-3 py-1.5 text-sm font-bold font-mono text-gray-800 dark:text-slate-100 focus:outline-none focus:border-violet-500 transition-all"
+                          />
+                          <span className="text-[10px] text-violet-500 dark:text-violet-400/70 font-bold">Se creará un trabajo en el Dashboard automáticamente</span>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </Fragment>
               ))}
 
               {/* Fila de ítem manual con autocomplete de inventario */}
@@ -645,7 +689,24 @@ function Ticket() {
                       )}
                     </div>
                   </td>
-                  <td className="p-3 text-center text-xs text-slate-400 italic">auto</td>
+                  <td className="p-3 text-center">
+                    {manualPid ? (
+                      <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">
+                        {unidadMap[productos.find(p => p.id === manualPid)?.unidad_id] || "auto"}
+                      </span>
+                    ) : (
+                      <select
+                        value={manualUnidad}
+                        onChange={(e) => setManualUnidad(e.target.value)}
+                        className="w-full bg-white dark:bg-slate-950 border border-sky-300 dark:border-sky-800/50 rounded-lg p-2 text-xs font-bold text-gray-800 dark:text-slate-100 focus:outline-none focus:border-sky-500 transition-all"
+                      >
+                        <option value="">Seleccionar</option>
+                        {unidades.map((u) => (
+                          <option key={u.id} value={u.id}>{u.descripcion || u.nombre || u.id}</option>
+                        ))}
+                      </select>
+                    )}
+                  </td>
                   <td className="p-3">
                     <input
                       type="number" min={1}
@@ -672,7 +733,7 @@ function Ticket() {
                     <div className="flex gap-2 justify-center">
                       <button onClick={handleAddManual} className="bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg px-3 py-1.5 cursor-pointer text-[10px] font-black uppercase tracking-widest transition-all">OK</button>
                       <button
-                        onClick={() => { setShowManualRow(false); setManualDesc(""); setManualCant(1); setManualPrecio(""); setShowSuggestions(false); }}
+                        onClick={() => { setShowManualRow(false); setManualDesc(""); setManualCant(1); setManualPrecio(""); setManualPid(null); setManualUnidad(""); setShowSuggestions(false); }}
                         className="bg-gray-200 dark:bg-slate-800 text-gray-600 dark:text-slate-400 rounded-lg px-3 py-1.5 cursor-pointer hover:bg-gray-300 dark:hover:bg-slate-700 text-[10px] font-black transition-all"
                       >✕</button>
                     </div>
