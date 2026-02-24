@@ -132,3 +132,8 @@ export const updateServicios = (servicios) => {
 export const deleteServicios = (id) => {
   return axiosURL.delete(`/servicios/${id}`);
 };
+
+export const getServiciosStats = async () => {
+  const res = await axiosURL.get("/servicios/stats");
+  return res.data;
+};
