@@ -76,43 +76,43 @@ const Pagination = memo(({ data, totalPages, currentPage, onPageChange, onEdit, 
 
   return (
     <div className="w-full animate-fade-in">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm">
         <div className="overflow-x-auto">
           <table className="min-w-full text-left text-sm">
             <thead>
               <tr className="border-b border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-950/50">
-                <th className="px-5 py-4 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">
+                <th className="px-3 md:px-5 py-3 md:py-4 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">
                   N
                 </th>
-                <th className="px-5 py-4 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">
+                <th className="px-3 md:px-5 py-3 md:py-4 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">
                   Cliente
                 </th>
-                <th className="px-5 py-4 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">
+                <th className="hidden md:table-cell px-3 md:px-5 py-3 md:py-4 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">
                   Fecha
                 </th>
-                <th className="px-5 py-4 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">
+                <th className="hidden md:table-cell px-3 md:px-5 py-3 md:py-4 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">
                   Cantidad
                 </th>
-                <th className="px-5 py-4 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">
+                <th className="px-3 md:px-5 py-3 md:py-4 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">
                   Descripcion
                 </th>
-                <th className="px-5 py-4 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">
+                <th className="px-3 md:px-5 py-3 md:py-4 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">
                   Estado
                 </th>
                 {admin && (
                   <>
-                    <th className="px-5 py-4 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest text-right">
+                    <th className="hidden lg:table-cell px-3 md:px-5 py-3 md:py-4 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest text-right">
                       Total
                     </th>
-                    <th className="px-5 py-4 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest text-right">
+                    <th className="hidden lg:table-cell px-3 md:px-5 py-3 md:py-4 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest text-right">
                       A Cuenta
                     </th>
-                    <th className="px-5 py-4 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest text-right">
+                    <th className="px-3 md:px-5 py-3 md:py-4 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest text-right">
                       Saldo
                     </th>
                   </>
                 )}
-                <th className="px-5 py-4 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest text-center">
+                <th className="px-3 md:px-5 py-3 md:py-4 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest text-center">
                   Acciones
                 </th>
               </tr>
@@ -127,33 +127,33 @@ const Pagination = memo(({ data, totalPages, currentPage, onPageChange, onEdit, 
                     key={cont.id}
                     className="hover:bg-gray-50/50 dark:hover:bg-slate-800/30 transition-colors group"
                   >
-                    <td className="whitespace-nowrap px-5 py-4">
-                      <span className="text-xs font-black text-gray-400 dark:text-slate-500 bg-gray-100 dark:bg-slate-800 px-2.5 py-1 rounded-lg">
+                    <td className="whitespace-nowrap px-3 md:px-5 py-3 md:py-4">
+                      <span className="text-xs font-black text-gray-400 dark:text-slate-500 bg-gray-100 dark:bg-slate-800 px-2 py-0.5 md:px-2.5 md:py-1 rounded-lg">
                         #{cont.id}
                       </span>
                     </td>
-                    <td className="whitespace-nowrap px-5 py-4 font-bold text-gray-800 dark:text-slate-100">
+                    <td className="whitespace-nowrap px-3 md:px-5 py-3 md:py-4 font-bold text-gray-800 dark:text-slate-100 text-xs md:text-sm">
                       {cont.nombre}
                     </td>
-                    <td className="whitespace-nowrap px-5 py-4 text-gray-500 dark:text-slate-400 text-xs font-medium">
+                    <td className="hidden md:table-cell whitespace-nowrap px-3 md:px-5 py-3 md:py-4 text-gray-500 dark:text-slate-400 text-xs font-medium">
                       {new Date(cont.createdAt).toLocaleDateString("es-PE", {
                         day: "2-digit",
                         month: "short",
                         year: "numeric",
                       })}
                     </td>
-                    <td className="whitespace-nowrap px-5 py-4 text-gray-700 dark:text-slate-300 font-medium">
+                    <td className="hidden md:table-cell whitespace-nowrap px-3 md:px-5 py-3 md:py-4 text-gray-700 dark:text-slate-300 font-medium">
                       {cont.cantidad}
                     </td>
                     <td
-                      className="px-5 py-4 text-gray-600 dark:text-slate-400 max-w-[200px] truncate"
+                      className="px-3 md:px-5 py-3 md:py-4 text-gray-600 dark:text-slate-400 max-w-[120px] md:max-w-[200px] truncate text-xs md:text-sm"
                       title={cont.descripcion}
                     >
                       {cont.descripcion}
                     </td>
-                    <td className="whitespace-nowrap px-5 py-4">
+                    <td className="whitespace-nowrap px-3 md:px-5 py-3 md:py-4">
                       <span
-                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border ${statusStyle.bg} ${statusStyle.text} ${statusStyle.border}`}
+                        className={`inline-flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-1 md:py-1.5 rounded-full text-[10px] md:text-xs font-bold border ${statusStyle.bg} ${statusStyle.text} ${statusStyle.border}`}
                       >
                         <span className={`w-1.5 h-1.5 rounded-full ${statusStyle.dot}`} />
                         {cont.estado}
@@ -161,15 +161,15 @@ const Pagination = memo(({ data, totalPages, currentPage, onPageChange, onEdit, 
                     </td>
                     {admin && (
                       <>
-                        <td className="whitespace-nowrap px-5 py-4 text-right font-bold text-gray-800 dark:text-slate-100">
+                        <td className="hidden lg:table-cell whitespace-nowrap px-3 md:px-5 py-3 md:py-4 text-right font-bold text-gray-800 dark:text-slate-100">
                           S/. {parseFloat(cont.total).toFixed(2)}
                         </td>
-                        <td className="whitespace-nowrap px-5 py-4 text-right text-gray-500 dark:text-slate-400 font-medium">
+                        <td className="hidden lg:table-cell whitespace-nowrap px-3 md:px-5 py-3 md:py-4 text-right text-gray-500 dark:text-slate-400 font-medium">
                           S/. {parseFloat(cont.acuenta).toFixed(2)}
                         </td>
-                        <td className="whitespace-nowrap px-5 py-4 text-right">
+                        <td className="whitespace-nowrap px-3 md:px-5 py-3 md:py-4 text-right">
                           <span
-                            className={`font-black ${
+                            className={`font-black text-xs md:text-sm ${
                               saldo > 0
                                 ? "text-rose-600 dark:text-rose-400"
                                 : "text-green-600 dark:text-green-400"
@@ -180,10 +180,10 @@ const Pagination = memo(({ data, totalPages, currentPage, onPageChange, onEdit, 
                         </td>
                       </>
                     )}
-                    <td className="relative whitespace-nowrap px-5 py-4 text-center">
+                    <td className="relative whitespace-nowrap px-3 md:px-5 py-3 md:py-4 text-center">
                       <button
                         onClick={() => setOpen(open === cont.id ? null : cont.id)}
-                        className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400 hover:bg-sky-100 dark:hover:bg-sky-900/30 hover:text-sky-600 dark:hover:text-sky-400 transition-all flex items-center justify-center cursor-pointer mx-auto"
+                        className="w-8 h-8 md:w-9 md:h-9 rounded-xl bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400 hover:bg-sky-100 dark:hover:bg-sky-900/30 hover:text-sky-600 dark:hover:text-sky-400 transition-all flex items-center justify-center cursor-pointer mx-auto"
                       >
                         <IoEllipsisVertical />
                       </button>
@@ -191,14 +191,14 @@ const Pagination = memo(({ data, totalPages, currentPage, onPageChange, onEdit, 
                       {open === cont.id && (
                         <div
                           ref={dropdownRef}
-                          className="absolute flex flex-col z-50 top-14 right-4 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl shadow-xl w-40 text-sm animate-fade-down animate-duration-100 animate-ease-in overflow-hidden"
+                          className="absolute flex flex-col z-50 top-12 md:top-14 right-2 md:right-4 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl shadow-xl w-36 md:w-40 text-sm animate-fade-down animate-duration-100 animate-ease-in overflow-hidden"
                         >
                           <button
                             onClick={() => {
                               onEdit(cont.id);
                               setOpen(null);
                             }}
-                            className="w-full text-left px-4 py-3 hover:bg-sky-50 dark:hover:bg-slate-800 text-gray-700 dark:text-slate-200 flex gap-2.5 items-center cursor-pointer transition-colors font-medium"
+                            className="w-full text-left px-3 md:px-4 py-2.5 md:py-3 hover:bg-sky-50 dark:hover:bg-slate-800 text-gray-700 dark:text-slate-200 flex gap-2 items-center cursor-pointer transition-colors font-medium"
                           >
                             <CiEdit className="w-5 h-5 text-sky-600" />
                             Editar
@@ -209,7 +209,7 @@ const Pagination = memo(({ data, totalPages, currentPage, onPageChange, onEdit, 
                                 onDelete(cont.id);
                                 setOpen(null);
                               }}
-                              className="w-full text-left px-4 py-3 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-red-600 dark:text-red-400 flex gap-2.5 items-center cursor-pointer transition-colors font-medium"
+                              className="w-full text-left px-3 md:px-4 py-2.5 md:py-3 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-red-600 dark:text-red-400 flex gap-2 items-center cursor-pointer transition-colors font-medium"
                             >
                               <MdDelete className="w-5 h-5" />
                               Eliminar
@@ -227,7 +227,7 @@ const Pagination = memo(({ data, totalPages, currentPage, onPageChange, onEdit, 
 
         {/* PAGINATION CONTROLS */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between px-5 py-4 border-t border-gray-100 dark:border-slate-800">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-3 md:px-5 py-3 md:py-4 border-t border-gray-100 dark:border-slate-800">
             <p className="text-xs font-bold text-gray-400 dark:text-slate-500">
               Pagina {currentPage} de {totalPages}
             </p>
@@ -235,7 +235,7 @@ const Pagination = memo(({ data, totalPages, currentPage, onPageChange, onEdit, 
               <button
                 onClick={handlePrev}
                 disabled={currentPage === 1}
-                className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400 hover:bg-sky-100 dark:hover:bg-sky-900/30 hover:text-sky-600 dark:hover:text-sky-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center justify-center cursor-pointer"
+                className="w-8 h-8 md:w-9 md:h-9 rounded-xl bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400 hover:bg-sky-100 dark:hover:bg-sky-900/30 hover:text-sky-600 dark:hover:text-sky-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center justify-center cursor-pointer"
               >
                 <FaChevronLeft className="text-xs" />
               </button>
@@ -244,7 +244,7 @@ const Pagination = memo(({ data, totalPages, currentPage, onPageChange, onEdit, 
                 pageNum === "..." ? (
                   <span
                     key={`dots-${idx}`}
-                    className="px-2 text-gray-400 dark:text-slate-500 text-xs font-bold"
+                    className="px-1.5 md:px-2 text-gray-400 dark:text-slate-500 text-xs font-bold"
                   >
                     ...
                   </span>
@@ -252,7 +252,7 @@ const Pagination = memo(({ data, totalPages, currentPage, onPageChange, onEdit, 
                   <button
                     key={pageNum}
                     onClick={() => onPageChange(pageNum)}
-                    className={`w-9 h-9 rounded-xl text-xs font-black transition-all flex items-center justify-center cursor-pointer ${
+                    className={`w-8 h-8 md:w-9 md:h-9 rounded-xl text-xs font-black transition-all flex items-center justify-center cursor-pointer ${
                       currentPage === pageNum
                         ? "bg-sky-700 text-white shadow-md shadow-sky-900/20"
                         : "bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400 hover:bg-sky-100 dark:hover:bg-sky-900/30 hover:text-sky-600 dark:hover:text-sky-400"
@@ -266,7 +266,7 @@ const Pagination = memo(({ data, totalPages, currentPage, onPageChange, onEdit, 
               <button
                 onClick={handleNext}
                 disabled={currentPage === totalPages}
-                className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400 hover:bg-sky-100 dark:hover:bg-sky-900/30 hover:text-sky-600 dark:hover:text-sky-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center justify-center cursor-pointer"
+                className="w-8 h-8 md:w-9 md:h-9 rounded-xl bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400 hover:bg-sky-100 dark:hover:bg-sky-900/30 hover:text-sky-600 dark:hover:text-sky-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center justify-center cursor-pointer"
               >
                 <FaChevronRight className="text-xs" />
               </button>

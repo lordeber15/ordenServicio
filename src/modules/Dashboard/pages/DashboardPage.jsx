@@ -269,11 +269,11 @@ function Dashboard() {
           <div className="flex items-center gap-4">
             <Drawer />
             <div>
-              <h1 className="text-3xl font-black text-gray-800 dark:text-slate-50 flex items-center gap-3">
-                <FaClipboardList className="text-sky-600 dark:text-sky-400" />
+              <h1 className="text-xl sm:text-3xl font-black text-gray-800 dark:text-slate-50 flex items-center gap-2 sm:gap-3">
+                <FaClipboardList className="text-sky-600 dark:text-sky-400 shrink-0" />
                 Lista de Trabajos
               </h1>
-              <p className="text-gray-500 dark:text-slate-400 mt-1 text-sm">
+              <p className="text-gray-500 dark:text-slate-400 mt-1 text-xs sm:text-sm hidden sm:block">
                 Gestiona las ordenes de trabajo de la imprenta.
               </p>
             </div>
@@ -283,7 +283,7 @@ function Dashboard() {
               handlerReset();
               openModal({});
             }}
-            className="bg-sky-700 hover:bg-sky-600 text-white px-6 py-4 rounded-2xl font-bold flex items-center gap-2 shadow-lg shadow-sky-900/10 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+            className="bg-sky-700 hover:bg-sky-600 text-white px-4 py-3 sm:px-6 sm:py-4 rounded-2xl font-bold flex items-center gap-2 shadow-lg shadow-sky-900/10 transition-all hover:scale-105 active:scale-95 cursor-pointer text-sm sm:text-base"
           >
             <FaPlus />
             Nuevo Trabajo
@@ -295,14 +295,14 @@ function Dashboard() {
           {STAT_CARDS.map((card) => (
             <div
               key={card.label}
-              className={`${card.bg} border ${card.border} rounded-2xl p-5 flex items-center gap-4 transition-all hover:shadow-md`}
+              className={`${card.bg} border ${card.border} rounded-2xl p-3 md:p-5 flex items-center gap-3 md:gap-4 transition-all hover:shadow-md`}
             >
-              <div className={`w-12 h-12 rounded-xl ${card.bg} flex items-center justify-center`}>
-                <card.icon className={`text-xl ${card.color}`} />
+              <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl ${card.bg} flex items-center justify-center shrink-0`}>
+                <card.icon className={`text-lg md:text-xl ${card.color}`} />
               </div>
-              <div>
-                <p className="text-2xl font-black text-gray-800 dark:text-slate-50">{card.value}</p>
-                <p className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">
+              <div className="min-w-0">
+                <p className="text-xl md:text-2xl font-black text-gray-800 dark:text-slate-50">{card.value}</p>
+                <p className="text-[10px] md:text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wide md:tracking-widest truncate">
                   {card.label}
                 </p>
               </div>
@@ -373,7 +373,7 @@ function Dashboard() {
             </div>
           </div>
         ) : servicios.length === 0 ? (
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-16 text-center animate-fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-8 md:p-16 text-center animate-fade-in">
             <div className="w-20 h-20 bg-gray-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6">
               <FaClipboardList className="text-3xl text-gray-300 dark:text-slate-600" />
             </div>
@@ -414,9 +414,9 @@ function Dashboard() {
           className="outline-none"
           overlayClassName="fixed inset-0 flex items-center justify-center bg-slate-950/60 backdrop-blur-md z-50 p-4"
         >
-          <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] w-full max-w-lg overflow-hidden shadow-2xl animate-fade-in border dark:border-slate-800">
-            <div className="bg-sky-900 dark:bg-slate-950 p-8 text-white">
-              <h2 className="text-2xl font-black">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl sm:rounded-[2.5rem] w-full max-w-lg overflow-hidden shadow-2xl animate-fade-in border dark:border-slate-800 max-h-[90vh] overflow-y-auto">
+            <div className="bg-sky-900 dark:bg-slate-950 p-5 sm:p-8 text-white">
+              <h2 className="text-xl sm:text-2xl font-black">
                 {editServiciosId ? "Editar Trabajo" : "Nuevo Trabajo"}
               </h2>
               <p className="text-sky-300 text-sm mt-1">
@@ -426,7 +426,7 @@ function Dashboard() {
               </p>
             </div>
 
-            <div className="p-8 space-y-4">
+            <div className="p-5 sm:p-8 space-y-4">
               <div className="space-y-1">
                 <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">
                   Nombre del Cliente
@@ -441,7 +441,7 @@ function Dashboard() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">
                     Cantidad
@@ -488,7 +488,7 @@ function Dashboard() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">
                     Total (S/.)
@@ -546,12 +546,12 @@ function Dashboard() {
           className="outline-none"
           overlayClassName="fixed inset-0 flex items-center justify-center bg-slate-950/60 backdrop-blur-md z-50 p-4"
         >
-          <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] w-full max-w-sm overflow-hidden shadow-2xl animate-fade-in border dark:border-slate-800">
-            <div className="bg-red-600 dark:bg-red-900 p-8 text-white">
-              <h2 className="text-2xl font-black">Confirmar Eliminacion</h2>
+          <div className="bg-white dark:bg-slate-900 rounded-3xl sm:rounded-[2.5rem] w-full max-w-sm overflow-hidden shadow-2xl animate-fade-in border dark:border-slate-800">
+            <div className="bg-red-600 dark:bg-red-900 p-5 sm:p-8 text-white">
+              <h2 className="text-xl sm:text-2xl font-black">Confirmar Eliminacion</h2>
               <p className="text-red-200 text-sm mt-1">Esta accion no se puede deshacer.</p>
             </div>
-            <div className="p-8 space-y-6">
+            <div className="p-5 sm:p-8 space-y-6">
               <p className="text-gray-700 dark:text-slate-300 font-medium">
                 Deseas eliminar permanentemente el servicio de{" "}
                 <span className="text-red-700 dark:text-red-400 font-black">
