@@ -26,7 +26,9 @@ import {
   FaUserSlash,
   FaKey,
   FaShieldHalved,
-  FaBuilding
+  FaBuilding,
+  FaEye,
+  FaEyeSlash
 } from "react-icons/fa6";
 
 const INITIAL_FORM = { usuario: "", password: "", confirmPassword: "", cargo: "Usuario" };
@@ -47,6 +49,14 @@ function Perfil() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isUploading, setIsUploading] = useState(false);
+
+  // Estados para mostrar/ocultar contraseñas
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showFormPassword, setShowFormPassword] = useState(false);
+  const [showFormConfirmPassword, setShowFormConfirmPassword] = useState(false);
+  const [showClaveSol, setShowClaveSol] = useState(false);
+  const [showClientSecret, setShowClientSecret] = useState(false);
   
   // Estados para Gestión (Admin)
   const [searchTerm, setSearchTerm] = useState("");
@@ -357,24 +367,42 @@ function Perfil() {
               <div className="space-y-4 pt-4 border-t border-gray-50">
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">Nueva Contraseña</label>
-                  <input
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full p-4 bg-white dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 outline-none transition-all text-gray-700 dark:text-slate-200"
-                  />
+                  <div className="relative">
+                    <input
+                      type={showNewPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full p-4 pr-12 bg-white dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 outline-none transition-all text-gray-700 dark:text-slate-200"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 transition cursor-pointer"
+                    >
+                      {showNewPassword ? <FaEyeSlash /> : <FaEye />}
+                    </button>
+                  </div>
                 </div>
 
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">Confirmar Nueva Contraseña</label>
-                  <input
-                    type="password"
-                    placeholder="••••••••"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full p-4 bg-white dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 outline-none transition-all text-gray-700 dark:text-slate-200"
-                  />
+                  <div className="relative">
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="w-full p-4 pr-12 bg-white dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 outline-none transition-all text-gray-700 dark:text-slate-200"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 transition cursor-pointer"
+                    >
+                      {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                    </button>
+                  </div>
                 </div>
 
                 <button
@@ -534,13 +562,22 @@ function Perfil() {
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">Clave SOL</label>
-                  <input
-                    type="password"
-                    placeholder="••••••••"
-                    value={empresaForm.clave_sol || ""}
-                    onChange={(e) => setEmpresaForm({ ...empresaForm, clave_sol: e.target.value })}
-                    className="w-full p-4 bg-white dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 outline-none transition-all text-gray-700 dark:text-slate-200 font-mono"
-                  />
+                  <div className="relative">
+                    <input
+                      type={showClaveSol ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={empresaForm.clave_sol || ""}
+                      onChange={(e) => setEmpresaForm({ ...empresaForm, clave_sol: e.target.value })}
+                      className="w-full p-4 pr-12 bg-white dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 outline-none transition-all text-gray-700 dark:text-slate-200 font-mono"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowClaveSol(!showClaveSol)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 transition cursor-pointer"
+                    >
+                      {showClaveSol ? <FaEyeSlash /> : <FaEye />}
+                    </button>
+                  </div>
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">Client ID (Guías REST)</label>
@@ -554,13 +591,22 @@ function Perfil() {
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">Client Secret (Guías REST)</label>
-                  <input
-                    type="password"
-                    placeholder="••••••••"
-                    value={empresaForm.client_secret || ""}
-                    onChange={(e) => setEmpresaForm({ ...empresaForm, client_secret: e.target.value })}
-                    className="w-full p-4 bg-white dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 outline-none transition-all text-gray-700 dark:text-slate-200 font-mono"
-                  />
+                  <div className="relative">
+                    <input
+                      type={showClientSecret ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={empresaForm.client_secret || ""}
+                      onChange={(e) => setEmpresaForm({ ...empresaForm, client_secret: e.target.value })}
+                      className="w-full p-4 pr-12 bg-white dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 outline-none transition-all text-gray-700 dark:text-slate-200 font-mono"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowClientSecret(!showClientSecret)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 transition cursor-pointer"
+                    >
+                      {showClientSecret ? <FaEyeSlash /> : <FaEye />}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -619,23 +665,41 @@ function Perfil() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">Password {form.id && "(Opcional)"}</label>
-                  <input
-                    type="password"
-                    placeholder="••••"
-                    className="w-full p-4 bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 outline-none text-gray-800 dark:text-slate-100"
-                    value={form.password}
-                    onChange={e => setForm({...form, password: e.target.value})}
-                  />
+                  <div className="relative">
+                    <input
+                      type={showFormPassword ? "text" : "password"}
+                      placeholder="••••"
+                      className="w-full p-4 pr-12 bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 outline-none text-gray-800 dark:text-slate-100"
+                      value={form.password}
+                      onChange={e => setForm({...form, password: e.target.value})}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowFormPassword(!showFormPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 transition cursor-pointer"
+                    >
+                      {showFormPassword ? <FaEyeSlash /> : <FaEye />}
+                    </button>
+                  </div>
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">Confirmar</label>
-                  <input
-                    type="password"
-                    placeholder="••••"
-                    className="w-full p-4 bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 outline-none text-gray-800 dark:text-slate-100"
-                    value={form.confirmPassword}
-                    onChange={e => setForm({...form, confirmPassword: e.target.value})}
-                  />
+                  <div className="relative">
+                    <input
+                      type={showFormConfirmPassword ? "text" : "password"}
+                      placeholder="••••"
+                      className="w-full p-4 pr-12 bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 outline-none text-gray-800 dark:text-slate-100"
+                      value={form.confirmPassword}
+                      onChange={e => setForm({...form, confirmPassword: e.target.value})}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowFormConfirmPassword(!showFormConfirmPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 transition cursor-pointer"
+                    >
+                      {showFormConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                    </button>
+                  </div>
                 </div>
               </div>
 

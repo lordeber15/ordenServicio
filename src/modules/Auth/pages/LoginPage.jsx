@@ -28,6 +28,7 @@ import { useNavigate } from "react-router";
 import { useMutation } from "@tanstack/react-query";
 import { authLogin } from "../services/loginrequest";
 import toast from "react-hot-toast";
+import { FaEye, FaEyeSlash } from "react-icons/fa6";
 
 function Login() {
   /**
@@ -39,6 +40,7 @@ function Login() {
    */
   const [usuario, setUsuario] = useState("");
   const [contrasena, setContrasena] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   /**
@@ -121,14 +123,23 @@ function Login() {
           placeholder="Nombre"
         />
         {/* INPUT: Contraseña con soporte para Enter */}
-        <input
-          type="password"
-          value={contrasena}
-          onChange={(e) => setContrasena(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleIngresar()}
-          className="p-2 w-11/12 sm:w-8/12 border rounded-md font-bold px-4 text-amber-50 bg-transparent placeholder:text-amber-100"
-          placeholder="Contraseña"
-        />
+        <div className="relative w-11/12 sm:w-8/12">
+          <input
+            type={showPassword ? "text" : "password"}
+            value={contrasena}
+            onChange={(e) => setContrasena(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleIngresar()}
+            className="p-2 w-full border rounded-md font-bold px-4 pr-12 text-amber-50 bg-transparent placeholder:text-amber-100"
+            placeholder="Contraseña"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-amber-200 hover:text-white transition cursor-pointer"
+          >
+            {showPassword ? <FaEyeSlash /> : <FaEye />}
+          </button>
+        </div>
         {/* BOTÓN: Ingresar con estado de carga */}
         <button
           onClick={handleIngresar}
