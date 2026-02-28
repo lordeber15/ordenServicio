@@ -29,6 +29,7 @@ const Guiarem = lazy(() => import("./modules/Billing/pages/guiaremision"));
 const Guiatransp = lazy(() => import("./modules/Billing/pages/guiatransportista"));
 const Notacredito = lazy(() => import("./modules/Billing/pages/notadecredito"));
 const Ticket = lazy(() => import("./modules/Billing/pages/ticket"));
+const ListaGuias = lazy(() => import("./modules/Billing/pages/listaGuias"));
 
 // Páginas de Cotizaciones (Lazy Loaded)
 const Cotizacion = lazy(() => import("./modules/Almanaque/pages/almanaques"));
@@ -92,6 +93,7 @@ function App() {
             <Route path="/guiatransp" element={<Guiatransp />} />
             <Route path="/notacredito" element={<Notacredito />} />
             <Route path="/ticket" element={<Ticket />} />
+            <Route path="/guias" element={<ListaGuias />} />
             
             {/* Finanzas */}
             <Route path="/ingresos" element={<Ingresos />} />

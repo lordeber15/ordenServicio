@@ -9,6 +9,7 @@ import { getEmisores } from "../services/emisores";
 import { getSeriesByTipo } from "../services/series";
 import { findClienteByDoc, createCliente } from "../../../shared/services/clientes";
 import axiosURL from "../../../core/api/axiosURL";
+import { getGuiaPdf } from "../services/comprobantes";
 
 const HOY = new Date().toLocaleDateString('en-CA');
 
@@ -81,6 +82,27 @@ function GuiaRemision() {
   // Estado de Emisión
   const [emitiendo, setEmitiendo] = useState(false);
   const [resultado, setResultado] = useState(null);
+
+  const printPdfBlob = (blob) => {
+    const url = URL.createObjectURL(new Blob([blob], { type: "application/pdf" }));
+    const iframe = document.createElement("iframe");
+    iframe.style.display = "none";
+    iframe.src = url;
+    document.body.appendChild(iframe);
+    iframe.onload = () => {
+      iframe.contentWindow.print();
+      setTimeout(() => { document.body.removeChild(iframe); URL.revokeObjectURL(url); }, 1000);
+    };
+  };
+
+  const handlePrintGuia = async (id) => {
+    try {
+      const res = await getGuiaPdf(id);
+      printPdfBlob(res.data);
+    } catch {
+      toast.error("Error al generar PDF de la guía");
+    }
+  };
 
   const handleBuscarDestinatario = async () => {
     if (!clienteDoc.trim()) return toast.error("Ingresa el RUC/DNI");
@@ -411,6 +433,18 @@ function GuiaRemision() {
               {resultado.success ? "✓ Guía Aceptada" : "✗ Guía Rechazada"}
             </div>
             <div className="text-gray-600 dark:text-slate-400 font-medium">SUNAT: <span className="font-bold">{resultado.codigo_sunat}</span> — {resultado.mensaje_sunat}</div>
+            {resultado.success && (
+              <div className="flex gap-3 mt-4 flex-wrap">
+                <button onClick={() => handlePrintGuia(resultado.guia_id)}
+                  className="flex items-center gap-2 bg-sky-700 hover:bg-sky-600 text-white px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all shadow-md cursor-pointer">
+                  <FaPrint className="text-base" /> Imprimir A5
+                </button>
+                <a href={`${import.meta.env.VITE_API_URL || "http://localhost:3000/"}guia/${resultado.guia_id}/xml`} target="_blank" rel="noreferrer"
+                  className="flex items-center gap-2 bg-slate-600 hover:bg-slate-500 text-white px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all shadow-md">
+                  <FaFileCode className="text-base" /> XML
+                </a>
+              </div>
+            )}
           </div>
         )}
 

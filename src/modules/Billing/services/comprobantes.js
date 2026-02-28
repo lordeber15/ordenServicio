@@ -63,3 +63,18 @@ export const getXmlUrl = (id) => {
  */
 export const getComprobantePdf = (id, format = "a5") =>
   axiosURL.get(`/comprobante/${id}/pdf?format=${format}`, { responseType: "blob" });
+
+/**
+ * Lista guías de remisión con filtro opcional por fecha.
+ */
+export const getGuias = async (fecha) => {
+  const params = fecha ? `?fecha=${fecha}` : "";
+  const res = await axiosURL.get(`/guia${params}`);
+  return res.data;
+};
+
+/**
+ * Obtiene el PDF de la guía de remisión como blob (para impresión directa via iframe).
+ */
+export const getGuiaPdf = (id) =>
+  axiosURL.get(`/guia/${id}/pdf`, { responseType: "blob" });
