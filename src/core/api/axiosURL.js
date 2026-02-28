@@ -32,37 +32,22 @@ const egresosoApi = axios.create({
 
 /**
  * INTERCEPTOR DE REQUEST
- * 
- * Este interceptor se ejecuta ANTES de cada petición HTTP.
- * Agrega automáticamente el token JWT al header Authorization
- * si el usuario está autenticado.
- * 
- * Flujo:
- * 1. Lee userData desde localStorage
- * 2. Si existe token, lo agrega al header Authorization
- * 3. Formato: "Bearer <token>"
- * 
- * Esto permite que el backend verifique la autenticación
- * en rutas protegidas sin tener que agregar el token manualmente
- * en cada petición.
- * 
- * @param {Object} config - Configuración de la petición Axios
- * @returns {Object} Configuración modificada con token
+ *
+ * Agrega automáticamente el token JWT al header Authorization.
+ * Usa cache en memoria para evitar JSON.parse en cada petición.
  */
+let cachedToken = null;
+let lastRaw = null;
+
 egresosoApi.interceptors.request.use((config) => {
-  // Obtener datos del usuario desde localStorage
   const raw = localStorage.getItem("userData");
-  
-  if (raw) {
-    const userData = JSON.parse(raw);
-    
-    // Si existe token, agregarlo al header Authorization
-    if (userData.token) {
-      config.headers.Authorization = `Bearer ${userData.token}`;
-    }
+  if (raw !== lastRaw) {
+    lastRaw = raw;
+    cachedToken = raw ? JSON.parse(raw)?.token : null;
   }
-  
-  // Retornar configuración (con o sin token)
+  if (cachedToken) {
+    config.headers.Authorization = `Bearer ${cachedToken}`;
+  }
   return config;
 });
 

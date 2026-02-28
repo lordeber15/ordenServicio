@@ -101,6 +101,13 @@ export default function Drawer() {
               </Link>
             </li>
           )}
+          {canAccess("notacredito") && (
+            <li>
+              <Link to="/notascredito" onClick={() => setIsOpen(false)} className={linkClass}>
+                Notas Emitidas
+              </Link>
+            </li>
+          )}
           {canAccess("ingresos") && (
             <li>
               <Link to="/ingresos" onClick={() => setIsOpen(false)} className={linkClass}>

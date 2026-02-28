@@ -11,7 +11,7 @@
  * - Rutas protegidas: Todas las demás (requieren autenticación)
  */
 
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useMemo } from "react";
 import "./App.css";
 
 // Páginas (Lazy Loaded) - Modulares
@@ -30,6 +30,7 @@ const Guiatransp = lazy(() => import("./modules/Billing/pages/guiatransportista"
 const Notacredito = lazy(() => import("./modules/Billing/pages/notadecredito"));
 const Ticket = lazy(() => import("./modules/Billing/pages/ticket"));
 const ListaGuias = lazy(() => import("./modules/Billing/pages/listaGuias"));
+const ListaNotasCredito = lazy(() => import("./modules/Billing/pages/listaNotasCredito"));
 
 // Páginas de Cotizaciones (Lazy Loaded)
 const Cotizacion = lazy(() => import("./modules/Almanaque/pages/almanaques"));
@@ -60,7 +61,7 @@ const LoadingFallback = () => (
  * @returns {JSX.Element} Estructura principal de la aplicación con rutas
  */
 function App() {
-  const storedUserData = JSON.parse(localStorage.getItem("userData") || "null");
+  const storedUserData = useMemo(() => JSON.parse(localStorage.getItem("userData") || "null"), []);
   
   /**
    * Hook para obtener la ubicación actual (pathname)
@@ -94,6 +95,7 @@ function App() {
             <Route path="/notacredito" element={<Notacredito />} />
             <Route path="/ticket" element={<Ticket />} />
             <Route path="/guias" element={<ListaGuias />} />
+            <Route path="/notascredito" element={<ListaNotasCredito />} />
             
             {/* Finanzas */}
             <Route path="/ingresos" element={<Ingresos />} />

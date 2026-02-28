@@ -454,7 +454,7 @@ function Perfil() {
                 <div key={user.id} className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-gray-100 dark:border-slate-800 shadow-sm flex items-center gap-4 hover:border-sky-200 dark:hover:border-slate-700 transition-all group">
                   <div className="w-14 h-14 rounded-full bg-sky-50 dark:bg-slate-800 flex items-center justify-center text-sky-700 dark:text-sky-400 font-black text-lg uppercase border-2 border-transparent group-hover:border-sky-100 dark:group-hover:border-slate-700 overflow-hidden">
                     {user.image_url ? (
-                      <img src={`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}${user.image_url}`} className="w-full h-full object-cover" />
+                      <img src={`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}${user.image_url}`} loading="lazy" className="w-full h-full object-cover" />
                     ) : (
                       user.usuario.substring(0, 2)
                     )}
@@ -502,7 +502,7 @@ function Perfil() {
                 onClick={() => emisor ? logoInputRef.current?.click() : toast.error("Primero guarda los datos de la empresa")}
               >
                 {emisor?.logo_url ? (
-                  <img src={`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}${emisor.logo_url}`} alt="Logo" className="w-full h-full object-contain" />
+                  <img src={`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}${emisor.logo_url}`} alt="Logo" loading="lazy" className="w-full h-full object-contain" />
                 ) : (
                   <FaBuilding className="text-3xl text-gray-300 dark:text-slate-600" />
                 )}

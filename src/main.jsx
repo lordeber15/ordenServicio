@@ -20,16 +20,16 @@ import App from "./App.jsx";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "./core/context/ThemeContext";
 
-/**
- * CONFIGURACIÓN DE TANSTACK QUERY
- * 
- * QueryClient maneja el caché y sincronización de datos del servidor.
- * Configuración por defecto:
- * - staleTime: 0ms (los datos se consideran obsoletos inmediatamente)
- * - cacheTime: 5min (los datos se mantienen en caché 5 minutos)
- * - refetchOnWindowFocus: true (refresca al volver a la ventana)
- */
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30_000,
+      gcTime: 5 * 60_000,
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
 
 /**
  * RENDERIZADO DE LA APLICACIÓN

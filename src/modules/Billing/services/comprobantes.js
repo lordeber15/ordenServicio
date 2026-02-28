@@ -65,6 +65,18 @@ export const getComprobantePdf = (id, format = "a5") =>
   axiosURL.get(`/comprobante/${id}/pdf?format=${format}`, { responseType: "blob" });
 
 /**
+ * Lista comprobantes con filtro por tipo (07=NC, 01=Factura, etc.) y fecha opcional.
+ */
+export const listComprobantes = async (tipo, fecha) => {
+  const params = new URLSearchParams();
+  if (tipo) params.set("tipo", tipo);
+  if (fecha) params.set("fecha", fecha);
+  const qs = params.toString();
+  const res = await axiosURL.get(`/comprobante/lista${qs ? `?${qs}` : ""}`);
+  return res.data;
+};
+
+/**
  * Lista guías de remisión con filtro opcional por fecha.
  */
 export const getGuias = async (fecha) => {
