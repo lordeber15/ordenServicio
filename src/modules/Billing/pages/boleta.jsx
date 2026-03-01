@@ -9,7 +9,7 @@ import DatosEmpresa from "../../../shared/components/datosEmpresa";
 import { getEmisores } from "../services/emisores";
 import { getSeriesByTipo } from "../services/series";
 import { getUnidades } from "../services/unidades";
-import { findClienteByDoc, createCliente } from "../../../shared/services/clientes";
+import { buscarClientePorDoc, createCliente } from "../../../shared/services/clientes";
 import {
   createComprobante,
   createDetalle,
@@ -18,7 +18,6 @@ import {
   getXmlUrl,
 } from "../services/comprobantes";
 import { getProducto } from "../../Inventory/services/productos";
-import { getReniec } from "../../../shared/services/reniec";
 import { openCashDrawer } from "../../../shared/utils/printDrawer";
 
 const IGV_RATE = 0.18;
@@ -241,18 +240,12 @@ function Boleta() {
     if (!clienteDoc.trim()) return;
     setBuscando(true);
     try {
-      if (tipoDoc === "1" && clienteDoc.length === 8) {
-        const data = await getReniec(clienteDoc);
-        if (data?.nombres) {
-          setClienteNombre(`${data.nombres} ${data.apellidoPaterno} ${data.apellidoMaterno}`.trim());
-        }
-      } else {
-        const cliente = await findClienteByDoc(clienteDoc.trim());
-        if (cliente) setClienteNombre(cliente.razon_social);
-        else toast("No encontrado — ingresa el nombre manualmente");
-      }
+      const data = await buscarClientePorDoc(clienteDoc.trim());
+      setClienteNombre(data.razon_social || "");
+      setDireccion(data.direccion || "");
+      toast.success(data.source === "db" ? "Cliente encontrado" : "Encontrado en RENIEC/SUNAT");
     } catch {
-      toast.error("Error al buscar cliente");
+      toast("No encontrado — ingresa el nombre manualmente");
     } finally {
       setBuscando(false);
     }
@@ -267,20 +260,31 @@ function Boleta() {
     setResultado(null);
 
     try {
-      // 1. Gestionar cliente
+      // 1. Gestionar cliente (buscar o crear)
       let clienteId = null;
       if (tipoDoc !== "0" && clienteDoc.trim()) {
-        let cliente = await findClienteByDoc(clienteDoc.trim());
-        if (!cliente) {
+        try {
+          const found = await buscarClientePorDoc(clienteDoc.trim());
+          if (found.source === "db" && found.id) {
+            clienteId = found.id;
+          } else {
+            const res = await createCliente({
+              tipo_documento_id: tipoDoc,
+              nrodoc: clienteDoc.trim(),
+              razon_social: clienteNombre || clienteDoc.trim(),
+              direccion: direccion || null,
+            });
+            clienteId = res.data.id;
+          }
+        } catch {
           const res = await createCliente({
             tipo_documento_id: tipoDoc,
             nrodoc: clienteDoc.trim(),
             razon_social: clienteNombre || clienteDoc.trim(),
             direccion: direccion || null,
           });
-          cliente = res.data;
+          clienteId = res.data.id;
         }
-        clienteId = cliente.id;
       }
 
       // 2. Crear cabecera

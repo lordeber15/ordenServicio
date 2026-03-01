@@ -12,6 +12,7 @@ import { openCashDrawer } from "../../../shared/utils/printDrawer";
 import { createTicket, getTicketPdf } from "../../../shared/services/ticket";
 import { getCajaActual, abrirCaja, cerrarCaja } from "../../../shared/services/caja";
 import { getUnidades } from "../services/unidades";
+import { buscarClientePorDoc, createCliente } from "../../../shared/services/clientes";
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 const today = new Date().toLocaleDateString('en-CA');
@@ -108,17 +109,22 @@ function Ticket() {
     total: cajaData?.total_ventas_preview || 0,
   };
 
-  // ── RENIEC ──
-  const { data: reniecData, refetch: buscarReniec } = useQuery({
-    queryKey: ["reniec", nroDoc],
-    queryFn: () => getReniec(nroDoc),
-    enabled: false,
-  });
-  useEffect(() => {
-    if (reniecData) {
-      setCliente([reniecData.nombres, reniecData.apellidoPaterno, reniecData.apellidoMaterno].filter(Boolean).join(" "));
+  // ── Búsqueda de cliente por DNI/RUC ──
+  const [buscandoCliente, setBuscandoCliente] = useState(false);
+  const handleBuscarCliente = async () => {
+    if (!nroDoc.trim()) return;
+    setBuscandoCliente(true);
+    try {
+      const data = await buscarClientePorDoc(nroDoc.trim());
+      setCliente(data.razon_social || "");
+      setDireccion(data.direccion || "");
+      toast.success(data.source === "db" ? "Cliente encontrado" : "Encontrado en RENIEC/SUNAT");
+    } catch {
+      toast("No encontrado — ingresa el nombre manualmente");
+    } finally {
+      setBuscandoCliente(false);
     }
-  }, [reniecData]);
+  };
 
   // ── Mutaciones ──
   const ticketMutation = useMutation({ mutationFn: createTicket });
@@ -277,6 +283,18 @@ function Ticket() {
         toast.error("Error al generar PDF");
       }
       return;
+    }
+
+    // Guardar cliente en BD si tiene documento
+    if (tipoDoc !== "Sin Documento" && nroDoc.trim() && cliente.trim()) {
+      try {
+        await createCliente({
+          tipo_documento_id: TIPO_DOC_MAP[tipoDoc] || "0",
+          nrodoc: nroDoc.trim(),
+          razon_social: cliente.trim(),
+          direccion: direccion || null,
+        });
+      } catch { /* ya existe */ }
     }
 
     toast.promise(ticketMutation.mutateAsync(buildPayload()), {
@@ -516,11 +534,12 @@ function Ticket() {
                   onChange={(e) => setNroDoc(e.target.value)}
                   maxLength={tipoDoc === "DNI" ? 8 : tipoDoc === "RUC" ? 11 : 20}
                 />
-                {tipoDoc === "DNI" ? (
+                {tipoDoc !== "Sin Documento" ? (
                   <button
-                    onClick={() => nroDoc.length === 8 && buscarReniec()}
-                    className="absolute right-2 top-2 p-1.5 bg-sky-700 hover:bg-sky-600 text-white rounded-md cursor-pointer transition-colors shadow-sm"
-                    title="Buscar en RENIEC"
+                    onClick={handleBuscarCliente}
+                    disabled={buscandoCliente || !nroDoc.trim()}
+                    className="absolute right-2 top-2 p-1.5 bg-sky-700 hover:bg-sky-600 text-white rounded-md cursor-pointer transition-colors shadow-sm disabled:opacity-50"
+                    title="Buscar cliente"
                   >
                     <CiSearch className="w-5 h-5" />
                   </button>

@@ -7,7 +7,7 @@ import Drawer from "../../../shared/components/drawer";
 import DatosEmpresa from "../../../shared/components/datosEmpresa";
 import { getEmisores } from "../services/emisores";
 import { getSeriesByTipo } from "../services/series";
-import { findClienteByDoc, createCliente } from "../../../shared/services/clientes";
+import { buscarClientePorDoc, createCliente } from "../../../shared/services/clientes";
 import axiosURL from "../../../core/api/axiosURL";
 import { getGuiaPdf } from "../services/comprobantes";
 
@@ -107,19 +107,14 @@ function GuiaRemision() {
   const handleBuscarDestinatario = async () => {
     if (!clienteDoc.trim()) return toast.error("Ingresa el RUC/DNI");
     try {
-      const cliente = await findClienteByDoc(clienteDoc.trim());
-      if (cliente) {
-        setClienteNombre(cliente.razon_social);
-        toast.success("Destinatario encontrado");
-        // Autocompletar dirección de llegada si no hay
-        if (cliente.direccion && !direccionLlegada) {
-          setDireccionLlegada(cliente.direccion);
-        }
-      } else {
-        toast("No encontrado. Ingresa Razón Social manualmente.");
+      const data = await buscarClientePorDoc(clienteDoc.trim());
+      setClienteNombre(data.razon_social || "");
+      toast.success(data.source === "db" ? "Destinatario encontrado" : "Encontrado en RENIEC/SUNAT");
+      if (data.direccion && !direccionLlegada) {
+        setDireccionLlegada(data.direccion);
       }
     } catch {
-      toast.error("Error al buscar");
+      toast("No encontrado. Ingresa Razón Social manualmente.");
     }
   };
 
@@ -142,15 +137,28 @@ function GuiaRemision() {
 
     try {
       // 1. Verificar/Crear Cliente
-      let cliente = await findClienteByDoc(clienteDoc.trim());
-      if (!cliente) {
+      let clienteId;
+      try {
+        const found = await buscarClientePorDoc(clienteDoc.trim());
+        if (found.source === "db" && found.id) {
+          clienteId = found.id;
+        } else {
+          const res = await createCliente({
+            tipo_documento_id: clienteDoc.length === 11 ? "6" : "1",
+            nrodoc: clienteDoc.trim(),
+            razon_social: clienteNombre.trim(),
+          });
+          clienteId = res.data.id;
+        }
+      } catch {
         const res = await createCliente({
           tipo_documento_id: clienteDoc.length === 11 ? "6" : "1",
           nrodoc: clienteDoc.trim(),
-          razon_social: clienteNombre.trim()
+          razon_social: clienteNombre.trim(),
         });
-        cliente = res.data;
+        clienteId = res.data.id;
       }
+      const cliente = { id: clienteId };
       
       // 2. Aquí tocaría crear la Guía en la base de datos (Backend CRUD de Guías)
       // Como esto es un desarrollo nuevo en frontend, adaptamos la llamada.

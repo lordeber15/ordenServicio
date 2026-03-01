@@ -9,7 +9,7 @@ import DatosEmpresa from "../../../shared/components/datosEmpresa";
 import { getEmisores } from "../services/emisores";
 import { getSeriesByTipo } from "../services/series";
 import { getUnidades } from "../services/unidades";
-import { findClienteByDoc, createCliente } from "../../../shared/services/clientes";
+import { buscarClientePorDoc, createCliente } from "../../../shared/services/clientes";
 import {
   createComprobante,
   createDetalle,
@@ -206,16 +206,12 @@ function NotaDeCredito() {
     }
     setBuscando(true);
     try {
-      const cliente = await findClienteByDoc(clienteRuc.trim());
-      if (cliente) {
-        setClienteNombre(cliente.razon_social);
-        setDireccion(cliente.direccion || "");
-        toast.success("Cliente encontrado en el sistema");
-      } else {
-        toast("RUC no encontrado en el sistema — ingresa la razón social manualmente");
-      }
+      const data = await buscarClientePorDoc(clienteRuc.trim());
+      setClienteNombre(data.razon_social || "");
+      setDireccion(data.direccion || "");
+      toast.success(data.source === "db" ? "Cliente encontrado" : "Encontrado en SUNAT");
     } catch {
-      toast.error("Error al buscar cliente");
+      toast("RUC no encontrado — ingresa la razón social manualmente");
     } finally {
       setBuscando(false);
     }
@@ -239,18 +235,30 @@ function NotaDeCredito() {
     setResultado(null);
 
     try {
-      // 1. Gestionar cliente (RUC obligatorio en factura)
-      let cliente = await findClienteByDoc(clienteRuc.trim());
-      if (!cliente) {
+      // 1. Gestionar cliente (RUC obligatorio)
+      let clienteId;
+      try {
+        const found = await buscarClientePorDoc(clienteRuc.trim());
+        if (found.source === "db" && found.id) {
+          clienteId = found.id;
+        } else {
+          const res = await createCliente({
+            tipo_documento_id: "6",
+            nrodoc: clienteRuc.trim(),
+            razon_social: clienteNombre.trim(),
+            direccion: direccion || null,
+          });
+          clienteId = res.data.id;
+        }
+      } catch {
         const res = await createCliente({
           tipo_documento_id: "6",
           nrodoc: clienteRuc.trim(),
           razon_social: clienteNombre.trim(),
           direccion: direccion || null,
         });
-        cliente = res.data;
+        clienteId = res.data.id;
       }
-      const clienteId = cliente.id;
 
       // 2. Crear cabecera
       const cabRes = await createComprobante({
