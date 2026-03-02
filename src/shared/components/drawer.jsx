@@ -129,6 +129,13 @@ export default function Drawer() {
               </Link>
             </li>
           )}
+          {isAdmin && (
+            <li>
+              <Link to="/clientes" onClick={() => setIsOpen(false)} className={linkClass}>
+                Clientes
+              </Link>
+            </li>
+          )}
         </ul>
       </div>
     </>
