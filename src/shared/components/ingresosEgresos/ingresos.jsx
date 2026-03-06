@@ -6,16 +6,16 @@ import { getEgresos } from "../../services/egresosrequest";
 import { getVentasDia } from "../../services/caja";
 import { useState, useMemo } from "react";
 
-function Ingresos() {
-  const getTodayDate = () => {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, "0");
-    const day = String(today.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  };
+const getTodayDate = () => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
 
-  const [selectedDate, setSelectedDate] = useState(getTodayDate());
+function Ingresos() {
+  const [selectedDate, setSelectedDate] = useState(getTodayDate);
 
   const { data: dataIngresos } = useQuery({
     queryKey: ["ingresos"],

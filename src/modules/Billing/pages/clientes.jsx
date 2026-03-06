@@ -187,9 +187,10 @@ function ModalCliente({ isOpen, onClose, cliente }) {
       <div className="flex flex-col gap-3">
         {/* Nro Documento + Buscar */}
         <div>
-          <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Nro Documento</label>
+          <label htmlFor="cli-nrodoc" className="text-sm font-medium text-gray-700 dark:text-slate-300">Nro Documento</label>
           <div className="relative mt-1">
             <input
+              id="cli-nrodoc"
               type="text"
               value={nrodoc}
               onChange={(e) => setNrodoc(e.target.value.replace(/\D/g, ""))}
@@ -210,8 +211,9 @@ function ModalCliente({ isOpen, onClose, cliente }) {
 
         {/* Tipo Documento */}
         <div>
-          <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Tipo Documento</label>
+          <label htmlFor="cli-tipodoc" className="text-sm font-medium text-gray-700 dark:text-slate-300">Tipo Documento</label>
           <select
+            id="cli-tipodoc"
             value={tipoDoc}
             onChange={(e) => setTipoDoc(e.target.value)}
             className="mt-1 border border-gray-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md p-2 w-full text-sm focus:outline-none focus:border-sky-500"
@@ -224,8 +226,9 @@ function ModalCliente({ isOpen, onClose, cliente }) {
 
         {/* Razón Social */}
         <div>
-          <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Razón Social / Nombre</label>
+          <label htmlFor="cli-razon" className="text-sm font-medium text-gray-700 dark:text-slate-300">Razón Social / Nombre</label>
           <input
+            id="cli-razon"
             type="text"
             value={razonSocial}
             onChange={(e) => setRazonSocial(e.target.value)}
@@ -236,8 +239,9 @@ function ModalCliente({ isOpen, onClose, cliente }) {
 
         {/* Dirección */}
         <div>
-          <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Dirección</label>
+          <label htmlFor="cli-direccion" className="text-sm font-medium text-gray-700 dark:text-slate-300">Dirección</label>
           <input
+            id="cli-direccion"
             type="text"
             value={direccion}
             onChange={(e) => setDireccion(e.target.value)}

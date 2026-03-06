@@ -4,7 +4,9 @@ import efectivo from "../../assets/efectivo.png";
 import { useState } from "react";
 import ModalIngreso from "./modalIngreso";
 
-function Tablaingresosegresos({ ingresosyegresos = [], titulo }) {
+const EMPTY_LIST = [];
+
+function Tablaingresosegresos({ ingresosyegresos = EMPTY_LIST, titulo }) {
   const total = ingresosyegresos.reduce(
     (acc, item) => acc + parseFloat(item.monto || 0),
     0
@@ -28,8 +30,8 @@ function Tablaingresosegresos({ ingresosyegresos = [], titulo }) {
         </thead>
         <tbody className="divide-y divide-gray-100 dark:divide-slate-800 bg-white dark:bg-slate-950">
           {ingresosyegresos ? (
-            ingresosyegresos.map((item, index) => (
-              <tr key={index} className="hover:bg-gray-50 dark:hover:bg-slate-900 transition-colors">
+            ingresosyegresos.map((item) => (
+              <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-slate-900 transition-colors">
                 <td className="text-center px-4 py-2 text-sm text-gray-800 dark:text-slate-200">
                   {item.descripcion}
                 </td>
@@ -38,9 +40,9 @@ function Tablaingresosegresos({ ingresosyegresos = [], titulo }) {
                 </td>
                 <td className="px-4 py-2 text-sm text-gray-800">
                   {item.metodo == "efectivo" ? (
-                    <img src={efectivo} className="w-6" />
+                    <img src={efectivo} alt="Efectivo" className="w-6" />
                   ) : (
-                    <img src={yape} className="w-6" />
+                    <img src={yape} alt="Yape" className="w-6" />
                   )}
                 </td>
               </tr>
