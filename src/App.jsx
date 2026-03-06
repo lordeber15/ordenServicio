@@ -14,29 +14,44 @@
 import { lazy, Suspense, useMemo } from "react";
 import "./App.css";
 
+// Helper: reintenta el import dinámico recargando la página si el chunk no existe
+const lazyRetry = (importFn) =>
+  lazy(() =>
+    importFn().catch(() => {
+      const hasReloaded = sessionStorage.getItem("chunk-reload");
+      if (!hasReloaded) {
+        sessionStorage.setItem("chunk-reload", "1");
+        window.location.reload();
+        return new Promise(() => {}); // nunca resuelve, la página se recarga
+      }
+      sessionStorage.removeItem("chunk-reload");
+      return importFn(); // segundo intento real, deja que el error se propague
+    })
+  );
+
 // Páginas (Lazy Loaded) - Modulares
-const Login = lazy(() => import("./modules/Auth/pages/LoginPage"));
-const Dashboard = lazy(() => import("./modules/Dashboard/pages/DashboardPage"));
-const Perfil = lazy(() => import("./modules/Auth/pages/ProfilePage"));
-const Inventario = lazy(() => import("./modules/Inventory/pages/InventoryPage"));
-const Reportes = lazy(() => import("./modules/Reports/pages/ReportsPage"));
-const Ventas = lazy(() => import("./modules/Sales/pages/SalesPage"));
+const Login = lazyRetry(() => import("./modules/Auth/pages/LoginPage"));
+const Dashboard = lazyRetry(() => import("./modules/Dashboard/pages/DashboardPage"));
+const Perfil = lazyRetry(() => import("./modules/Auth/pages/ProfilePage"));
+const Inventario = lazyRetry(() => import("./modules/Inventory/pages/InventoryPage"));
+const Reportes = lazyRetry(() => import("./modules/Reports/pages/ReportsPage"));
+const Ventas = lazyRetry(() => import("./modules/Sales/pages/SalesPage"));
 
 // Páginas de Facturación (Lazy Loaded)
-const Boleta = lazy(() => import("./modules/Billing/pages/boleta"));
-const Factura = lazy(() => import("./modules/Billing/pages/factura"));
-const Guiarem = lazy(() => import("./modules/Billing/pages/guiaremision"));
-const Guiatransp = lazy(() => import("./modules/Billing/pages/guiatransportista"));
-const Notacredito = lazy(() => import("./modules/Billing/pages/notadecredito"));
-const Ticket = lazy(() => import("./modules/Billing/pages/ticket"));
-const ListaGuias = lazy(() => import("./modules/Billing/pages/listaGuias"));
-const ListaNotasCredito = lazy(() => import("./modules/Billing/pages/listaNotasCredito"));
-const Clientes = lazy(() => import("./modules/Billing/pages/clientes"));
+const Boleta = lazyRetry(() => import("./modules/Billing/pages/boleta"));
+const Factura = lazyRetry(() => import("./modules/Billing/pages/factura"));
+const Guiarem = lazyRetry(() => import("./modules/Billing/pages/guiaremision"));
+const Guiatransp = lazyRetry(() => import("./modules/Billing/pages/guiatransportista"));
+const Notacredito = lazyRetry(() => import("./modules/Billing/pages/notadecredito"));
+const Ticket = lazyRetry(() => import("./modules/Billing/pages/ticket"));
+const ListaGuias = lazyRetry(() => import("./modules/Billing/pages/listaGuias"));
+const ListaNotasCredito = lazyRetry(() => import("./modules/Billing/pages/listaNotasCredito"));
+const Clientes = lazyRetry(() => import("./modules/Billing/pages/clientes"));
 
 // Páginas de Cotizaciones (Lazy Loaded)
-const Cotizacion = lazy(() => import("./modules/Almanaque/pages/almanaques"));
-const ListaCotizacion = lazy(() => import("./shared/components/almanaque/listaAlmanaque"));
-const DetalleCotizacion = lazy(() => import("./shared/components/almanaque/detallesAlmanaque"));
+const Cotizacion = lazyRetry(() => import("./modules/Almanaque/pages/almanaques"));
+const ListaCotizacion = lazyRetry(() => import("./shared/components/almanaque/listaAlmanaque"));
+const DetalleCotizacion = lazyRetry(() => import("./shared/components/almanaque/detallesAlmanaque"));
 
 // Componentes
 import NavBar from "./shared/components/navbar";
