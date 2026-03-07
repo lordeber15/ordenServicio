@@ -206,10 +206,11 @@ function DetallesAlmanaque() {
               onChange={(e) => setTelefono(e.target.value)}
             />
             <div className="flex w-full md:w-1/3 items-center gap-3 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg p-1 px-3 shadow-sm transition-colors">
-              <label className="whitespace-nowrap text-xs font-black uppercase text-gray-500 dark:text-slate-500 tracking-widest">
+              <label htmlFor="detalle-almanaque-emision" className="whitespace-nowrap text-xs font-black uppercase text-gray-500 dark:text-slate-500 tracking-widest">
                 Emisión
               </label>
               <input
+                id="detalle-almanaque-emision"
                 type="date"
                 className="p-2 bg-transparent w-full text-gray-700 dark:text-slate-200 text-sm focus:outline-none font-bold"
                 value={fechaEmision}

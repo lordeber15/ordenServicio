@@ -366,9 +366,10 @@ function Perfil() {
 
               <div className="space-y-4 pt-4 border-t border-gray-50">
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">Nueva Contraseña</label>
+                  <label htmlFor="profile-nueva-password" className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">Nueva Contraseña</label>
                   <div className="relative">
                     <input
+                      id="profile-nueva-password"
                       type={showNewPassword ? "text" : "password"}
                       placeholder="••••••••"
                       value={password}
@@ -386,9 +387,10 @@ function Perfil() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">Confirmar Nueva Contraseña</label>
+                  <label htmlFor="profile-confirmar-password" className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">Confirmar Nueva Contraseña</label>
                   <div className="relative">
                     <input
+                      id="profile-confirmar-password"
                       type={showConfirmPassword ? "text" : "password"}
                       placeholder="••••••••"
                       value={confirmPassword}
@@ -454,7 +456,7 @@ function Perfil() {
                 <div key={user.id} className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-gray-100 dark:border-slate-800 shadow-sm flex items-center gap-4 hover:border-sky-200 dark:hover:border-slate-700 transition-all group">
                   <div className="w-14 h-14 rounded-full bg-sky-50 dark:bg-slate-800 flex items-center justify-center text-sky-700 dark:text-sky-400 font-black text-lg uppercase border-2 border-transparent group-hover:border-sky-100 dark:group-hover:border-slate-700 overflow-hidden">
                     {user.image_url ? (
-                      <img src={`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}${user.image_url}`} loading="lazy" className="w-full h-full object-cover" />
+                      <img src={`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}${user.image_url}`} alt={user.usuario} loading="lazy" className="w-full h-full object-cover" />
                     ) : (
                       user.usuario.substring(0, 2)
                     )}
@@ -533,8 +535,9 @@ function Perfil() {
                 { key: "ubigeo", label: "Ubigeo", placeholder: "050101", maxLength: 6 },
               ].map(({ key, label, placeholder, span, maxLength }) => (
                 <div key={key} className={`space-y-1 ${span === 2 ? "md:col-span-2" : ""}`}>
-                  <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">{label}</label>
+                  <label htmlFor={`empresa-${key}`} className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">{label}</label>
                   <input
+                    id={`empresa-${key}`}
                     type="text"
                     placeholder={placeholder}
                     maxLength={maxLength}
@@ -551,8 +554,9 @@ function Perfil() {
               <h3 className="text-sm font-black text-gray-500 dark:text-slate-400 uppercase tracking-widest mb-4">Credenciales SUNAT (SOL)</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-3xl">
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">Usuario SOL</label>
+                  <label htmlFor="profile-usuario-sol" className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">Usuario SOL</label>
                   <input
+                    id="profile-usuario-sol"
                     type="text"
                     placeholder="MODDATOS"
                     value={empresaForm.usuario_sol || ""}
@@ -561,9 +565,10 @@ function Perfil() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">Clave SOL</label>
+                  <label htmlFor="profile-clave-sol" className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">Clave SOL</label>
                   <div className="relative">
                     <input
+                      id="profile-clave-sol"
                       type={showClaveSol ? "text" : "password"}
                       placeholder="••••••••"
                       value={empresaForm.clave_sol || ""}
@@ -580,8 +585,9 @@ function Perfil() {
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">Client ID (Guías REST)</label>
+                  <label htmlFor="profile-client-id" className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">Client ID (Guías REST)</label>
                   <input
+                    id="profile-client-id"
                     type="text"
                     placeholder="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
                     value={empresaForm.client_id || ""}
@@ -590,9 +596,10 @@ function Perfil() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">Client Secret (Guías REST)</label>
+                  <label htmlFor="profile-client-secret" className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">Client Secret (Guías REST)</label>
                   <div className="relative">
                     <input
+                      id="profile-client-secret"
                       type={showClientSecret ? "text" : "password"}
                       placeholder="••••••••"
                       value={empresaForm.client_secret || ""}
@@ -641,8 +648,9 @@ function Perfil() {
             
             <div className="p-8 space-y-4">
               <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">Nombre de Usuario</label>
-                <input 
+                <label htmlFor="user-form-usuario" className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">Nombre de Usuario</label>
+                <input
+                  id="user-form-usuario"
                   className="w-full p-4 bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 outline-none font-medium text-gray-800 dark:text-slate-100"
                   placeholder="Ej: jdoe"
                   value={form.usuario}
@@ -651,8 +659,9 @@ function Perfil() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">Rol Administrativo</label>
-                <select 
+                <label htmlFor="user-form-cargo" className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">Rol Administrativo</label>
+                <select
+                  id="user-form-cargo"
                   className="w-full p-4 bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 outline-none font-bold text-gray-800 dark:text-slate-100"
                   value={form.cargo}
                   onChange={e => setForm({...form, cargo: e.target.value})}
@@ -664,9 +673,10 @@ function Perfil() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">Password {form.id && "(Opcional)"}</label>
+                  <label htmlFor="user-form-password" className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">Password {form.id && "(Opcional)"}</label>
                   <div className="relative">
                     <input
+                      id="user-form-password"
                       type={showFormPassword ? "text" : "password"}
                       placeholder="••••"
                       className="w-full p-4 pr-12 bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 outline-none text-gray-800 dark:text-slate-100"
@@ -683,9 +693,10 @@ function Perfil() {
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">Confirmar</label>
+                  <label htmlFor="user-form-confirm-password" className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">Confirmar</label>
                   <div className="relative">
                     <input
+                      id="user-form-confirm-password"
                       type={showFormConfirmPassword ? "text" : "password"}
                       placeholder="••••"
                       className="w-full p-4 pr-12 bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 outline-none text-gray-800 dark:text-slate-100"

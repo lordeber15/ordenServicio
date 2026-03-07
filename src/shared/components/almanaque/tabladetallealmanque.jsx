@@ -43,7 +43,7 @@ function tabladetallealmanque({ data, unidades, setItems }) {
           </thead>
           <tbody className="bg-white dark:bg-slate-950 divide-y divide-gray-100 dark:divide-slate-900">
             {data?.map((item, index) => (
-              <tr key={index} className="hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors">
+              <tr key={item.id || index} className="hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors">
                 <td className="text-center px-4 py-4 text-sm font-mono font-bold text-slate-700 dark:text-slate-300">
                   {item.cantidad}
                 </td>

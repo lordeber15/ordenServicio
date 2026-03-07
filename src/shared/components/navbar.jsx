@@ -108,12 +108,14 @@ function Navbar() {
         <ThemeToggle />
         
         {/* Botón para abrir/cerrar dropdown */}
-        <div
+        <button
+          type="button"
           onClick={() => setOpen(!open)}
           className="rounded-md w-10 h-10 bg-sky-700 dark:bg-slate-800 text-white hover:text-white flex items-center justify-center cursor-pointer hover:bg-sky-600 dark:hover:bg-slate-700 transition ease-in duration-300 ml-2 border dark:border-slate-700"
+          aria-label="Menú"
         >
           <TiThMenu />
-        </div>
+        </button>
         
         {/* DROPDOWN MENU - Solo visible si open === true */}
         {open && (

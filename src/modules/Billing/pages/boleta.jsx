@@ -1,5 +1,7 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+
+const EMPTY_LIST = [];
 import { useLocation } from "react-router";
 import toast from "react-hot-toast";
 import { CiSearch } from "react-icons/ci";
@@ -83,7 +85,7 @@ function numeroALetras(monto) {
   return convertir(entero) + " CON " + String(decimales).padStart(2, "0") + "/100 SOLES";
 }
 
-function ItemForm({ unidades, productos = [], onAgregar, onCancelar }) {
+function ItemForm({ unidades, productos = EMPTY_LIST, onAgregar, onCancelar }) {
   const [desc, setDesc] = useState("");
   const [unidadId, setUnidadId] = useState(unidades[0]?.id || "NIU");
   const [cantidad, setCantidad] = useState("1");
@@ -233,8 +235,8 @@ function Boleta() {
   const [resultado, setResultado] = useState(null);
 
   const opGravadas = useMemo(() => items.reduce((s, i) => s + i.valor_total, 0), [items]);
-  const totalIgv = useMemo(() => opGravadas * IGV_RATE, [opGravadas]);
-  const total = useMemo(() => opGravadas + totalIgv, [opGravadas, totalIgv]);
+  const totalIgv = opGravadas * IGV_RATE;
+  const total = opGravadas + totalIgv;
 
   const handleBuscar = async () => {
     if (!clienteDoc.trim()) return;
@@ -401,8 +403,8 @@ function Boleta() {
           <input type="text" value={direccion} onChange={(e) => setDireccion(e.target.value)}
             className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-gray-800 dark:text-slate-100 rounded-lg p-3 w-full md:w-1/2 text-sm focus:outline-none focus:border-sky-500 transition-colors shadow-sm font-bold" placeholder="Dirección (Opcional)" />
           <div className="flex w-full md:w-1/2 items-center gap-3 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg p-1 px-3 shadow-sm">
-            <label className="whitespace-nowrap text-xs font-black uppercase text-gray-500 dark:text-slate-500 tracking-widest">Emisión</label>
-            <input type="date" value={fechaEmision} onChange={(e) => setFechaEmision(e.target.value)}
+            <label htmlFor="boleta-emision" className="whitespace-nowrap text-xs font-black uppercase text-gray-500 dark:text-slate-500 tracking-widest">Emisión</label>
+            <input id="boleta-emision" type="date" value={fechaEmision} onChange={(e) => setFechaEmision(e.target.value)}
               className="p-2 bg-transparent w-full text-gray-700 dark:text-slate-200 text-sm focus:outline-none font-bold" />
           </div>
         </div>
@@ -434,7 +436,7 @@ function Boleta() {
                 </tr>
               )}
               {items.map((item, idx) => (
-                <tr key={idx} className="hover:bg-sky-50 dark:hover:bg-slate-900 transition-colors">
+                <tr key={`${item.descripcion}-${idx}`} className="hover:bg-sky-50 dark:hover:bg-slate-900 transition-colors">
                   <td className="text-center px-4 py-3 text-sm dark:text-slate-200 font-bold">{item.cantidad}</td>
                   <td className="px-4 py-3 text-sm dark:text-slate-200">{item.descripcion}</td>
                   <td className="px-4 py-3 text-sm dark:text-slate-300 italic opacity-80">

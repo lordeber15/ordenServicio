@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import Modal from "react-modal";
 import {
   FaPlus,
@@ -54,7 +54,6 @@ function Dashboard() {
   const queryClient = useQueryClient();
 
   const [modalIsOpen, setModalIsOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState(null);
   const [editServiciosId, setEditServiciosId] = useState(null);
   const [activeTab, setActiveTab] = useState("Pendiente");
   const [page, setPage] = useState(1);
@@ -84,10 +83,6 @@ function Dashboard() {
     queryFn: getServiciosStats,
     staleTime: 30000,
   });
-
-  useEffect(() => {
-    setPage(1);
-  }, [activeTab, debouncedSearchTerm]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -318,7 +313,7 @@ function Dashboard() {
               type="text"
               placeholder="Buscar por nombre de cliente..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
               className="w-full bg-transparent outline-none text-gray-700 dark:text-slate-200 font-medium placeholder:text-gray-300 dark:placeholder:text-slate-600"
             />
           </div>
@@ -330,7 +325,7 @@ function Dashboard() {
               return (
                 <button
                   key={tab.key}
-                  onClick={() => setActiveTab(tab.key)}
+                  onClick={() => { setActiveTab(tab.key); setPage(1); }}
                   className={`px-4 py-2 rounded-xl text-sm font-bold transition-all cursor-pointer flex items-center gap-2 ${
                     isActive
                       ? `${tab.color} shadow-md`
@@ -360,7 +355,7 @@ function Dashboard() {
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm overflow-hidden">
             <div className="p-4 space-y-3">
               {[...Array(5)].map((_, i) => (
-                <div key={i} className="flex items-center gap-4 animate-pulse">
+                <div key={`skeleton-${i}`} className="flex items-center gap-4 animate-pulse">
                   <div className="w-10 h-10 bg-gray-200 dark:bg-slate-800 rounded-xl" />
                   <div className="flex-1 space-y-2">
                     <div className="h-4 bg-gray-200 dark:bg-slate-800 rounded-lg w-1/3" />
@@ -428,10 +423,11 @@ function Dashboard() {
 
             <div className="p-5 sm:p-8 space-y-4">
               <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">
+                <label htmlFor="orden-nombre" className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">
                   Nombre del Cliente
                 </label>
                 <input
+                  id="orden-nombre"
                   type="text"
                   name="nombre"
                   value={form.nombre}
@@ -443,10 +439,11 @@ function Dashboard() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">
+                  <label htmlFor="orden-cantidad" className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">
                     Cantidad
                   </label>
                   <input
+                    id="orden-cantidad"
                     type="number"
                     name="cantidad"
                     value={form.cantidad}
@@ -456,10 +453,11 @@ function Dashboard() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">
+                  <label htmlFor="orden-estado" className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">
                     Estado
                   </label>
                   <select
+                    id="orden-estado"
                     name="estado"
                     value={form.estado}
                     onChange={handleChange}
@@ -476,10 +474,11 @@ function Dashboard() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">
+                <label htmlFor="orden-descripcion" className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">
                   Descripcion del Trabajo
                 </label>
                 <textarea
+                  id="orden-descripcion"
                   name="descripcion"
                   value={form.descripcion}
                   onChange={handleChange}
@@ -490,10 +489,11 @@ function Dashboard() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">
+                  <label htmlFor="orden-total" className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">
                     Total (S/.)
                   </label>
                   <input
+                    id="orden-total"
                     type="number"
                     name="total"
                     value={form.total}
@@ -502,10 +502,11 @@ function Dashboard() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">
+                  <label htmlFor="orden-acuenta" className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">
                     A Cuenta (S/.)
                   </label>
                   <input
+                    id="orden-acuenta"
                     type="number"
                     name="acuenta"
                     value={form.acuenta}

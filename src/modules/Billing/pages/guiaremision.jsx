@@ -269,8 +269,8 @@ function GuiaRemision() {
           <h3 className="text-sm font-bold text-emerald-700 dark:text-emerald-500 uppercase tracking-widest mb-4">1. Datos del Traslado</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-               <label className="block text-xs font-bold text-gray-500 mb-1">Motivo</label>
-               <select value={motivoId} onChange={e => setMotivoId(e.target.value)} className="w-full p-2 text-sm border rounded-lg dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200">
+               <label htmlFor="gr-motivo" className="block text-xs font-bold text-gray-500 mb-1">Motivo</label>
+               <select id="gr-motivo" value={motivoId} onChange={e => setMotivoId(e.target.value)} className="w-full p-2 text-sm border rounded-lg dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200">
                  <option value="01">Venta</option>
                  <option value="02">Compra</option>
                  <option value="04">Traslado entre est. de la misma empresa</option>
@@ -280,26 +280,26 @@ function GuiaRemision() {
                </select>
             </div>
             <div>
-               <label className="block text-xs font-bold text-gray-500 mb-1">Descripción (Si es Otros)</label>
-               <input type="text" value={descripcionMotivo} onChange={e => setDescripcionMotivo(e.target.value)} disabled={motivoId !== '13'} className="w-full p-2 text-sm border rounded-lg dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200" placeholder="Especifique..." />
+               <label htmlFor="gr-descripcion-motivo" className="block text-xs font-bold text-gray-500 mb-1">Descripción (Si es Otros)</label>
+               <input id="gr-descripcion-motivo" type="text" value={descripcionMotivo} onChange={e => setDescripcionMotivo(e.target.value)} disabled={motivoId !== '13'} className="w-full p-2 text-sm border rounded-lg dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200" placeholder="Especifique..." />
             </div>
             <div className="flex gap-2">
                <div className="flex-1">
-                 <label className="block text-xs font-bold text-gray-500 mb-1">Emisión</label>
-                 <input type="date" value={fechaEmision} onChange={e => setFechaEmision(e.target.value)} className="w-full p-2 text-sm border rounded-lg dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200 font-bold" />
+                 <label htmlFor="gr-emision" className="block text-xs font-bold text-gray-500 mb-1">Emisión</label>
+                 <input id="gr-emision" type="date" value={fechaEmision} onChange={e => setFechaEmision(e.target.value)} className="w-full p-2 text-sm border rounded-lg dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200 font-bold" />
                </div>
                <div className="flex-1">
-                 <label className="block text-xs font-bold text-gray-500 mb-1">Traslado</label>
-                 <input type="date" value={fechaTraslado} onChange={e => setFechaTraslado(e.target.value)} className="w-full p-2 text-sm border rounded-lg dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200 font-bold" />
+                 <label htmlFor="gr-traslado" className="block text-xs font-bold text-gray-500 mb-1">Traslado</label>
+                 <input id="gr-traslado" type="date" value={fechaTraslado} onChange={e => setFechaTraslado(e.target.value)} className="w-full p-2 text-sm border rounded-lg dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200 font-bold" />
                </div>
             </div>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
             <div>
-              <label className="block text-xs font-bold text-gray-500 mb-1">Peso Bruto Total</label>
+              <label htmlFor="gr-peso" className="block text-xs font-bold text-gray-500 mb-1">Peso Bruto Total</label>
               <div className="flex">
-                <input type="number" step="0.1" value={pesoTotal} onChange={e => setPesoTotal(e.target.value)} className="w-full p-2 text-sm border rounded-l-lg dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200" placeholder="Ej. 50.5" />
+                <input id="gr-peso" type="number" step="0.1" value={pesoTotal} onChange={e => setPesoTotal(e.target.value)} className="w-full p-2 text-sm border rounded-l-lg dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200" placeholder="Ej. 50.5" />
                 <select value={unidadPeso} onChange={e => setUnidadPeso(e.target.value)} className="p-2 border border-l-0 rounded-r-lg bg-gray-100 dark:bg-slate-800 text-sm font-bold dark:border-slate-800 dark:text-slate-200">
                   <option value="KGM">KGs</option>
                   <option value="TNE">Ton</option>
@@ -307,13 +307,13 @@ function GuiaRemision() {
               </div>
             </div>
             <div>
-               <label className="block text-xs font-bold text-gray-500 mb-1">Nro de Bultos</label>
-               <input type="number" value={numeroBultos} onChange={e => setNumeroBultos(e.target.value)} className="w-full p-2 text-sm border rounded-lg dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200" min="1" />
+               <label htmlFor="gr-bultos" className="block text-xs font-bold text-gray-500 mb-1">Nro de Bultos</label>
+               <input id="gr-bultos" type="number" value={numeroBultos} onChange={e => setNumeroBultos(e.target.value)} className="w-full p-2 text-sm border rounded-lg dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200" min="1" />
             </div>
             <div>
-               <label className="block text-xs font-bold text-gray-500 mb-1">Destinatario (RUC/DNI)</label>
+               <label htmlFor="gr-destinatario-doc" className="block text-xs font-bold text-gray-500 mb-1">Destinatario (RUC/DNI)</label>
                <div className="flex gap-2">
-                 <input type="text" value={clienteDoc} onChange={e => setClienteDoc(e.target.value)} onBlur={handleBuscarDestinatario} className="w-1/3 p-2 text-sm border rounded-lg dark:bg-slate-950 dark:border-slate-800 font-mono font-bold dark:text-slate-200" placeholder="Documento" />
+                 <input id="gr-destinatario-doc" type="text" value={clienteDoc} onChange={e => setClienteDoc(e.target.value)} onBlur={handleBuscarDestinatario} className="w-1/3 p-2 text-sm border rounded-lg dark:bg-slate-950 dark:border-slate-800 font-mono font-bold dark:text-slate-200" placeholder="Documento" />
                  <input type="text" value={clienteNombre} onChange={e => setClienteNombre(e.target.value)} className="w-2/3 p-2 text-sm border rounded-lg dark:bg-slate-950 dark:border-slate-800 font-bold dark:text-slate-200" placeholder="Razón Social / Nombre" />
                </div>
             </div>
@@ -326,17 +326,17 @@ function GuiaRemision() {
              <h3 className="text-sm font-bold text-emerald-700 dark:text-emerald-500 uppercase tracking-widest mb-4">2. Direcciones</h3>
              
              <div className="mb-4">
-               <label className="block text-xs font-bold text-emerald-800 dark:text-emerald-400 mb-1">PUNTO DE PARTIDA</label>
+               <label htmlFor="gr-ubigeo-partida" className="block text-xs font-bold text-emerald-800 dark:text-emerald-400 mb-1">PUNTO DE PARTIDA</label>
                <div className="flex gap-2 mb-2">
-                 <input type="text" value={ubigeoPartida} onChange={e => setUbigeoPartida(e.target.value)} className="w-1/3 p-2 text-sm border rounded-lg font-mono placeholder:text-gray-400 dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200" placeholder="Ubigeo (6 dig)" maxLength={6} />
+                 <input id="gr-ubigeo-partida" type="text" value={ubigeoPartida} onChange={e => setUbigeoPartida(e.target.value)} className="w-1/3 p-2 text-sm border rounded-lg font-mono placeholder:text-gray-400 dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200" placeholder="Ubigeo (6 dig)" maxLength={6} />
                  <input type="text" value={direccionPartida} onChange={e => setDireccionPartida(e.target.value)} className="w-2/3 p-2 text-sm border rounded-lg dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200" placeholder="Dirección completa exacta" />
                </div>
              </div>
 
              <div>
-               <label className="block text-xs font-bold text-emerald-800 dark:text-emerald-400 mb-1">PUNTO DE LLEGADA</label>
+               <label htmlFor="gr-ubigeo-llegada" className="block text-xs font-bold text-emerald-800 dark:text-emerald-400 mb-1">PUNTO DE LLEGADA</label>
                <div className="flex gap-2">
-                 <input type="text" value={ubigeoLlegada} onChange={e => setUbigeoLlegada(e.target.value)} className="w-1/3 p-2 text-sm border rounded-lg font-mono placeholder:text-gray-400 dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200" placeholder="Ubigeo (6 dig)" maxLength={6}/>
+                 <input id="gr-ubigeo-llegada" type="text" value={ubigeoLlegada} onChange={e => setUbigeoLlegada(e.target.value)} className="w-1/3 p-2 text-sm border rounded-lg font-mono placeholder:text-gray-400 dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200" placeholder="Ubigeo (6 dig)" maxLength={6}/>
                  <input type="text" value={direccionLlegada} onChange={e => setDireccionLlegada(e.target.value)} className="w-2/3 p-2 text-sm border rounded-lg dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200" placeholder="Dirección completa exacta" />
                </div>
              </div>
@@ -346,8 +346,8 @@ function GuiaRemision() {
              <h3 className="text-sm font-bold text-emerald-700 dark:text-emerald-500 uppercase tracking-widest mb-4">3. Transporte</h3>
              
              <div className="mb-4">
-               <label className="block text-xs font-bold text-gray-500 mb-1">Modalidad de Traslado</label>
-               <select value={modalidadTraslado} onChange={e => setModalidadTraslado(e.target.value)} className="w-full p-2 text-sm border rounded-lg font-bold dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200">
+               <label htmlFor="gr-modalidad" className="block text-xs font-bold text-gray-500 mb-1">Modalidad de Traslado</label>
+               <select id="gr-modalidad" value={modalidadTraslado} onChange={e => setModalidadTraslado(e.target.value)} className="w-full p-2 text-sm border rounded-lg font-bold dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200">
                  <option value="01">01 - Transporte Público (Terceros)</option>
                  <option value="02">02 - Transporte Privado (Propio)</option>
                </select>
@@ -355,9 +355,9 @@ function GuiaRemision() {
 
              {modalidadTraslado === '01' ? (
                <div className="animate-fade animate-duration-300">
-                 <label className="block text-xs font-bold text-gray-500 mb-1">Datos Empresa Transportista</label>
+                 <label htmlFor="gr-transp-ruc" className="block text-xs font-bold text-gray-500 mb-1">Datos Empresa Transportista</label>
                  <div className="flex gap-2 mb-2">
-                   <input type="text" value={transpRuc} onChange={e => setTranspRuc(e.target.value)} className="w-1/3 p-2 text-sm border rounded-lg font-mono dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200" placeholder="RUC Transporte" />
+                   <input id="gr-transp-ruc" type="text" value={transpRuc} onChange={e => setTranspRuc(e.target.value)} className="w-1/3 p-2 text-sm border rounded-lg font-mono dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200" placeholder="RUC Transporte" />
                    <input type="text" value={transpNombre} onChange={e => setTranspNombre(e.target.value)} className="w-2/3 p-2 text-sm border rounded-lg dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200" placeholder="Razón Social" />
                  </div>
                </div>
@@ -365,12 +365,12 @@ function GuiaRemision() {
                <div className="animate-fade animate-duration-300">
                  <div className="flex gap-2 mb-2">
                    <div className="w-1/2">
-                     <label className="block text-xs font-bold text-gray-500 mb-1">Placa Vehículo</label>
-                     <input type="text" value={vehiculoPlaca} onChange={e => setVehiculoPlaca(e.target.value.toUpperCase())} className="w-full p-2 text-sm border rounded-lg font-mono font-bold dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200" placeholder="ABC-123" />
+                     <label htmlFor="gr-vehiculo-placa" className="block text-xs font-bold text-gray-500 mb-1">Placa Vehículo</label>
+                     <input id="gr-vehiculo-placa" type="text" value={vehiculoPlaca} onChange={e => setVehiculoPlaca(e.target.value.toUpperCase())} className="w-full p-2 text-sm border rounded-lg font-mono font-bold dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200" placeholder="ABC-123" />
                    </div>
                    <div className="w-1/2">
-                     <label className="block text-xs font-bold text-gray-500 mb-1">DNI Conductor</label>
-                     <input type="text" value={conductorDoc} onChange={e => setConductorDoc(e.target.value)} className="w-full p-2 text-sm border rounded-lg font-mono dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200" placeholder="Nro Doc." />
+                     <label htmlFor="gr-conductor-doc" className="block text-xs font-bold text-gray-500 mb-1">DNI Conductor</label>
+                     <input id="gr-conductor-doc" type="text" value={conductorDoc} onChange={e => setConductorDoc(e.target.value)} className="w-full p-2 text-sm border rounded-lg font-mono dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200" placeholder="Nro Doc." />
                    </div>
                  </div>
                  <div className="flex gap-2">
@@ -406,7 +406,7 @@ function GuiaRemision() {
                       </tr>
                     )}
                     {items.map((item, idx) => (
-                      <tr key={idx} className="hover:bg-emerald-50 dark:hover:bg-slate-900 transition-colors">
+                      <tr key={`${item.descripcion}-${idx}`} className="hover:bg-emerald-50 dark:hover:bg-slate-900 transition-colors">
                         <td className="text-center px-4 py-2 text-sm dark:text-slate-200 font-bold">{item.cantidad}</td>
                         <td className="px-4 py-2 text-sm dark:text-slate-300 italic">{item.unidad_id}</td>
                         <td className="px-4 py-2 text-sm dark:text-slate-200 font-medium">{item.descripcion}</td>

@@ -354,8 +354,9 @@ function Cotizacion() {
             onChange={(e) => setTelefono(e.target.value)}
           />
           <div className="w-full md:w-1/3 flex items-center gap-3 bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-lg p-1 px-3 shadow-sm transition-colors">
-            <label className="text-xs font-black uppercase tracking-widest text-gray-500 dark:text-slate-500 whitespace-nowrap">Emisión</label>
+            <label htmlFor="almanaque-emision" className="text-xs font-black uppercase tracking-widest text-gray-500 dark:text-slate-500 whitespace-nowrap">Emisión</label>
             <input
+              id="almanaque-emision"
               type="date"
               className="p-2 bg-transparent text-gray-700 dark:text-slate-200 text-sm focus:outline-none font-bold w-full"
               value={fechaEmision}
@@ -412,7 +413,7 @@ function Cotizacion() {
               </tr>
             )}
             {items.map((item, idx) => (
-              <tr key={idx} className="hover:bg-sky-50 dark:hover:bg-slate-950 transition-colors">
+              <tr key={`${item.descripcion}-${idx}`} className="hover:bg-sky-50 dark:hover:bg-slate-950 transition-colors">
                 <td className="p-4 font-bold text-gray-800 dark:text-slate-200">{item.descripcion}</td>
                 <td className="p-4 text-center text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">{item._unidad || "—"}</td>
                 <td className="p-4 text-center">

@@ -61,8 +61,9 @@ function ListaNotasCredito() {
       <div className="px-4 md:px-10 flex flex-wrap gap-4 items-center mb-4">
         <div className="flex items-center gap-2">
           <FaFilter className="text-gray-500 dark:text-gray-400" />
-          <label className="text-sm font-medium dark:text-gray-300">Fecha:</label>
+          <label htmlFor="nc-fecha" className="text-sm font-medium dark:text-gray-300">Fecha:</label>
           <input
+            id="nc-fecha"
             type="date"
             value={fecha}
             onChange={(e) => { setFecha(e.target.value); setPage(1); }}

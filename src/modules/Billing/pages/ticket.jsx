@@ -560,8 +560,9 @@ function Ticket() {
               onChange={(e) => setDireccion(e.target.value)}
             />
             <div className="w-full md:w-1/2 flex items-center gap-3 bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-lg p-1 px-3 shadow-sm transition-colors">
-              <label className="text-xs font-black uppercase tracking-widest text-gray-500 dark:text-slate-500 whitespace-nowrap">Emisión</label>
+              <label htmlFor="ticket-emision" className="text-xs font-black uppercase tracking-widest text-gray-500 dark:text-slate-500 whitespace-nowrap">Emisión</label>
               <input
+                id="ticket-emision"
                 type="date"
                 className="p-2 bg-transparent text-gray-700 dark:text-slate-200 text-sm focus:outline-none font-bold w-full"
                 value={fechaEmision}
@@ -618,7 +619,7 @@ function Ticket() {
                 </tr>
               )}
               {items.map((item, idx) => (
-                <Fragment key={idx}>
+                <Fragment key={`${item.descripcion}-${idx}`}>
                   <tr className="hover:bg-sky-50 dark:hover:bg-slate-950 transition-colors">
                     <td className="p-4 font-bold text-gray-800 dark:text-slate-200">
                       {item.descripcion}
@@ -815,16 +816,16 @@ function Ticket() {
             </div>
 
             <div className="mb-8">
-              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 mb-2">Monto de apertura</label>
+              <label htmlFor="ticket-monto-apertura" className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 mb-2">Monto de apertura</label>
               <div className="relative group">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 font-black text-slate-400 dark:text-slate-500 text-lg">S/</span>
                 <input
+                  id="ticket-monto-apertura"
                   type="number" min="0" step="0.01"
                   className="w-full bg-slate-50 dark:bg-slate-950 border-2 border-slate-100 dark:border-slate-800 rounded-2xl py-4 pl-12 pr-4 text-2xl font-mono font-black text-slate-800 dark:text-slate-100 focus:outline-none focus:border-sky-500 transition-all shadow-inner"
                   placeholder="0.00"
                   value={montoApertura}
                   onChange={(e) => setMontoApertura(e.target.value)}
-                  autoFocus
                   onKeyDown={(e) => e.key === "Enter" && handleAbrirCaja()}
                 />
               </div>
@@ -881,16 +882,16 @@ function Ticket() {
 
             {/* Monto físico */}
             <div className="mb-6">
-              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 mb-2">Efectivo contado (Cierre)</label>
+              <label htmlFor="ticket-monto-cierre" className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 mb-2">Efectivo contado (Cierre)</label>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 font-black text-slate-400 dark:text-slate-500 text-lg">S/</span>
                 <input
+                  id="ticket-monto-cierre"
                   type="number" min="0" step="0.01"
                   className="w-full bg-slate-50 dark:bg-slate-950 border-2 border-slate-100 dark:border-slate-800 rounded-2xl py-3 pl-12 pr-4 text-xl font-mono font-black text-slate-800 dark:text-slate-100 focus:outline-none focus:border-sky-500 transition-all shadow-inner"
                   placeholder="0.00"
                   value={montoCierre}
                   onChange={(e) => setMontoCierre(e.target.value)}
-                  autoFocus
                 />
               </div>
             </div>
@@ -904,8 +905,9 @@ function Ticket() {
             )}
 
             <div className="mb-8">
-              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 mb-2">Observaciones</label>
+              <label htmlFor="ticket-observaciones" className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 mb-2">Observaciones</label>
               <textarea
+                id="ticket-observaciones"
                 className="w-full bg-slate-50 dark:bg-slate-950 border-2 border-slate-100 dark:border-slate-800 rounded-2xl p-4 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:border-sky-500 transition-all shadow-inner h-20 resize-none"
                 placeholder="Escriba aquí cualquier incidencia o nota del turno..."
                 value={observacionCierre}

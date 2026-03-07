@@ -243,7 +243,7 @@ const Pagination = memo(({ data, totalPages, currentPage, onPageChange, onEdit, 
               {getPageNumbers().map((pageNum, idx) =>
                 pageNum === "..." ? (
                   <span
-                    key={`dots-${idx}`}
+                    key={`dots-${pageNum}-${idx}`}
                     className="px-1.5 md:px-2 text-gray-400 dark:text-slate-500 text-xs font-bold"
                   >
                     ...

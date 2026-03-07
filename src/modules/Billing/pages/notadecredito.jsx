@@ -196,8 +196,8 @@ function NotaDeCredito() {
   const [descripcionNota, setDescripcionNota] = useState("");
 
   const opGravadas = useMemo(() => items.reduce((s, i) => s + i.valor_total, 0), [items]);
-  const totalIgv = useMemo(() => opGravadas * IGV_RATE, [opGravadas]);
-  const total = useMemo(() => opGravadas + totalIgv, [opGravadas, totalIgv]);
+  const totalIgv = opGravadas * IGV_RATE;
+  const total = opGravadas + totalIgv;
 
   const handleBuscarRuc = async () => {
     if (clienteRuc.trim().length !== 11) {
@@ -382,8 +382,8 @@ function NotaDeCredito() {
           <input type="text" value={direccion} onChange={(e) => setDireccion(e.target.value)}
             className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-gray-800 dark:text-slate-100 rounded-lg p-3 w-full md:w-1/2 text-sm focus:outline-none focus:border-sky-500 transition-colors shadow-sm font-bold" placeholder="Dirección del cliente (Opcional)" />
           <div className="flex w-full md:w-1/2 items-center gap-3 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg p-1 px-3 shadow-sm">
-            <label className="whitespace-nowrap text-xs font-black uppercase text-gray-500 dark:text-slate-500 tracking-widest">Emisión</label>
-            <input type="date" value={fechaEmision} onChange={(e) => setFechaEmision(e.target.value)}
+            <label htmlFor="nc-emision" className="whitespace-nowrap text-xs font-black uppercase text-gray-500 dark:text-slate-500 tracking-widest">Emisión</label>
+            <input id="nc-emision" type="date" value={fechaEmision} onChange={(e) => setFechaEmision(e.target.value)}
               className="p-2 bg-transparent w-full text-gray-700 dark:text-slate-200 text-sm focus:outline-none font-bold" />
           </div>
         </div>
@@ -391,8 +391,8 @@ function NotaDeCredito() {
         {/* Cajas para Doc. Referencia y Motivo NC */}
         <div className="flex flex-col md:flex-row gap-4 mt-4 bg-slate-50 dark:bg-slate-900 border border-amber-200 dark:border-amber-900/50 p-4 rounded-xl shadow-inner">
           <div className="w-full md:w-1/3">
-            <label className="block text-xs font-black uppercase tracking-widest text-amber-600 dark:text-amber-500 mb-1">Doc. Referencia</label>
-            <select value={comprobanteRefId} onChange={(e) => {
+            <label htmlFor="nc-doc-ref" className="block text-xs font-black uppercase tracking-widest text-amber-600 dark:text-amber-500 mb-1">Doc. Referencia</label>
+            <select id="nc-doc-ref" value={comprobanteRefId} onChange={(e) => {
                 setComprobanteRefId(e.target.value);
                 // Opcional: auto-poblar el cliente usando el documento referenciado
                 const cRef = comprobantes.find(x => String(x.id) === e.target.value);
@@ -408,8 +408,8 @@ function NotaDeCredito() {
             </select>
           </div>
           <div className="w-full md:w-1/3">
-            <label className="block text-xs font-black uppercase tracking-widest text-amber-600 dark:text-amber-500 mb-1">Motivo NC</label>
-            <select value={tipoNotaId} onChange={(e) => setTipoNotaId(e.target.value)}
+            <label htmlFor="nc-motivo" className="block text-xs font-black uppercase tracking-widest text-amber-600 dark:text-amber-500 mb-1">Motivo NC</label>
+            <select id="nc-motivo" value={tipoNotaId} onChange={(e) => setTipoNotaId(e.target.value)}
               className="w-full p-2.5 rounded-lg border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-sm focus:outline-none focus:border-amber-500 font-bold text-gray-700 dark:text-slate-200">
               <option value="01">01 - Anulación de la operación</option>
               <option value="02">02 - Anulación por error en el RUC</option>
@@ -421,8 +421,8 @@ function NotaDeCredito() {
             </select>
           </div>
           <div className="w-full md:w-1/3">
-            <label className="block text-xs font-black uppercase tracking-widest text-amber-600 dark:text-amber-500 mb-1">Sustento</label>
-            <input type="text" value={descripcionNota} onChange={(e) => setDescripcionNota(e.target.value)}
+            <label htmlFor="nc-sustento" className="block text-xs font-black uppercase tracking-widest text-amber-600 dark:text-amber-500 mb-1">Sustento</label>
+            <input id="nc-sustento" type="text" value={descripcionNota} onChange={(e) => setDescripcionNota(e.target.value)}
               placeholder="Razón de la NC..."
               className="w-full p-2.5 rounded-lg border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-sm focus:outline-none focus:border-amber-500 font-bold text-gray-700 dark:text-slate-200" />
           </div>
@@ -455,7 +455,7 @@ function NotaDeCredito() {
                 </tr>
               )}
               {items.map((item, idx) => (
-                <tr key={idx} className="hover:bg-sky-50 dark:hover:bg-slate-900 transition-colors">
+                <tr key={`${item.descripcion}-${idx}`} className="hover:bg-sky-50 dark:hover:bg-slate-900 transition-colors">
                   <td className="text-center px-4 py-3 text-sm dark:text-slate-200 font-bold">{item.cantidad}</td>
                   <td className="px-4 py-3 text-sm dark:text-slate-200">{item.descripcion}</td>
                   <td className="px-4 py-3 text-sm dark:text-slate-300 italic opacity-80">

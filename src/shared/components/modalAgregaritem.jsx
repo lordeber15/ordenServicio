@@ -123,8 +123,9 @@ function ModalAgregaritem({ isOpen, onClose, producto }) {
 
       <div className="flex flex-col gap-3">
         <div>
-          <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Nombre</label>
+          <label htmlFor="modal-producto-nombre" className="text-sm font-medium text-gray-700 dark:text-slate-300">Nombre</label>
           <input
+            id="modal-producto-nombre"
             type="text"
             value={nombre}
             onChange={(e) => setNombre(e.target.value)}
@@ -134,8 +135,9 @@ function ModalAgregaritem({ isOpen, onClose, producto }) {
         </div>
 
         <div>
-           <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Código de Barras (Opcional)</label>
+           <label htmlFor="modal-producto-codigo" className="text-sm font-medium text-gray-700 dark:text-slate-300">Código de Barras (Opcional)</label>
            <input
+             id="modal-producto-codigo"
              type="text"
              value={codigoBarras}
              onChange={(e) => setCodigoBarras(e.target.value)}
@@ -145,8 +147,9 @@ function ModalAgregaritem({ isOpen, onClose, producto }) {
         </div>
 
         <div>
-          <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Precio con IGV (S/)</label>
+          <label htmlFor="modal-producto-precio" className="text-sm font-medium text-gray-700 dark:text-slate-300">Precio con IGV (S/)</label>
           <input
+            id="modal-producto-precio"
             type="number"
             min="0"
             step="0.01"
@@ -177,8 +180,9 @@ function ModalAgregaritem({ isOpen, onClose, producto }) {
 
         {!esServicio && (
           <div>
-            <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Stock</label>
+            <label htmlFor="modal-producto-stock" className="text-sm font-medium text-gray-700 dark:text-slate-300">Stock</label>
             <input
+              id="modal-producto-stock"
               type="number"
               min="0"
               step="1"
@@ -190,8 +194,9 @@ function ModalAgregaritem({ isOpen, onClose, producto }) {
         )}
 
         <div>
-          <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Unidad de Medida</label>
+          <label htmlFor="modal-producto-unidad" className="text-sm font-medium text-gray-700 dark:text-slate-300">Unidad de Medida</label>
           <select
+            id="modal-producto-unidad"
             value={unidadId}
             onChange={(e) => setUnidadId(e.target.value)}
             className="mt-1 border border-gray-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md p-2 w-full text-sm focus:outline-none focus:border-sky-500"
@@ -205,8 +210,9 @@ function ModalAgregaritem({ isOpen, onClose, producto }) {
         </div>
 
         <div>
-          <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Tipo de Afectación IGV</label>
+          <label htmlFor="modal-producto-afectacion" className="text-sm font-medium text-gray-700 dark:text-slate-300">Tipo de Afectación IGV</label>
           <select
+            id="modal-producto-afectacion"
             value={tipoAfectacion}
             onChange={(e) => setTipoAfectacion(e.target.value)}
             className="mt-1 border border-gray-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md p-2 w-full text-sm focus:outline-none focus:border-sky-500"

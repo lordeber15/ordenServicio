@@ -27,11 +27,14 @@ function TablaAlmanaque({ data }) {
             </tr>
           </thead>
           <tbody className="bg-white dark:bg-slate-950 divide-y divide-gray-100 dark:divide-slate-900">
-            {data?.map((item, index) => (
+            {data?.map((item) => (
               <tr
-                key={index}
+                key={item.id}
                 className="hover:bg-sky-50 dark:hover:bg-slate-900 cursor-pointer transition-all group"
                 onClick={() => routeChange(item.id)}
+                onKeyDown={(e) => e.key === "Enter" && routeChange(item.id)}
+                tabIndex={0}
+                role="button"
               >
                 <td className="text-center px-6 py-4 text-sm font-mono font-black text-sky-700 dark:text-slate-400">
                   {item.id.toString().padStart(5, '0')}

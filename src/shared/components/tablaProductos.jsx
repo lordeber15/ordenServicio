@@ -1,6 +1,8 @@
 import { CiEdit } from "react-icons/ci";
 import { MdDeleteOutline } from "react-icons/md";
 
+const EMPTY_LIST = [];
+
 const TIPO_LABEL = {
   "10": "Gravado",
   "20": "Exonerado",
@@ -11,7 +13,7 @@ function precioDisplay(p) {
   return parseFloat(p.valor_unitario || 0);
 }
 
-function TablaProductos({ data, unidades = [], onEdit, onDelete }) {
+function TablaProductos({ data, unidades = EMPTY_LIST, onEdit, onDelete }) {
   const getUnidadNombre = (id) =>
     unidades.find((u) => u.id === id)?.descripcion || id || "—";
 

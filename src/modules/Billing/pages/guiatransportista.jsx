@@ -220,17 +220,17 @@ function GuiaTransportista() {
           <h3 className="text-sm font-bold text-indigo-700 dark:text-indigo-500 uppercase tracking-widest mb-4">1. Datos del Traslado</h3>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-               <label className="block text-xs font-bold text-gray-500 mb-1">Emisión</label>
-               <input type="date" value={fechaEmision} onChange={e => setFechaEmision(e.target.value)} className="w-full p-2 text-sm border rounded-lg dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200 font-bold" />
+               <label htmlFor="gt-emision" className="block text-xs font-bold text-gray-500 mb-1">Emisión</label>
+               <input id="gt-emision" type="date" value={fechaEmision} onChange={e => setFechaEmision(e.target.value)} className="w-full p-2 text-sm border rounded-lg dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200 font-bold" />
             </div>
             <div>
-               <label className="block text-xs font-bold text-gray-500 mb-1">Traslado</label>
-               <input type="date" value={fechaTraslado} onChange={e => setFechaTraslado(e.target.value)} className="w-full p-2 text-sm border rounded-lg dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200 font-bold" />
+               <label htmlFor="gt-traslado" className="block text-xs font-bold text-gray-500 mb-1">Traslado</label>
+               <input id="gt-traslado" type="date" value={fechaTraslado} onChange={e => setFechaTraslado(e.target.value)} className="w-full p-2 text-sm border rounded-lg dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200 font-bold" />
             </div>
             <div>
-              <label className="block text-xs font-bold text-gray-500 mb-1">Peso Bruto Total</label>
+              <label htmlFor="gt-peso" className="block text-xs font-bold text-gray-500 mb-1">Peso Bruto Total</label>
               <div className="flex">
-                <input type="number" step="0.1" value={pesoTotal} onChange={e => setPesoTotal(e.target.value)} className="w-full p-2 text-sm border rounded-l-lg dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200" placeholder="Ej. 50.5" />
+                <input id="gt-peso" type="number" step="0.1" value={pesoTotal} onChange={e => setPesoTotal(e.target.value)} className="w-full p-2 text-sm border rounded-l-lg dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200" placeholder="Ej. 50.5" />
                 <select value={unidadPeso} onChange={e => setUnidadPeso(e.target.value)} className="p-2 border border-l-0 rounded-r-lg bg-gray-100 dark:bg-slate-800 text-sm font-bold dark:border-slate-800 dark:text-slate-200">
                   <option value="KGM">KGs</option>
                   <option value="TNE">Ton</option>
@@ -238,8 +238,8 @@ function GuiaTransportista() {
               </div>
             </div>
             <div>
-               <label className="block text-xs font-bold text-gray-500 mb-1">Nro de Bultos</label>
-               <input type="number" value={numeroBultos} onChange={e => setNumeroBultos(e.target.value)} className="w-full p-2 text-sm border rounded-lg dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200" min="1" />
+               <label htmlFor="gt-bultos" className="block text-xs font-bold text-gray-500 mb-1">Nro de Bultos</label>
+               <input id="gt-bultos" type="number" value={numeroBultos} onChange={e => setNumeroBultos(e.target.value)} className="w-full p-2 text-sm border rounded-lg dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200" min="1" />
             </div>
           </div>
         </div>
@@ -249,16 +249,16 @@ function GuiaTransportista() {
           <h3 className="text-sm font-bold text-indigo-700 dark:text-indigo-500 uppercase tracking-widest mb-4">2. Sujetos (Quién entrega y Quién recibe)</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="border border-slate-200 dark:border-slate-800 rounded-lg p-4 bg-white dark:bg-slate-950">
-               <label className="block text-xs font-black uppercase tracking-widest text-indigo-800 dark:text-indigo-400 mb-2">REMITENTE (Quien te contrata)</label>
+               <label htmlFor="gt-remitente-doc" className="block text-xs font-black uppercase tracking-widest text-indigo-800 dark:text-indigo-400 mb-2">REMITENTE (Quien te contrata)</label>
                <div className="flex gap-2 mb-2">
-                 <input type="text" value={remitenteDoc} onChange={e => setRemitenteDoc(e.target.value)} onBlur={() => handleBuscarPersona(remitenteDoc, setRemitenteNombre)} className="w-1/3 p-2 text-sm border rounded-lg font-mono font-bold dark:bg-slate-900 dark:border-slate-800 dark:text-slate-200" placeholder="RUC" />
+                 <input id="gt-remitente-doc" type="text" value={remitenteDoc} onChange={e => setRemitenteDoc(e.target.value)} onBlur={() => handleBuscarPersona(remitenteDoc, setRemitenteNombre)} className="w-1/3 p-2 text-sm border rounded-lg font-mono font-bold dark:bg-slate-900 dark:border-slate-800 dark:text-slate-200" placeholder="RUC" />
                  <input type="text" value={remitenteNombre} onChange={e => setRemitenteNombre(e.target.value)} className="w-2/3 p-2 text-sm border rounded-lg font-bold dark:bg-slate-900 dark:border-slate-800 dark:text-slate-200" placeholder="Razón Social" />
                </div>
             </div>
             <div className="border border-slate-200 dark:border-slate-800 rounded-lg p-4 bg-white dark:bg-slate-950">
-               <label className="block text-xs font-black uppercase tracking-widest text-indigo-800 dark:text-indigo-400 mb-2">DESTINATARIO (Quien recibe)</label>
+               <label htmlFor="gt-destinatario-doc" className="block text-xs font-black uppercase tracking-widest text-indigo-800 dark:text-indigo-400 mb-2">DESTINATARIO (Quien recibe)</label>
                <div className="flex gap-2 mb-2">
-                 <input type="text" value={destinatarioDoc} onChange={e => setDestinatarioDoc(e.target.value)} onBlur={() => handleBuscarPersona(destinatarioDoc, setDestinatarioNombre)} className="w-1/3 p-2 text-sm border rounded-lg font-mono font-bold dark:bg-slate-900 dark:border-slate-800 dark:text-slate-200" placeholder="RUC/DNI" />
+                 <input id="gt-destinatario-doc" type="text" value={destinatarioDoc} onChange={e => setDestinatarioDoc(e.target.value)} onBlur={() => handleBuscarPersona(destinatarioDoc, setDestinatarioNombre)} className="w-1/3 p-2 text-sm border rounded-lg font-mono font-bold dark:bg-slate-900 dark:border-slate-800 dark:text-slate-200" placeholder="RUC/DNI" />
                  <input type="text" value={destinatarioNombre} onChange={e => setDestinatarioNombre(e.target.value)} className="w-2/3 p-2 text-sm border rounded-lg font-bold dark:bg-slate-900 dark:border-slate-800 dark:text-slate-200" placeholder="Razón Social / Nombre" />
                </div>
             </div>
@@ -271,17 +271,17 @@ function GuiaTransportista() {
              <h3 className="text-sm font-bold text-indigo-700 dark:text-indigo-500 uppercase tracking-widest mb-4">3. Direcciones</h3>
              
              <div className="mb-4">
-               <label className="block text-xs font-bold text-indigo-800 dark:text-indigo-400 mb-1">ORIGEN (Punto de Partida)</label>
+               <label htmlFor="gt-ubigeo-partida" className="block text-xs font-bold text-indigo-800 dark:text-indigo-400 mb-1">ORIGEN (Punto de Partida)</label>
                <div className="flex gap-2 mb-2">
-                 <input type="text" value={ubigeoPartida} onChange={e => setUbigeoPartida(e.target.value)} className="w-1/3 p-2 text-sm border rounded-lg font-mono placeholder:text-gray-400 dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200" placeholder="Ubigeo (6 dig)" maxLength={6} />
+                 <input id="gt-ubigeo-partida" type="text" value={ubigeoPartida} onChange={e => setUbigeoPartida(e.target.value)} className="w-1/3 p-2 text-sm border rounded-lg font-mono placeholder:text-gray-400 dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200" placeholder="Ubigeo (6 dig)" maxLength={6} />
                  <input type="text" value={direccionPartida} onChange={e => setDireccionPartida(e.target.value)} className="w-2/3 p-2 text-sm border rounded-lg dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200" placeholder="Dirección completa exacta" />
                </div>
              </div>
 
              <div>
-               <label className="block text-xs font-bold text-indigo-800 dark:text-indigo-400 mb-1">DESTINO (Punto de Llegada)</label>
+               <label htmlFor="gt-ubigeo-llegada" className="block text-xs font-bold text-indigo-800 dark:text-indigo-400 mb-1">DESTINO (Punto de Llegada)</label>
                <div className="flex gap-2">
-                 <input type="text" value={ubigeoLlegada} onChange={e => setUbigeoLlegada(e.target.value)} className="w-1/3 p-2 text-sm border rounded-lg font-mono placeholder:text-gray-400 dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200" placeholder="Ubigeo (6 dig)" maxLength={6}/>
+                 <input id="gt-ubigeo-llegada" type="text" value={ubigeoLlegada} onChange={e => setUbigeoLlegada(e.target.value)} className="w-1/3 p-2 text-sm border rounded-lg font-mono placeholder:text-gray-400 dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200" placeholder="Ubigeo (6 dig)" maxLength={6}/>
                  <input type="text" value={direccionLlegada} onChange={e => setDireccionLlegada(e.target.value)} className="w-2/3 p-2 text-sm border rounded-lg dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200" placeholder="Dirección completa exacta" />
                </div>
              </div>
@@ -292,21 +292,21 @@ function GuiaTransportista() {
              
              {/* Doc Referencia */}
              <div className="mb-4 pb-4 border-b border-gray-200 dark:border-slate-800">
-               <label className="block text-xs font-bold text-indigo-800 dark:text-indigo-400 mb-1">Guía Remitente de Referencia (Opcional)</label>
+               <label htmlFor="gt-doc-ref-serie" className="block text-xs font-bold text-indigo-800 dark:text-indigo-400 mb-1">Guía Remitente de Referencia (Opcional)</label>
                <div className="flex gap-2">
-                 <input type="text" value={docRefSerie} onChange={e => setDocRefSerie(e.target.value.toUpperCase())} className="w-1/3 p-2 text-sm border rounded-lg font-mono font-bold dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200" placeholder="Serie Ej. T001" maxLength={4} />
+                 <input id="gt-doc-ref-serie" type="text" value={docRefSerie} onChange={e => setDocRefSerie(e.target.value.toUpperCase())} className="w-1/3 p-2 text-sm border rounded-lg font-mono font-bold dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200" placeholder="Serie Ej. T001" maxLength={4} />
                  <input type="text" value={docRefCorrelativo} onChange={e => setDocRefCorrelativo(e.target.value)} className="w-2/3 p-2 text-sm border rounded-lg font-mono dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200" placeholder="Correlativo Ej. 1290" />
                </div>
              </div>
 
              <div className="flex gap-2 mb-2">
                <div className="w-1/2">
-                 <label className="block text-xs font-bold text-gray-500 mb-1">Placa Vehículo</label>
-                 <input type="text" value={vehiculoPlaca} onChange={e => setVehiculoPlaca(e.target.value.toUpperCase())} className="w-full p-2 text-sm border rounded-lg font-mono font-bold dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200" placeholder="ABC-123" />
+                 <label htmlFor="gt-vehiculo-placa" className="block text-xs font-bold text-gray-500 mb-1">Placa Vehículo</label>
+                 <input id="gt-vehiculo-placa" type="text" value={vehiculoPlaca} onChange={e => setVehiculoPlaca(e.target.value.toUpperCase())} className="w-full p-2 text-sm border rounded-lg font-mono font-bold dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200" placeholder="ABC-123" />
                </div>
                <div className="w-1/2">
-                 <label className="block text-xs font-bold text-gray-500 mb-1">DNI Conductor</label>
-                 <input type="text" value={conductorDoc} onChange={e => setConductorDoc(e.target.value)} className="w-full p-2 text-sm border rounded-lg font-mono dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200" placeholder="Nro Doc." />
+                 <label htmlFor="gt-conductor-doc" className="block text-xs font-bold text-gray-500 mb-1">DNI Conductor</label>
+                 <input id="gt-conductor-doc" type="text" value={conductorDoc} onChange={e => setConductorDoc(e.target.value)} className="w-full p-2 text-sm border rounded-lg font-mono dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200" placeholder="Nro Doc." />
                </div>
              </div>
              <div className="flex gap-2">
@@ -340,7 +340,7 @@ function GuiaTransportista() {
                       </tr>
                     )}
                     {items.map((item, idx) => (
-                      <tr key={idx} className="hover:bg-indigo-50 dark:hover:bg-slate-900 transition-colors">
+                      <tr key={`${item.descripcion}-${idx}`} className="hover:bg-indigo-50 dark:hover:bg-slate-900 transition-colors">
                         <td className="text-center px-4 py-2 text-sm dark:text-slate-200 font-bold">{item.cantidad}</td>
                         <td className="px-4 py-2 text-sm dark:text-slate-300 italic">{item.unidad_id}</td>
                         <td className="px-4 py-2 text-sm dark:text-slate-200 font-medium">{item.descripcion}</td>
