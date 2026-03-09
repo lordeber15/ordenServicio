@@ -22,6 +22,7 @@ import {
 import { getProducto } from "../../Inventory/services/productos";
 import axiosURL from "../../../core/api/axiosURL";
 import { openCashDrawer } from "../../../shared/utils/printDrawer";
+import PaymentModal from "../../../shared/components/PaymentModal";
 
 const IGV_RATE = 0.18;
 const HOY = new Date().toLocaleDateString('en-CA');
@@ -235,6 +236,7 @@ function Factura() {
   const [buscando, setBuscando] = useState(false);
   const [emitiendo, setEmitiendo] = useState(false);
   const [resultado, setResultado] = useState(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   const opGravadas = useMemo(() => items.reduce((s, i) => s + i.valor_total, 0), [items]);
   const totalIgv = opGravadas * IGV_RATE;
@@ -256,6 +258,23 @@ function Factura() {
     } finally {
       setBuscando(false);
     }
+  };
+
+  // ── Validar antes de abrir modal de pago ──
+  const handlePreEmitir = () => {
+    if (!emisor) { toast.error("No hay emisor configurado"); return; }
+    if (!serie) { toast.error("No hay serie F configurada. Crea una en Configuración > Series"); return; }
+    if (!clienteRuc.trim() || clienteRuc.trim().length !== 11) {
+      toast.error("La Factura requiere el RUC del cliente (11 dígitos)");
+      return;
+    }
+    if (!clienteNombre.trim()) { toast.error("Ingresa la razón social del cliente"); return; }
+    if (items.length === 0) { toast.error("Agrega al menos un ítem"); return; }
+    if (formaPago === "Crédito" && !fechaVencimiento) {
+      toast.error("Ingresa la fecha de vencimiento para pago a crédito");
+      return;
+    }
+    setShowPaymentModal(true);
   };
 
   const handleEmitir = async () => {
@@ -559,12 +578,21 @@ function Factura() {
 
         {/* Botón emitir */}
         <div className="flex justify-center md:justify-end mt-8">
-          <button onClick={handleEmitir} disabled={emitiendo || items.length === 0}
+          <button onClick={handlePreEmitir} disabled={emitiendo || items.length === 0}
             className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl p-4 w-full md:w-1/4 text-white cursor-pointer font-black uppercase tracking-[0.2em] shadow-xl transition-all hover:scale-105 active:scale-95 disabled:hover:scale-100">
             {emitiendo ? "Enviando..." : "Emitir Factura"}
           </button>
         </div>
       </div>
+      {/* ── Modal de Pago ── */}
+      <PaymentModal
+        open={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        onConfirm={() => { setShowPaymentModal(false); handleEmitir(); }}
+        montoCobrar={total}
+        label="Factura Electrónica"
+        loading={emitiendo}
+      />
     </div>
   );
 }

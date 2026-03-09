@@ -21,6 +21,7 @@ import {
 } from "../services/comprobantes";
 import { getProducto } from "../../Inventory/services/productos";
 import { openCashDrawer } from "../../../shared/utils/printDrawer";
+import PaymentModal from "../../../shared/components/PaymentModal";
 
 const IGV_RATE = 0.18;
 const HOY = new Date().toLocaleDateString('en-CA');
@@ -233,6 +234,7 @@ function Boleta() {
   const [buscando, setBuscando] = useState(false);
   const [emitiendo, setEmitiendo] = useState(false);
   const [resultado, setResultado] = useState(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   const opGravadas = useMemo(() => items.reduce((s, i) => s + i.valor_total, 0), [items]);
   const totalIgv = opGravadas * IGV_RATE;
@@ -251,6 +253,14 @@ function Boleta() {
     } finally {
       setBuscando(false);
     }
+  };
+
+  // ── Validar antes de abrir modal de pago ──
+  const handlePreEmitir = () => {
+    if (!emisor) { toast.error("No hay emisor configurado"); return; }
+    if (!serie) { toast.error("No hay serie B configurada. Crea una en Configuración > Series"); return; }
+    if (items.length === 0) { toast.error("Agrega al menos un ítem"); return; }
+    setShowPaymentModal(true);
   };
 
   const handleEmitir = async () => {
@@ -521,12 +531,21 @@ function Boleta() {
 
         {/* Botón emitir */}
         <div className="flex justify-center md:justify-end mt-8">
-          <button onClick={handleEmitir} disabled={emitiendo || items.length === 0}
+          <button onClick={handlePreEmitir} disabled={emitiendo || items.length === 0}
             className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl p-4 w-full md:w-1/4 text-white cursor-pointer font-black uppercase tracking-[0.2em] shadow-xl transition-all hover:scale-105 active:scale-95 disabled:hover:scale-100">
             {emitiendo ? "Enviando..." : "Emitir Boleta"}
           </button>
         </div>
       </div>
+      {/* ── Modal de Pago ── */}
+      <PaymentModal
+        open={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        onConfirm={() => { setShowPaymentModal(false); handleEmitir(); }}
+        montoCobrar={total}
+        label="Boleta de Venta"
+        loading={emitiendo}
+      />
     </div>
   );
 }

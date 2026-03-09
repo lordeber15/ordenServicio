@@ -9,6 +9,7 @@ import { CiSearch } from "react-icons/ci";
 import toast from "react-hot-toast";
 import { getProducto } from "../../Inventory/services/productos";
 import { openCashDrawer } from "../../../shared/utils/printDrawer";
+import PaymentModal from "../../../shared/components/PaymentModal";
 import { createTicket, getTicketPdf } from "../../../shared/services/ticket";
 import { getCajaActual, abrirCaja, cerrarCaja } from "../../../shared/services/caja";
 import { getUnidades } from "../services/unidades";
@@ -82,6 +83,10 @@ function Ticket() {
   // ── Menú Convertir a ──
   const [showConvertMenu, setShowConvertMenu] = useState(false);
 
+  // ── Modal de pago ──
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [pendingPrintMode, setPendingPrintMode] = useState(null);
+
   const barcodeRef = useRef(null);
   const manualDescRef = useRef(null);
   const manualPrecioRef = useRef(null);
@@ -135,6 +140,12 @@ function Ticket() {
   const total = items.reduce((s, i) => s + i.subtotal, 0);
   const opGravada = total / 1.18;
   const igv = total - opGravada;
+
+  // ── Monto a cobrar (servicios: adelanto; productos: total) ──
+  const tieneServicios = items.some(i => i._es_servicio);
+  const montoCobrar = tieneServicios
+    ? items.reduce((s, i) => s + (i._es_servicio ? (i._adelanto || 0) : i.subtotal), 0)
+    : total;
 
   // ── Sugerencias de inventario para ítem manual ──
   const suggestions = useMemo(() => {
@@ -785,7 +796,13 @@ function Ticket() {
         {/* ── Botones de acción ── */}
         <div className="flex flex-col md:flex-row gap-4 justify-end mb-10">
           <button
-            onClick={() => handleSaveAndPrint("ticket")}
+            onClick={() => {
+              if (savedTicket) { handleSaveAndPrint("ticket"); return; }
+              if (items.length === 0) { toast.error("Agrega al menos un ítem"); return; }
+              if (!caja) { toast.error("Debe abrir la caja antes de generar tickets"); return; }
+              setPendingPrintMode("ticket");
+              setShowPaymentModal(true);
+            }}
             disabled={ticketMutation.isPending}
             className="flex items-center justify-center gap-3 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white rounded-xl px-8 py-4 cursor-pointer transition-all font-black uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95 text-xs"
           >
@@ -793,7 +810,13 @@ function Ticket() {
             {savedTicket ? "Reimprimir Ticket (80mm)" : "Emitir Ticket (80mm)"}
           </button>
           <button
-            onClick={() => handleSaveAndPrint("a5")}
+            onClick={() => {
+              if (savedTicket) { handleSaveAndPrint("a5"); return; }
+              if (items.length === 0) { toast.error("Agrega al menos un ítem"); return; }
+              if (!caja) { toast.error("Debe abrir la caja antes de generar tickets"); return; }
+              setPendingPrintMode("a5");
+              setShowPaymentModal(true);
+            }}
             disabled={ticketMutation.isPending}
             className="flex items-center justify-center gap-3 bg-sky-800 hover:bg-sky-700 disabled:opacity-50 text-white rounded-xl px-8 py-4 cursor-pointer transition-all font-black uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95 text-xs"
           >
@@ -929,6 +952,16 @@ function Ticket() {
           </div>
         </div>
       )}
+
+      {/* ── Modal de Pago ── */}
+      <PaymentModal
+        open={showPaymentModal}
+        onClose={() => { setShowPaymentModal(false); setPendingPrintMode(null); }}
+        onConfirm={() => { setShowPaymentModal(false); handleSaveAndPrint(pendingPrintMode); setPendingPrintMode(null); }}
+        montoCobrar={montoCobrar}
+        label={tieneServicios ? "Ticket — Adelanto de Servicio" : "Ticket de Venta"}
+        loading={ticketMutation.isPending}
+      />
     </>
   );
 }
