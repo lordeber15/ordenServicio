@@ -21,23 +21,11 @@ import {
 } from "../services/comprobantes";
 import { getProducto } from "../../Inventory/services/productos";
 import { openCashDrawer } from "../../../shared/utils/printDrawer";
+import { printPdfBlob } from "../../../shared/utils/printPdfBlob";
 import PaymentModal from "../../../shared/components/PaymentModal";
 
 const IGV_RATE = 0.18;
 const HOY = new Date().toLocaleDateString('en-CA');
-
-// ─── Helper: impresión directa via iframe oculto ─────────────────────────────
-const printPdfBlob = (blob) => {
-  const url = URL.createObjectURL(new Blob([blob], { type: "application/pdf" }));
-  const iframe = document.createElement("iframe");
-  iframe.style.display = "none";
-  iframe.src = url;
-  document.body.appendChild(iframe);
-  iframe.onload = () => {
-    iframe.contentWindow.print();
-    setTimeout(() => { document.body.removeChild(iframe); URL.revokeObjectURL(url); }, 1000);
-  };
-};
 
 const handlePrintComprobante = async (id, format) => {
   try {

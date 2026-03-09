@@ -4,18 +4,7 @@ import toast from "react-hot-toast";
 import { getGuias, getGuiaPdf } from "../services/comprobantes";
 import Drawer from "../../../shared/components/drawer";
 import { FaPrint, FaFileCode, FaTruckFast, FaCircleCheck, FaCircleXmark, FaClock, FaFilter } from "react-icons/fa6";
-
-const printPdfBlob = (blob) => {
-  const url = URL.createObjectURL(new Blob([blob], { type: "application/pdf" }));
-  const iframe = document.createElement("iframe");
-  iframe.style.display = "none";
-  iframe.src = url;
-  document.body.appendChild(iframe);
-  iframe.onload = () => {
-    iframe.contentWindow.print();
-    setTimeout(() => { document.body.removeChild(iframe); URL.revokeObjectURL(url); }, 1000);
-  };
-};
+import { printPdfBlob } from "../../../shared/utils/printPdfBlob";
 
 const PER_PAGE = 8;
 

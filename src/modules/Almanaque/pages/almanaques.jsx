@@ -10,25 +10,10 @@ import { getReniec } from "../../../shared/services/reniec";
 import { createAlmanaque, getCotizacionPdf } from "../services/almanaques";
 import { getUnidades } from "../../Billing/services/unidades";
 import logo from "../../../assets/ALEXANDER.webp";
+import { printPdfBlob } from "../../../shared/utils/printPdfBlob";
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 const today = new Date().toLocaleDateString('en-CA');
-
-// ─── Helper: impresión directa via iframe oculto ─────────────────────────────
-const printPdfBlob = (blob) => {
-  const url = URL.createObjectURL(new Blob([blob], { type: "application/pdf" }));
-  const iframe = document.createElement("iframe");
-  iframe.style.display = "none";
-  iframe.src = url;
-  document.body.appendChild(iframe);
-  iframe.onload = () => {
-    iframe.contentWindow.print();
-    setTimeout(() => {
-      document.body.removeChild(iframe);
-      URL.revokeObjectURL(url);
-    }, 1000);
-  };
-};
 
 // ─────────────────────────────────────────────────────────────────
 // Componente principal

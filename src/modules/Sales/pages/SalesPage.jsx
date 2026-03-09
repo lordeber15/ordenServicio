@@ -5,19 +5,7 @@ import { getTicketPdf } from "../../../shared/services/ticket";
 import { getComprobantePdf } from "../../Billing/services/comprobantes";
 import Drawer from "../../../shared/components/drawer";
 import { FaReceipt, FaFileInvoice, FaFileLines, FaFilter, FaCircleCheck, FaCircleXmark, FaClock, FaSpinner, FaBan } from "react-icons/fa6";
-
-// ─── Helper: impresión directa via iframe oculto ─────────────────────────────
-const printPdfBlob = (blob) => {
-  const url = URL.createObjectURL(new Blob([blob], { type: "application/pdf" }));
-  const iframe = document.createElement("iframe");
-  iframe.style.display = "none";
-  iframe.src = url;
-  document.body.appendChild(iframe);
-  iframe.onload = () => {
-    iframe.contentWindow.print();
-    setTimeout(() => { document.body.removeChild(iframe); URL.revokeObjectURL(url); }, 1000);
-  };
-};
+import { printPdfBlob } from "../../../shared/utils/printPdfBlob";
 
 /**
  * Módulo de Gestión de Ventas y Servicios (Dashboard)

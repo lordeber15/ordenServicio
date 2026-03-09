@@ -10,6 +10,7 @@ import { getSeriesByTipo } from "../services/series";
 import { buscarClientePorDoc, createCliente } from "../../../shared/services/clientes";
 import axiosURL from "../../../core/api/axiosURL";
 import { getGuiaPdf } from "../services/comprobantes";
+import { printPdfBlob } from "../../../shared/utils/printPdfBlob";
 
 const HOY = new Date().toLocaleDateString('en-CA');
 
@@ -82,18 +83,6 @@ function GuiaRemision() {
   // Estado de Emisión
   const [emitiendo, setEmitiendo] = useState(false);
   const [resultado, setResultado] = useState(null);
-
-  const printPdfBlob = (blob) => {
-    const url = URL.createObjectURL(new Blob([blob], { type: "application/pdf" }));
-    const iframe = document.createElement("iframe");
-    iframe.style.display = "none";
-    iframe.src = url;
-    document.body.appendChild(iframe);
-    iframe.onload = () => {
-      iframe.contentWindow.print();
-      setTimeout(() => { document.body.removeChild(iframe); URL.revokeObjectURL(url); }, 1000);
-    };
-  };
 
   const handlePrintGuia = async (id) => {
     try {
