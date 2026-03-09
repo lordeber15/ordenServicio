@@ -129,14 +129,12 @@ function Dashboard() {
     setForm(FORM_INITIAL);
   }, []);
 
-  const openModal = useCallback((item) => {
-    setSelectedItem(item);
+  const openModal = useCallback(() => {
     setModalIsOpen(true);
   }, []);
 
   const closeModal = useCallback(() => {
     setModalIsOpen(false);
-    setSelectedItem(null);
   }, []);
 
   const handlerClickServicios = async () => {
@@ -173,7 +171,7 @@ function Dashboard() {
           total: servicio.total,
           acuenta: servicio.acuenta,
         });
-        openModal({});
+        openModal();
       } else {
         toast.error("Servicio no encontrado en la página actual");
       }
@@ -276,7 +274,7 @@ function Dashboard() {
           <button
             onClick={() => {
               handlerReset();
-              openModal({});
+              openModal();
             }}
             className="bg-sky-700 hover:bg-sky-600 text-white px-4 py-3 sm:px-6 sm:py-4 rounded-2xl font-bold flex items-center gap-2 shadow-lg shadow-sky-900/10 transition-all hover:scale-105 active:scale-95 cursor-pointer text-sm sm:text-base"
           >
@@ -382,7 +380,7 @@ function Dashboard() {
               <button
                 onClick={() => {
                   handlerReset();
-                  openModal({});
+                  openModal();
                 }}
                 className="bg-sky-700 hover:bg-sky-600 text-white px-6 py-3 rounded-2xl font-bold inline-flex items-center gap-2 shadow-lg shadow-sky-900/10 transition-all hover:scale-105 active:scale-95 cursor-pointer"
               >
