@@ -100,6 +100,8 @@ function Ticket() {
     tickets: cajaData?.ventas_tickets || 0,
     comprobantes: cajaData?.ventas_comprobantes || 0,
     total: cajaData?.total_ventas_preview || 0,
+    total_efectivo: cajaData?.total_efectivo || 0,
+    total_yape: cajaData?.total_yape || 0,
   };
 
   // ── Búsqueda de cliente por DNI/RUC ──
@@ -251,13 +253,14 @@ function Ticket() {
   const handleRemoveItem = (idx) => setItems((prev) => prev.filter((_, k) => k !== idx));
 
   // ── Construir payload ──
-  const buildPayload = () => ({
+  const buildPayload = (metodoPago) => ({
     cliente: cliente || "Sin nombre",
     tipoDocumento: tipoDoc,
     numeroDocumento: nroDoc || "00000000",
     direccion,
     fechaEmision,
     precioTotal: parseFloat(total.toFixed(2)),
+    metodo_pago: metodoPago || "Efectivo",
     detalles: items.map(({ _pid, descripcion, cantidad, precioUnitario, subtotal, _es_servicio, _adelanto }) => ({
       descripcion, cantidad, precioUnitario, subtotal,
       producto_id: _pid || null,
@@ -267,7 +270,7 @@ function Ticket() {
   });
 
   // ── Guardar + imprimir (PDF desde backend) ──
-  const handleSaveAndPrint = async (mode) => {
+  const handleSaveAndPrint = async (mode, metodoPago) => {
     if (items.length === 0) { toast.error("Agrega al menos un ítem"); return; }
     if (!caja) { toast.error("Debe abrir la caja antes de generar tickets"); return; }
 
@@ -277,7 +280,7 @@ function Ticket() {
       try {
         const res = await getTicketPdf(savedTicket.id, format);
         printPdfBlob(res.data);
-        openCashDrawer(); // Intento de abrir gaveta
+        if (metodoPago === "Efectivo") openCashDrawer(); // Intento de abrir gaveta
       } catch (err) {
         toast.error("Error al generar PDF");
       }
@@ -296,7 +299,7 @@ function Ticket() {
       } catch { /* ya existe */ }
     }
 
-    toast.promise(ticketMutation.mutateAsync(buildPayload()), {
+    toast.promise(ticketMutation.mutateAsync(buildPayload(metodoPago)), {
       loading: "Guardando ticket...",
       success: async (res) => {
         setSavedTicket(res.data);
@@ -304,7 +307,7 @@ function Ticket() {
         try {
           const pdfRes = await getTicketPdf(res.data.id, format);
           printPdfBlob(pdfRes.data);
-          openCashDrawer(); // Intento de abrir gaveta
+          if (metodoPago === "Efectivo") openCashDrawer(); // Intento de abrir gaveta
         } catch (_) { /* PDF opcional */ }
         handleNuevaVenta();
         return `Ticket N° ${String(res.data.id).padStart(6, "0")} guardado`;
@@ -886,6 +889,14 @@ function Ticket() {
                 <span className="font-mono text-sm font-black text-slate-800 dark:text-slate-200">S/ {ventasPreview.total.toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center pt-3 border-t dark:border-slate-800">
+                <span className="text-[11px] font-black uppercase tracking-widest text-violet-700 dark:text-violet-400">Total Yape</span>
+                <span className="font-mono text-sm font-black text-violet-800 dark:text-violet-300">S/ {ventasPreview.total_yape.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between items-center pt-3 border-t dark:border-slate-800">
+                <span className="text-[11px] font-black uppercase tracking-widest text-emerald-700 dark:text-emerald-400">Total Efectivo</span>
+                <span className="font-mono text-sm font-black text-emerald-800 dark:text-emerald-300">S/ {ventasPreview.total_efectivo.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between items-center pt-3 border-t dark:border-slate-800">
                 <span className="text-xs font-black uppercase tracking-widest text-sky-800 dark:text-sky-400">Efectivo esperado</span>
                 <span className="text-xl font-mono font-black text-sky-800 dark:text-sky-100">S/ {montoEsperado.toFixed(2)}</span>
               </div>
@@ -945,7 +956,7 @@ function Ticket() {
       <PaymentModal
         open={showPaymentModal}
         onClose={() => { setShowPaymentModal(false); setPendingPrintMode(null); }}
-        onConfirm={() => { setShowPaymentModal(false); handleSaveAndPrint(pendingPrintMode); setPendingPrintMode(null); }}
+        onConfirm={(metodoPago) => { setShowPaymentModal(false); handleSaveAndPrint(pendingPrintMode, metodoPago); setPendingPrintMode(null); }}
         montoCobrar={montoCobrar}
         label={tieneServicios ? "Ticket — Adelanto de Servicio" : "Ticket de Venta"}
         loading={ticketMutation.isPending}

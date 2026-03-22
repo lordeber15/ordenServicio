@@ -251,7 +251,7 @@ function Boleta() {
     setShowPaymentModal(true);
   };
 
-  const handleEmitir = async () => {
+  const handleEmitir = async (metodoPago) => {
     if (!emisor) { toast.error("No hay emisor configurado"); return; }
     if (!serie) { toast.error("No hay serie B configurada. Crea una en Configuración > Series"); return; }
     if (items.length === 0) { toast.error("Agrega al menos un ítem"); return; }
@@ -301,6 +301,7 @@ function Boleta() {
         total: total.toFixed(2),
         cliente_id: clienteId,
         forma_pago: "Contado",
+        metodo_pago: metodoPago || "Efectivo",
       });
       const comprobanteId = cabRes.data.id;
 
@@ -332,7 +333,7 @@ function Boleta() {
         }
       );
 
-      setResultado({ comprobante_id: comprobanteId, ...emitRes.data });
+      setResultado({ comprobante_id: comprobanteId, metodo_pago: metodoPago || "Efectivo", ...emitRes.data });
     } catch (err) {
       toast.error(err?.response?.data?.message || err.message || "Error al emitir boleta");
     } finally {
@@ -500,11 +501,11 @@ function Boleta() {
             <div className="text-gray-600 dark:text-slate-400 font-medium">SUNAT: <span className="font-bold">{resultado.codigo_sunat}</span> — {resultado.mensaje_sunat}</div>
             {resultado.success && (
               <div className="flex gap-3 mt-4 flex-wrap">
-                <button onClick={() => { handlePrintComprobante(resultado.comprobante_id, "ticket"); openCashDrawer(); }}
+                <button onClick={() => { handlePrintComprobante(resultado.comprobante_id, "ticket"); if (resultado.metodo_pago === "Efectivo") openCashDrawer(); }}
                   className="flex items-center gap-2 bg-emerald-700 hover:bg-emerald-600 text-white px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all shadow-md cursor-pointer">
                   <FaPrint className="text-base" /> Imprimir Ticket
                 </button>
-                <button onClick={() => { handlePrintComprobante(resultado.comprobante_id, "a5"); openCashDrawer(); }}
+                <button onClick={() => { handlePrintComprobante(resultado.comprobante_id, "a5"); if (resultado.metodo_pago === "Efectivo") openCashDrawer(); }}
                   className="flex items-center gap-2 bg-sky-700 hover:bg-sky-600 text-white px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all shadow-md cursor-pointer">
                   <FaFileLines className="text-base" /> Imprimir A5
                 </button>
@@ -529,7 +530,7 @@ function Boleta() {
       <PaymentModal
         open={showPaymentModal}
         onClose={() => setShowPaymentModal(false)}
-        onConfirm={() => { setShowPaymentModal(false); handleEmitir(); }}
+        onConfirm={(metodoPago) => { setShowPaymentModal(false); handleEmitir(metodoPago); }}
         montoCobrar={total}
         label="Boleta de Venta"
         loading={emitiendo}
