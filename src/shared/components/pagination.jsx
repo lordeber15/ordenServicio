@@ -77,7 +77,7 @@ const Pagination = memo(({ data, totalPages, currentPage, onPageChange, onEdit, 
   return (
     <div className="w-full animate-fade-in">
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto pb-24 -mb-24 px-1">
           <table className="min-w-full text-left text-sm">
             <thead>
               <tr className="border-b border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-950/50">
@@ -118,9 +118,10 @@ const Pagination = memo(({ data, totalPages, currentPage, onPageChange, onEdit, 
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50 dark:divide-slate-800/50">
-              {data.map((cont) => {
+              {data.map((cont, index) => {
                 const statusStyle = STATUS_STYLES[cont.estado] || STATUS_STYLES.Pendiente;
                 const saldo = cont.total - cont.acuenta;
+                const isLast = index >= data.length - 2 && data.length > 2;
 
                 return (
                   <tr
@@ -187,11 +188,11 @@ const Pagination = memo(({ data, totalPages, currentPage, onPageChange, onEdit, 
                       >
                         <IoEllipsisVertical />
                       </button>
-
+ 
                       {open === cont.id && (
                         <div
                           ref={dropdownRef}
-                          className="absolute flex flex-col z-50 top-12 md:top-14 right-2 md:right-4 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl shadow-xl w-36 md:w-40 text-sm animate-fade-down animate-duration-100 animate-ease-in overflow-hidden"
+                          className={`absolute flex flex-col z-50 ${isLast ? "bottom-12 md:bottom-14" : "top-12 md:top-14"} right-2 md:right-4 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl shadow-xl w-36 md:w-40 text-sm animate-fade-down animate-duration-100 animate-ease-in overflow-hidden`}
                         >
                           <button
                             onClick={() => {
