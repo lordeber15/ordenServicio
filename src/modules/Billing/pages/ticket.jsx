@@ -280,7 +280,7 @@ function Ticket() {
       try {
         const res = await getTicketPdf(savedTicket.id, format);
         printPdfBlob(res.data);
-        if (metodoPago === "Efectivo") openCashDrawer(); // Intento de abrir gaveta
+        // if (metodoPago === "Efectivo") openCashDrawer(); // Retirado a petición del usuario. Solo se abre en modal.
       } catch (err) {
         toast.error("Error al generar PDF");
       }
@@ -307,7 +307,7 @@ function Ticket() {
         try {
           const pdfRes = await getTicketPdf(res.data.id, format);
           printPdfBlob(pdfRes.data);
-          if (metodoPago === "Efectivo") openCashDrawer(); // Intento de abrir gaveta
+          // if (metodoPago === "Efectivo") openCashDrawer(); // Retirado a petición del usuario. Solo se abre en modal.
         } catch (_) { /* PDF opcional */ }
         handleNuevaVenta();
         return `Ticket N° ${String(res.data.id).padStart(6, "0")} guardado`;

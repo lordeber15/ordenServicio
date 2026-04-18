@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { FaMoneyBillWave, FaCoins } from "react-icons/fa6";
+import { openCashDrawer } from "../utils/printDrawer";
 
 /**
  * Modal de cobro con cálculo de vuelto.
@@ -81,6 +82,7 @@ export default function PaymentModal({ open, onClose, onConfirm, montoCobrar, la
                 onClick={() => {
                   setMetodoPago("Efectivo");
                   setPasoActual(2);
+                  openCashDrawer();
                   setTimeout(() => inputRef.current?.focus(), 100);
                 }}
                 className="flex-1 py-3 rounded-2xl font-black uppercase tracking-widest text-xs transition-all border-2 bg-slate-50 border-slate-200 text-slate-600 hover:bg-emerald-50 hover:border-emerald-300 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-emerald-950/30 dark:hover:border-emerald-700"
