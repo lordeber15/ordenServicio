@@ -253,7 +253,7 @@ function Ticket() {
   const handleRemoveItem = (idx) => setItems((prev) => prev.filter((_, k) => k !== idx));
 
   // ── Construir payload ──
-  const buildPayload = (metodoPago) => ({
+  const buildPayload = (metodoPago, recibido, vuelto) => ({
     cliente: cliente || "Sin nombre",
     tipoDocumento: tipoDoc,
     numeroDocumento: nroDoc || "00000000",
@@ -261,6 +261,8 @@ function Ticket() {
     fechaEmision,
     precioTotal: parseFloat(total.toFixed(2)),
     metodo_pago: metodoPago || "Efectivo",
+    monto_recibido: recibido !== undefined && recibido !== "" ? parseFloat(recibido) : null,
+    vuelto: vuelto !== undefined && vuelto !== "" ? parseFloat(vuelto) : null,
     detalles: items.map(({ _pid, descripcion, cantidad, precioUnitario, subtotal, _es_servicio, _adelanto }) => ({
       descripcion, cantidad, precioUnitario, subtotal,
       producto_id: _pid || null,
@@ -270,7 +272,7 @@ function Ticket() {
   });
 
   // ── Guardar + imprimir (PDF desde backend) ──
-  const handleSaveAndPrint = async (mode, metodoPago) => {
+  const handleSaveAndPrint = async (mode, metodoPago, recibido, vuelto) => {
     if (items.length === 0) { toast.error("Agrega al menos un ítem"); return; }
     if (!caja) { toast.error("Debe abrir la caja antes de generar tickets"); return; }
 
@@ -299,7 +301,7 @@ function Ticket() {
       } catch { /* ya existe */ }
     }
 
-    toast.promise(ticketMutation.mutateAsync(buildPayload(metodoPago)), {
+    toast.promise(ticketMutation.mutateAsync(buildPayload(metodoPago, recibido, vuelto)), {
       loading: "Guardando ticket...",
       success: async (res) => {
         setSavedTicket(res.data);
@@ -956,7 +958,7 @@ function Ticket() {
       <PaymentModal
         open={showPaymentModal}
         onClose={() => { setShowPaymentModal(false); setPendingPrintMode(null); }}
-        onConfirm={(metodoPago) => { setShowPaymentModal(false); handleSaveAndPrint(pendingPrintMode, metodoPago); setPendingPrintMode(null); }}
+        onConfirm={(metodoPago, recibido, vuelto) => { setShowPaymentModal(false); handleSaveAndPrint(pendingPrintMode, metodoPago, recibido, vuelto); setPendingPrintMode(null); }}
         montoCobrar={montoCobrar}
         label={tieneServicios ? "Ticket — Adelanto de Servicio" : "Ticket de Venta"}
         loading={ticketMutation.isPending}

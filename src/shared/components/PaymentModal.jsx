@@ -35,7 +35,7 @@ export default function PaymentModal({ open, onClose, onConfirm, montoCobrar, la
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && puedeConfirmar) {
-      onConfirm(metodoPago);
+      onConfirm(metodoPago, recibido, vuelto);
     }
     if (e.key === "Escape") {
       onClose();
@@ -202,7 +202,7 @@ export default function PaymentModal({ open, onClose, onConfirm, montoCobrar, la
         <div className="space-y-3">
           {pasoActual === 2 && (
             <button
-              onClick={() => onConfirm(metodoPago)}
+              onClick={() => onConfirm(metodoPago, recibido, vuelto)}
               disabled={!puedeConfirmar}
               className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed font-black uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95 disabled:hover:scale-100 animate-fade animate-duration-300"
             >
