@@ -2,9 +2,9 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getVentasDia } from "../../../shared/services/caja";
 import { getTicketPdf } from "../../../shared/services/ticket";
-import { getComprobantePdf } from "../../Billing/services/comprobantes";
+import { getComprobantePdf, getXmlUrl } from "../../Billing/services/comprobantes";
 import Drawer from "../../../shared/components/drawer";
-import { FaReceipt, FaFileInvoice, FaFileLines, FaFilter, FaCircleCheck, FaCircleXmark, FaClock, FaSpinner, FaBan } from "react-icons/fa6";
+import { FaReceipt, FaFileInvoice, FaFileLines, FaFilter, FaCircleCheck, FaCircleXmark, FaClock, FaSpinner, FaBan, FaFileCode } from "react-icons/fa6";
 import { printPdfBlob } from "../../../shared/utils/printPdfBlob";
 
 /**
@@ -206,6 +206,17 @@ function Ventas() {
                             >
                               A5
                             </button>
+                            {v.tipo !== "ticket" && (
+                              <a
+                                href={getXmlUrl(v.id)}
+                                target="_blank"
+                                rel="noreferrer"
+                                onClick={() => setOpenPdfMenu(null)}
+                                className="w-full text-left px-3 py-2 text-xs hover:bg-emerald-50 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200 cursor-pointer border-t border-gray-100 dark:border-slate-700 transition-colors flex items-center gap-1.5"
+                              >
+                                <FaFileCode /> XML
+                              </a>
+                            )}
                           </div>
                         )}
                       </div>
