@@ -30,8 +30,9 @@ export default function PaymentModal({ open, onClose, onConfirm, montoCobrar, la
   if (!open) return null;
 
   const recibido = metodoPago === "Yape" ? montoCobrar : (parseFloat(montoRecibido) || 0);
-  const vuelto = recibido - montoCobrar;
-  const puedeConfirmar = pasoActual === 2 && recibido >= montoCobrar && montoCobrar > 0 && !loading;
+  // Comparación en céntimos para evitar errores de punto flotante (ej: 1.5 - 1.5 = -2.22e-16)
+  const vuelto = Math.round((recibido - montoCobrar) * 100) / 100;
+  const puedeConfirmar = pasoActual === 2 && Math.round(recibido * 100) >= Math.round(montoCobrar * 100) && montoCobrar > 0 && !loading;
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && puedeConfirmar) {
