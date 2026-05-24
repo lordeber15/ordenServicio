@@ -1,21 +1,18 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 import { getVentasDia } from "../../../shared/services/caja";
 import { getTicketPdf } from "../../../shared/services/ticket";
-import { getComprobantePdf, getXmlUrl } from "../../Billing/services/comprobantes";
+import { getComprobantePdf, getXmlUrl, reenviarComprobante } from "../../Billing/services/comprobantes";
 import Drawer from "../../../shared/components/drawer";
-import { FaReceipt, FaFileInvoice, FaFileLines, FaFilter, FaCircleCheck, FaCircleXmark, FaClock, FaSpinner, FaBan, FaFileCode } from "react-icons/fa6";
+import EstadoSunatBadge from "../../../shared/components/EstadoSunatBadge";
+import { ESTADOS_PENDIENTES, ESTADOS_REENVIABLES } from "../../../shared/utils/sunatEstados";
 import { printPdfBlob } from "../../../shared/utils/printPdfBlob";
+import {
+  FaReceipt, FaFileInvoice, FaFileLines,
+  FaFilter, FaFileCode, FaRotateRight,
+} from "react-icons/fa6";
 
-/**
- * Módulo de Gestión de Ventas y Servicios (Dashboard)
- * 
- * Este componente es el núcleo operativo de la imprenta. Permite:
- * - Visualizar órdenes de servicio filtradas por fecha y estado.
- * - Crear nuevas órdenes de trabajo.
- * - Cambiar el estado de las órdenes (Pendiente -> Diseño -> Impresión -> etc).
- * - Imprimir tickets y comprobantes asociados.
- */
 function Ventas() {
   const hoy = new Date().toLocaleDateString("en-CA");
   const [fecha, setFecha] = useState(hoy);
@@ -24,9 +21,17 @@ function Ventas() {
   const [page, setPage] = useState(1);
   const PER_PAGE = 8;
 
+  const queryClient = useQueryClient();
+
   const { data, isLoading } = useQuery({
     queryKey: ["ventasDia", fecha, tipo],
     queryFn: () => getVentasDia(fecha, tipo),
+    // Polling activo mientras haya comprobantes en estado transitorio
+    refetchInterval: (query) => {
+      const ventas = query.state.data?.ventas ?? [];
+      const hayPendientes = ventas.some((v) => ESTADOS_PENDIENTES.includes(v.estado));
+      return hayPendientes ? 8_000 : false;
+    },
   });
 
   const ventas = data?.ventas || [];
@@ -34,12 +39,22 @@ function Ventas() {
   const totalPages = Math.ceil(ventas.length / PER_PAGE);
   const paginatedVentas = ventas.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
-  /**
-   * Manejador para visualizar el PDF del comprobante/ticket.
-   * 
-   * @param {Object} venta - Objeto de la venta seleccionada.
-   * @param {string} format - Formato de impresión ('80mm' o 'A4').
-   */
+  // Mutation para reenvío manual
+  const reenviarMutation = useMutation({
+    mutationFn: (id) => reenviarComprobante(id),
+    onMutate: () => {
+      toast.loading("Reenviando a SUNAT…", { id: "reenvio" });
+    },
+    onSuccess: () => {
+      toast.success("En cola de envío ✓", { id: "reenvio" });
+      queryClient.invalidateQueries({ queryKey: ["ventasDia", fecha, tipo] });
+    },
+    onError: (err) => {
+      const msg = err?.response?.data?.message || "Error al reenviar";
+      toast.error(msg, { id: "reenvio" });
+    },
+  });
+
   const handleVerPdf = async (venta, format = "80mm") => {
     try {
       if (venta.tipo === "ticket") {
@@ -50,23 +65,15 @@ function Ventas() {
         printPdfBlob(res.data);
       }
     } catch {
-      // PDF no disponible
+      toast.error("PDF no disponible");
     }
     setOpenPdfMenu(null);
   };
 
   const badgeClasses = {
-    ticket: "bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200",
-    boleta: "bg-sky-100 text-sky-700 dark:bg-sky-900 dark:text-sky-200",
+    ticket:  "bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200",
+    boleta:  "bg-sky-100 text-sky-700 dark:bg-sky-900 dark:text-sky-200",
     factura: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-200",
-  };
-
-  const estadoConfig = {
-    AC: { icon: FaCircleCheck, label: "Aceptado SUNAT", color: "text-green-500", bg: "bg-green-50 dark:bg-green-950/30" },
-    RR: { icon: FaCircleXmark, label: "Rechazado SUNAT", color: "text-red-500", bg: "bg-red-50 dark:bg-red-950/30" },
-    PE: { icon: FaClock, label: "Pendiente envío", color: "text-yellow-500", bg: "bg-yellow-50 dark:bg-yellow-950/30" },
-    EN: { icon: FaSpinner, label: "En proceso", color: "text-blue-500", bg: "bg-blue-50 dark:bg-blue-950/30" },
-    AN: { icon: FaBan, label: "Anulado", color: "text-gray-400", bg: "bg-gray-50 dark:bg-gray-800" },
   };
 
   return (
@@ -142,118 +149,147 @@ function Ventas() {
           </div>
         ) : (
           <>
-          <div className="overflow-x-auto rounded-lg shadow dark:shadow-slate-950/50">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-sky-700 dark:bg-slate-950 text-white">
-                  <th className="px-4 py-3 text-left">Tipo</th>
-                  <th className="px-4 py-3 text-left">N° Documento</th>
-                  <th className="px-4 py-3 text-left">Cliente</th>
-                  <th className="px-4 py-3 text-left">Doc. Identidad</th>
-                  <th className="px-4 py-3 text-right">Total</th>
-                  <th className="px-4 py-3 text-center">Estado</th>
-                  <th className="px-4 py-3 text-center">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedVentas.map((v, i) => (
-                  <tr
-                    key={`${v.tipo}-${v.id}`}
-                    className={`border-b dark:border-slate-700 ${i % 2 === 0 ? "bg-white dark:bg-slate-800" : "bg-gray-50 dark:bg-slate-900"}`}
-                  >
-                    <td className="px-4 py-3">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${badgeClasses[v.tipo]}`}>
-                        {v.tipo.charAt(0).toUpperCase() + v.tipo.slice(1)}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 font-mono dark:text-gray-200">{v.numero}</td>
-                    <td className="px-4 py-3 dark:text-gray-200">{v.cliente}</td>
-                    <td className="px-4 py-3 dark:text-gray-300">{v.documento || "—"}</td>
-                    <td className="px-4 py-3 text-right font-semibold dark:text-white">S/ {v.total.toFixed(2)}</td>
-                    <td className="px-4 py-3 text-center">
-                      {v.estado && estadoConfig[v.estado] ? (() => {
-                        const cfg = estadoConfig[v.estado];
-                        const Icon = cfg.icon;
-                        return (
-                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${cfg.bg} ${cfg.color}`} title={cfg.label}>
-                            <Icon className="text-sm" />
-                            {cfg.label}
+            <div className="overflow-x-auto rounded-lg shadow dark:shadow-slate-950/50">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-sky-700 dark:bg-slate-950 text-white">
+                    <th className="px-4 py-3 text-left">Tipo</th>
+                    <th className="px-4 py-3 text-left">N° Documento</th>
+                    <th className="px-4 py-3 text-left">Cliente</th>
+                    <th className="px-4 py-3 text-left">Doc. Identidad</th>
+                    <th className="px-4 py-3 text-right">Total</th>
+                    <th className="px-4 py-3 text-center">Estado SUNAT</th>
+                    <th className="px-4 py-3 text-center">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginatedVentas.map((v, i) => {
+                    const esComprobante = v.tipo !== "ticket";
+                    const puedeReenviar = esComprobante && ESTADOS_REENVIABLES.includes(v.estado);
+                    const reenviando = reenviarMutation.isPending && reenviarMutation.variables === v.id;
+
+                    return (
+                      <tr
+                        key={`${v.tipo}-${v.id}`}
+                        className={`border-b dark:border-slate-700 ${i % 2 === 0 ? "bg-white dark:bg-slate-800" : "bg-gray-50 dark:bg-slate-900"}`}
+                      >
+                        {/* Tipo */}
+                        <td className="px-4 py-3">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${badgeClasses[v.tipo]}`}>
+                            {v.tipo.charAt(0).toUpperCase() + v.tipo.slice(1)}
                           </span>
-                        );
-                      })() : (
-                        <span className="text-xs text-gray-400">—</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <div className="relative inline-block">
-                        <button
-                          onClick={() => setOpenPdfMenu(openPdfMenu === `${v.tipo}-${v.id}` ? null : `${v.tipo}-${v.id}`)}
-                          className="text-sky-600 hover:text-sky-800 dark:text-sky-400 dark:hover:text-sky-200 text-xs font-medium cursor-pointer"
-                        >
-                          Imprimir ▾
-                        </button>
-                        {openPdfMenu === `${v.tipo}-${v.id}` && (
-                          <div className={`absolute right-0 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg z-20 min-w-28 overflow-hidden ${i >= 4 ? "bottom-full mb-1" : "top-full mt-1"}`}>
-                            <button
-                              onClick={() => handleVerPdf(v, v.tipo === "ticket" ? "80mm" : "ticket")}
-                              className="w-full text-left px-3 py-2 text-xs hover:bg-sky-50 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200 cursor-pointer transition-colors"
-                            >
-                              Ticket 80mm
-                            </button>
-                            <button
-                              onClick={() => handleVerPdf(v, "a5")}
-                              className="w-full text-left px-3 py-2 text-xs hover:bg-sky-50 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200 cursor-pointer border-t border-gray-100 dark:border-slate-700 transition-colors"
-                            >
-                              A5
-                            </button>
-                            {v.tipo !== "ticket" && (
-                              <a
-                                href={getXmlUrl(v.id)}
-                                target="_blank"
-                                rel="noreferrer"
-                                onClick={() => setOpenPdfMenu(null)}
-                                className="w-full text-left px-3 py-2 text-xs hover:bg-emerald-50 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200 cursor-pointer border-t border-gray-100 dark:border-slate-700 transition-colors flex items-center gap-1.5"
+                        </td>
+
+                        {/* N° Documento */}
+                        <td className="px-4 py-3 font-mono dark:text-gray-200">{v.numero}</td>
+
+                        {/* Cliente */}
+                        <td className="px-4 py-3 dark:text-gray-200">{v.cliente}</td>
+
+                        {/* Doc. Identidad */}
+                        <td className="px-4 py-3 dark:text-gray-300">{v.documento || "—"}</td>
+
+                        {/* Total */}
+                        <td className="px-4 py-3 text-right font-semibold dark:text-white">
+                          S/ {v.total.toFixed(2)}
+                        </td>
+
+                        {/* Estado SUNAT */}
+                        <td className="px-4 py-3 text-center">
+                          {esComprobante
+                            ? <EstadoSunatBadge estado={v.estado} mensaje={v.mensaje_sunat} />
+                            : <span className="text-xs text-gray-400">—</span>
+                          }
+                        </td>
+
+                        {/* Acciones */}
+                        <td className="px-4 py-3 text-center">
+                          <div className="flex items-center justify-center gap-2">
+                            {/* Menú imprimir */}
+                            <div className="relative inline-block">
+                              <button
+                                onClick={() => setOpenPdfMenu(openPdfMenu === `${v.tipo}-${v.id}` ? null : `${v.tipo}-${v.id}`)}
+                                className="text-sky-600 hover:text-sky-800 dark:text-sky-400 dark:hover:text-sky-200 text-xs font-medium cursor-pointer"
                               >
-                                <FaFileCode /> XML
-                              </a>
+                                Imprimir ▾
+                              </button>
+                              {openPdfMenu === `${v.tipo}-${v.id}` && (
+                                <div className={`absolute right-0 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg z-20 min-w-28 overflow-hidden ${i >= 4 ? "bottom-full mb-1" : "top-full mt-1"}`}>
+                                  <button
+                                    onClick={() => handleVerPdf(v, v.tipo === "ticket" ? "80mm" : "ticket")}
+                                    className="w-full text-left px-3 py-2 text-xs hover:bg-sky-50 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200 cursor-pointer transition-colors"
+                                  >
+                                    Ticket 80mm
+                                  </button>
+                                  <button
+                                    onClick={() => handleVerPdf(v, "a5")}
+                                    className="w-full text-left px-3 py-2 text-xs hover:bg-sky-50 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200 cursor-pointer border-t border-gray-100 dark:border-slate-700 transition-colors"
+                                  >
+                                    A5
+                                  </button>
+                                  {esComprobante && (
+                                    <a
+                                      href={getXmlUrl(v.id)}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      onClick={() => setOpenPdfMenu(null)}
+                                      className="w-full text-left px-3 py-2 text-xs hover:bg-emerald-50 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200 cursor-pointer border-t border-gray-100 dark:border-slate-700 transition-colors flex items-center gap-1.5"
+                                    >
+                                      <FaFileCode /> XML
+                                    </a>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Botón Reenviar — solo si el estado lo permite */}
+                            {puedeReenviar && (
+                              <button
+                                onClick={() => reenviarMutation.mutate(v.id)}
+                                disabled={reenviando}
+                                title="Reenviar a SUNAT manualmente"
+                                className="flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-md text-orange-600 hover:text-white hover:bg-orange-500 dark:text-orange-400 dark:hover:text-white dark:hover:bg-orange-600 border border-orange-300 dark:border-orange-700 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                <FaRotateRight className={reenviando ? "animate-spin" : ""} />
+                                Reenviar
+                              </button>
                             )}
                           </div>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Paginación */}
-          {totalPages > 1 && (
-            <div className="flex justify-between items-center mt-4">
-              <span className="text-xs text-gray-500 dark:text-gray-400">
-                {ventas.length} ventas en total
-              </span>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  className="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-300 dark:border-slate-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
-                >
-                  Anterior
-                </button>
-                <span className="text-xs text-gray-600 dark:text-gray-300 font-medium">
-                  {page} / {totalPages}
-                </span>
-                <button
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}
-                  className="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-300 dark:border-slate-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
-                >
-                  Siguiente
-                </button>
-              </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
-          )}
+
+            {/* Paginación */}
+            {totalPages > 1 && (
+              <div className="flex justify-between items-center mt-4">
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  {ventas.length} ventas en total
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                    className="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-300 dark:border-slate-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                  >
+                    Anterior
+                  </button>
+                  <span className="text-xs text-gray-600 dark:text-gray-300 font-medium">
+                    {page} / {totalPages}
+                  </span>
+                  <button
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={page === totalPages}
+                    className="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-300 dark:border-slate-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                  >
+                    Siguiente
+                  </button>
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>
