@@ -27,7 +27,7 @@ import axios from "axios";
  * Ejemplo: axiosURL.get('/servicios') → GET http://localhost:3000/servicios
  */
 const egresosoApi = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3001/",
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000/",
 });
 
 /**
