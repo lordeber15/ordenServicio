@@ -165,7 +165,7 @@ function Ventas() {
                 <tbody>
                   {paginatedVentas.map((v, i) => {
                     const esComprobante = v.tipo !== "ticket";
-                    const puedeReenviar = esComprobante && ESTADOS_REENVIABLES.includes(v.estado);
+                    const puedeReenviar = esComprobante && ESTADOS_REENVIABLES.includes(v.estado) && !v.es_terminal;
                     const reenviando = reenviarMutation.isPending && reenviarMutation.variables === v.id;
 
                     return (

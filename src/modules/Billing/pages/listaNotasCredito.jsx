@@ -117,7 +117,7 @@ function ListaNotasCredito() {
                     const ref = c.comprobanteRef
                       ? `${c.comprobanteRef.serie}-${String(c.comprobanteRef.correlativo).padStart(8, "0")}`
                       : "—";
-                    const puedeReenviar = ESTADOS_REENVIABLES.includes(c.estado_sunat);
+                    const puedeReenviar = ESTADOS_REENVIABLES.includes(c.estado_sunat) && !c.es_terminal;
                     const reenviando = reenviarMutation.isPending && reenviarMutation.variables === c.id;
 
                     return (
