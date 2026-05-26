@@ -41,6 +41,37 @@ export const getEstadoComprobante = async (id) => {
   return res.data;
 };
 
+const ESTADOS_TRANSITIVOS = new Set(["GENERADO", "FIRMADO", "ENVIANDO"]);
+
+/**
+ * Hace polling a /comprobante/:id/estado hasta que el estado deja de ser
+ * transitorio (GENERADO / FIRMADO / ENVIANDO) o hasta que se agota el timeout.
+ *
+ * @param {number} id - ID del comprobante
+ * @param {{ intervalo?: number, timeout?: number, onTick?: (estado) => void }} opts
+ * @returns {Promise<object>} - Objeto de estado final
+ */
+export const pollEstadoHastaFinal = (id, { intervalo = 2000, timeout = 30000, onTick } = {}) =>
+  new Promise((resolve) => {
+    const inicio = Date.now();
+    const tick = async () => {
+      try {
+        const estado = await getEstadoComprobante(id);
+        onTick?.(estado);
+        if (!ESTADOS_TRANSITIVOS.has(estado.estado_sunat) || Date.now() - inicio >= timeout) {
+          resolve(estado);
+        } else {
+          setTimeout(tick, intervalo);
+        }
+      } catch {
+        // En error de red mantenemos polling hasta timeout
+        if (Date.now() - inicio >= timeout) resolve({ estado_sunat: "SIN_CDR" });
+        else setTimeout(tick, intervalo);
+      }
+    };
+    setTimeout(tick, intervalo); // primera consulta después del primer intervalo
+  });
+
 /**
  * Retorna la URL para descarga del PDF.
  * El backend responde con res.download(), así que se abre en nueva pestaña.

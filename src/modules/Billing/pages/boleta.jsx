@@ -16,6 +16,7 @@ import {
   createComprobante,
   createDetalle,
   emitirComprobante,
+  pollEstadoHastaFinal,
   getComprobantePdf,
   getXmlUrl,
 } from "../services/comprobantes";
@@ -323,17 +324,38 @@ function Boleta() {
         });
       }
 
-      // 4. Emitir a SUNAT
-      const emitRes = await toast.promise(
+      // 4. Firmar y encolar en SUNAT (202 inmediato)
+      await toast.promise(
         emitirComprobante(comprobanteId),
         {
-          loading: "Enviando boleta a SUNAT...",
-          success: "Boleta enviada a SUNAT",
+          loading: "Firmando y enviando a SUNAT…",
+          success: "Boleta en cola — esperando respuesta…",
           error: (e) => `Error SUNAT: ${e?.response?.data?.message || e.message}`,
         }
       );
 
-      setResultado({ comprobante_id: comprobanteId, metodo_pago: metodoPago || "Efectivo", ...emitRes.data });
+      setResultado({ comprobante_id: comprobanteId, metodo_pago: metodoPago || "Efectivo", esperando: true });
+
+      // 5. Polling hasta respuesta final de SUNAT (máx 30 s)
+      const estadoFinal = await pollEstadoHastaFinal(comprobanteId, { timeout: 30000, intervalo: 2000 });
+
+      const aceptado   = ["ACEPTADO", "OBSERVADO"].includes(estadoFinal.estado_sunat);
+      const enProceso  = ["GENERADO", "FIRMADO", "ENVIANDO"].includes(estadoFinal.estado_sunat);
+
+      setResultado({
+        comprobante_id: comprobanteId,
+        metodo_pago:    metodoPago || "Efectivo",
+        success:        aceptado,
+        en_proceso:     enProceso,
+        estado_sunat:   estadoFinal.estado_sunat,
+        codigo_sunat:   estadoFinal.cdr_code || estadoFinal.codigo_sunat,
+        mensaje_sunat:  estadoFinal.mensaje_sunat,
+      });
+
+      if (aceptado)       toast.success("✓ Boleta aceptada por SUNAT");
+      else if (enProceso) toast("SUNAT aún procesando — revisa en Ventas del Día", { icon: "⏳" });
+      else                toast.error(`SUNAT: ${estadoFinal.mensaje_sunat || estadoFinal.estado_sunat}`);
+
     } catch (err) {
       toast.error(err?.response?.data?.message || err.message || "Error al emitir boleta");
     } finally {
@@ -493,30 +515,57 @@ function Boleta() {
         </div>
 
         {/* Resultado de emisión */}
-        {resultado && (
-          <div className={`rounded-xl p-5 text-sm mt-4 shadow-lg border-2 animate-jump-in ${resultado.success ? "bg-emerald-50 dark:bg-emerald-950/20 border-emerald-300 dark:border-emerald-800/50" : "bg-rose-50 dark:bg-rose-950/20 border-rose-300 dark:border-rose-800/50"}`}>
-            <div className={`font-black uppercase tracking-widest mb-2 flex items-center gap-2 ${resultado.success ? "text-emerald-800 dark:text-emerald-400" : "text-rose-800 dark:text-rose-400"}`}>
-              {resultado.success ? "✓ Boleta aceptada" : "✗ Boleta rechazada"}
-            </div>
-            <div className="text-gray-600 dark:text-slate-400 font-medium">SUNAT: <span className="font-bold">{resultado.codigo_sunat}</span> — {resultado.mensaje_sunat}</div>
-            {resultado.success && (
-              <div className="flex gap-3 mt-4 flex-wrap">
-                <button onClick={() => { handlePrintComprobante(resultado.comprobante_id, "ticket"); if (resultado.metodo_pago === "Efectivo") openCashDrawer(); }}
-                  className="flex items-center gap-2 bg-emerald-700 hover:bg-emerald-600 text-white px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all shadow-md cursor-pointer">
-                  <FaPrint className="text-base" /> Imprimir Ticket
-                </button>
-                <button onClick={() => { handlePrintComprobante(resultado.comprobante_id, "a5"); if (resultado.metodo_pago === "Efectivo") openCashDrawer(); }}
-                  className="flex items-center gap-2 bg-sky-700 hover:bg-sky-600 text-white px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all shadow-md cursor-pointer">
-                  <FaFileLines className="text-base" /> Imprimir A5
-                </button>
-                <a href={getXmlUrl(resultado.comprobante_id)} target="_blank" rel="noreferrer"
-                  className="flex items-center gap-2 bg-slate-600 hover:bg-slate-500 text-white px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all shadow-md">
-                  <FaFileCode className="text-base" /> XML
-                </a>
+        {resultado && (() => {
+          const { success, en_proceso, esperando } = resultado;
+          const cardCls = esperando || en_proceso
+            ? "bg-amber-50 dark:bg-amber-950/20 border-amber-300 dark:border-amber-700/50"
+            : success
+              ? "bg-emerald-50 dark:bg-emerald-950/20 border-emerald-300 dark:border-emerald-800/50"
+              : "bg-rose-50 dark:bg-rose-950/20 border-rose-300 dark:border-rose-800/50";
+          const titleCls = esperando || en_proceso
+            ? "text-amber-700 dark:text-amber-400"
+            : success ? "text-emerald-800 dark:text-emerald-400" : "text-rose-800 dark:text-rose-400";
+          const title = esperando
+            ? "⏳ Esperando respuesta de SUNAT…"
+            : en_proceso ? "⏳ En proceso — revisa en Ventas del Día"
+            : success ? "✓ Boleta aceptada" : "✗ Boleta rechazada";
+          const puedeImprimir = success || en_proceso;
+
+          return (
+            <div className={`rounded-xl p-5 text-sm mt-4 shadow-lg border-2 animate-jump-in ${cardCls}`}>
+              <div className={`font-black uppercase tracking-widest mb-2 flex items-center gap-2 ${titleCls}`}>
+                {title}
               </div>
-            )}
-          </div>
-        )}
+              {!esperando && (
+                <div className="text-gray-600 dark:text-slate-400 font-medium">
+                  SUNAT: <span className="font-bold">{resultado.codigo_sunat || "—"}</span>
+                  {resultado.mensaje_sunat ? ` — ${resultado.mensaje_sunat}` : ""}
+                </div>
+              )}
+              {esperando && (
+                <div className="text-amber-700 dark:text-amber-400 text-xs mt-1 animate-pulse">
+                  El worker está enviando el XML a SUNAT. La respuesta llegará en segundos…
+                </div>
+              )}
+              {puedeImprimir && (
+                <div className="flex gap-3 mt-4 flex-wrap">
+                  <button onClick={() => { handlePrintComprobante(resultado.comprobante_id, "ticket"); if (resultado.metodo_pago === "Efectivo") openCashDrawer(); }}
+                    className="flex items-center gap-2 bg-emerald-700 hover:bg-emerald-600 text-white px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all shadow-md cursor-pointer">
+                    <FaPrint className="text-base" /> Imprimir Ticket
+                  </button>
+                  <button onClick={() => { handlePrintComprobante(resultado.comprobante_id, "a5"); if (resultado.metodo_pago === "Efectivo") openCashDrawer(); }}
+                    className="flex items-center gap-2 bg-sky-700 hover:bg-sky-600 text-white px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all shadow-md cursor-pointer">
+                    <FaFileLines className="text-base" /> Imprimir A5
+                  </button>
+                  <a href={getXmlUrl(resultado.comprobante_id)} target="_blank" rel="noreferrer"
+                    className="flex items-center gap-2 bg-slate-600 hover:bg-slate-500 text-white px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all shadow-md">
+                    <FaFileCode className="text-base" /> XML
+                  </a>
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
         {/* Botón emitir */}
         <div className="flex justify-center md:justify-end mt-8">
