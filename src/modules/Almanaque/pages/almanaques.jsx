@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import {
-  FaTrash, FaPrint, FaBarcode, FaPlus, FaRotateLeft, FaSave, FaLock,
+  FaTrash, FaPrint, FaBarcode, FaPlus, FaRotateLeft, FaFloppyDisk, FaLock,
 } from "react-icons/fa6";
 import { CiSearch } from "react-icons/ci";
 import toast from "react-hot-toast";
@@ -588,7 +588,7 @@ function Cotizacion() {
             disabled={cotizacionMutation.isPending || updateMutation.isPending}
             className="flex items-center justify-center gap-3 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white rounded-xl px-8 py-4 cursor-pointer transition-all font-black uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95 text-xs"
           >
-            <FaSave className="text-lg" />
+            <FaFloppyDisk className="text-lg" />
             {savedCotizacion ? "Actualizar Cotización" : "Guardar Cotización"}
           </button>
         )}
