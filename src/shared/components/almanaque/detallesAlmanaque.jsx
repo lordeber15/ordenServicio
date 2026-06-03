@@ -10,7 +10,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getAlmanaqueById, updateAlmanaque, getCotizacionPdf } from "../../../modules/Almanaque/services/almanaques";
 import TablaDetalleAlmanaque from "./tabladetallealmanque";
 import toast from "react-hot-toast";
-import { FaPrint } from "react-icons/fa6";
+import { FaPrint, FaLock } from "react-icons/fa6";
 
 function DetallesAlmanaque() {
   const [requestAlmanaque, setRequestAlmanaque] = useState("");
@@ -19,6 +19,7 @@ function DetallesAlmanaque() {
   const [items, setItems] = useState([]);
   const [fechaEmision, setFechaEmision] = useState("");
   const [telefono, setTelefono] = useState("");
+  const [impreso, setImpreso] = useState(false);
   const { id } = useParams();
   const queryClient = useQueryClient();
   const {
@@ -67,6 +68,7 @@ function DetallesAlmanaque() {
       setSelectDocumento(dataAlmanaque.tipoDocumento);
       setRequestAlmanaque(dataAlmanaque.numeroDocumento);
       setFechaEmision(dataAlmanaque.fechaEmision?.split("T")[0] || "");
+      setImpreso(!!dataAlmanaque.impreso);
       setItems(
         (dataAlmanaque.detalles || []).map((d) => ({
           ...d,
@@ -92,6 +94,7 @@ function DetallesAlmanaque() {
         iframe.contentWindow.print();
         setTimeout(() => { document.body.removeChild(iframe); URL.revokeObjectURL(url); }, 1000);
       };
+      setImpreso(true);
     } catch (err) {
       toast.error("Error al generar PDF");
     }
@@ -130,6 +133,11 @@ function DetallesAlmanaque() {
         <div className="flex justify-start gap-5 items-center mb-6">
           <Drawer />
           <div className="text-3xl font-black text-sky-800 dark:text-slate-100 transition-colors tracking-tight">Detalle de Cotización</div>
+          {impreso && (
+            <span className="flex items-center gap-1.5 bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 text-[11px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full border border-amber-200 dark:border-amber-800/50">
+              <FaLock className="text-[10px]" /> Impresa — solo lectura
+            </span>
+          )}
         </div>
         <div className="flex justify-center items-center w-full p-2 mt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 w-full gap-6">
@@ -156,16 +164,18 @@ function DetallesAlmanaque() {
           <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
             <input
               type="text"
-              className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-gray-800 dark:text-slate-100 rounded-lg p-3 text-sm focus:outline-none focus:border-sky-500 transition-colors shadow-sm font-bold"
+              disabled={impreso}
+              className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-gray-800 dark:text-slate-100 rounded-lg p-3 text-sm focus:outline-none focus:border-sky-500 transition-colors shadow-sm font-bold disabled:opacity-60 disabled:cursor-not-allowed"
               placeholder="Nombre Cliente"
               value={nombreAlmanaque}
               onChange={(e) => setNombreAlmanaque(e.target.value)}
             />
             <div className="flex flex-row gap-2">
               <select
+                disabled={impreso}
                 onChange={handleSelectDcument}
                 value={selectDocumento || "DNI"}
-                className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-gray-800 dark:text-slate-100 p-3 rounded-lg text-xs font-black uppercase tracking-widest shadow-sm focus:outline-none focus:border-sky-500 transition-colors w-1/2"
+                className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-gray-800 dark:text-slate-100 p-3 rounded-lg text-xs font-black uppercase tracking-widest shadow-sm focus:outline-none focus:border-sky-500 transition-colors w-1/2 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 <option value="Sin Documento">Sin Documento</option>
                 <option value="DNI">DNI</option>
@@ -177,30 +187,34 @@ function DetallesAlmanaque() {
               <div className="relative flex-1">
                 <input
                   type="text"
-                  disabled={selectDocumento == "Sin Documento" ? true : false}
-                  className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-gray-800 dark:text-slate-100 rounded-lg p-3 w-full text-sm focus:outline-none focus:border-sky-500 transition-colors shadow-sm font-mono font-bold disabled:opacity-50"
+                  disabled={impreso || selectDocumento == "Sin Documento"}
+                  className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-gray-800 dark:text-slate-100 rounded-lg p-3 w-full text-sm focus:outline-none focus:border-sky-500 transition-colors shadow-sm font-mono font-bold disabled:opacity-50 disabled:cursor-not-allowed"
                   placeholder="Número de Documento"
                   value={requestAlmanaque}
                   onChange={(e) => setRequestAlmanaque(e.target.value)}
                 />
-                <button
-                  onClick={handleBuscarAlmanaque}
-                  className="absolute right-2 top-2 p-1.5 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-md cursor-pointer transition-colors"
-                >
-                  <CiSearch className="w-5 h-5" />
-                </button>
+                {!impreso && (
+                  <button
+                    onClick={handleBuscarAlmanaque}
+                    className="absolute right-2 top-2 p-1.5 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-md cursor-pointer transition-colors"
+                  >
+                    <CiSearch className="w-5 h-5" />
+                  </button>
+                )}
               </div>
             </div>
           </div>
           <div className="flex-col md:flex-row flex gap-4">
             <input
               type="text"
-              className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-gray-800 dark:text-slate-100 rounded-lg p-3 w-full md:w-1/3 text-sm focus:outline-none focus:border-sky-500 transition-colors shadow-sm font-bold"
+              disabled={impreso}
+              className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-gray-800 dark:text-slate-100 rounded-lg p-3 w-full md:w-1/3 text-sm focus:outline-none focus:border-sky-500 transition-colors shadow-sm font-bold disabled:opacity-60 disabled:cursor-not-allowed"
               placeholder="Dirección (Opcional)"
             />
             <input
               type="text"
-              className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-gray-800 dark:text-slate-100 rounded-lg p-3 w-full md:w-1/3 text-sm focus:outline-none focus:border-sky-500 transition-colors shadow-sm font-bold font-mono"
+              disabled={impreso}
+              className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-gray-800 dark:text-slate-100 rounded-lg p-3 w-full md:w-1/3 text-sm focus:outline-none focus:border-sky-500 transition-colors shadow-sm font-bold font-mono disabled:opacity-60 disabled:cursor-not-allowed"
               placeholder="Teléfono"
               value={telefono}
               onChange={(e) => setTelefono(e.target.value)}
@@ -212,20 +226,21 @@ function DetallesAlmanaque() {
               <input
                 id="detalle-almanaque-emision"
                 type="date"
-                className="p-2 bg-transparent w-full text-gray-700 dark:text-slate-200 text-sm focus:outline-none font-bold"
+                disabled={impreso}
+                className="p-2 bg-transparent w-full text-gray-700 dark:text-slate-200 text-sm focus:outline-none font-bold disabled:opacity-60 disabled:cursor-not-allowed"
                 value={fechaEmision}
                 onChange={(e) => setFechaEmision(e.target.value)}
               />
             </div>
           </div>
 
-          <div className=" overflow-x-auto">
+          <div className="overflow-x-auto">
             {items.length == 0 ? (
-              <AgregarItemTabla setItems={setItems} />
+              !impreso ? <AgregarItemTabla setItems={setItems} /> : null
             ) : (
               <div>
-                <TablaDetalleAlmanaque data={items} setItems={setItems} />
-                <AgregarItemsTabla setItems={setItems} />
+                <TablaDetalleAlmanaque data={items} setItems={setItems} readOnly={impreso} />
+                {!impreso && <AgregarItemsTabla setItems={setItems} />}
               </div>
             )}
           </div>
@@ -253,21 +268,23 @@ function DetallesAlmanaque() {
                 onClick={() => handlePrintPdf("a5")}
                 className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 rounded-xl p-4 text-white cursor-pointer font-black uppercase tracking-widest shadow-xl transition-all hover:scale-105 active:scale-95 text-xs"
               >
-                <FaPrint /> Imprimir A5
+                <FaPrint /> {impreso ? "Reimprimir A5" : "Imprimir A5"}
               </button>
               <button
                 onClick={() => handlePrintPdf("a4")}
                 className="flex items-center justify-center gap-2 bg-sky-800 hover:bg-sky-700 rounded-xl p-4 text-white cursor-pointer font-black uppercase tracking-widest shadow-xl transition-all hover:scale-105 active:scale-95 text-xs"
               >
-                <FaPrint /> Imprimir A4
+                <FaPrint /> {impreso ? "Reimprimir A4" : "Imprimir A4"}
               </button>
-              <button
-                onClick={handleActualizar}
-                disabled={mutation.isLoading}
-                className="bg-sky-700 hover:bg-sky-600 dark:bg-emerald-600 dark:hover:bg-emerald-500 rounded-xl p-4 text-white cursor-pointer font-black uppercase tracking-[0.2em] shadow-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
-              >
-                {mutation.isLoading ? "Actualizando..." : "Actualizar Cotización"}
-              </button>
+              {!impreso && (
+                <button
+                  onClick={handleActualizar}
+                  disabled={mutation.isLoading}
+                  className="bg-sky-700 hover:bg-sky-600 dark:bg-emerald-600 dark:hover:bg-emerald-500 rounded-xl p-4 text-white cursor-pointer font-black uppercase tracking-[0.2em] shadow-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
+                >
+                  {mutation.isLoading ? "Actualizando..." : "Actualizar Cotización"}
+                </button>
+              )}
             </div>
           </div>
         </div>

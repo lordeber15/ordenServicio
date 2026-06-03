@@ -1,13 +1,13 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import {
-  FaTrash, FaPrint, FaBarcode, FaPlus, FaRotateLeft,
+  FaTrash, FaPrint, FaBarcode, FaPlus, FaRotateLeft, FaSave, FaLock,
 } from "react-icons/fa6";
 import { CiSearch } from "react-icons/ci";
 import toast from "react-hot-toast";
 import { getProducto } from "../../Inventory/services/productos";
 import { getReniec } from "../../../shared/services/reniec";
-import { createAlmanaque, getCotizacionPdf } from "../services/almanaques";
+import { createAlmanaque, updateAlmanaque, getCotizacionPdf } from "../services/almanaques";
 import { getUnidades } from "../../Billing/services/unidades";
 import logo from "../../../assets/ALEXANDER.webp";
 import { printPdfBlob } from "../../../shared/utils/printPdfBlob";
@@ -41,6 +41,7 @@ function Cotizacion() {
 
   // ── Estado de guardado ──
   const [savedCotizacion, setSavedCotizacion] = useState(null);
+  const [impreso, setImpreso] = useState(false);
 
   const barcodeRef = useRef(null);
   const manualDescRef = useRef(null);
@@ -69,8 +70,9 @@ function Cotizacion() {
     }
   }, [reniecData]);
 
-  // ── Mutación ──
+  // ── Mutaciones ──
   const cotizacionMutation = useMutation({ mutationFn: createAlmanaque });
+  const updateMutation = useMutation({ mutationFn: ({ id, data }) => updateAlmanaque(id, data) });
 
   // ── Totales ──
   const total = items.reduce((s, i) => s + i.subtotal, 0);
@@ -169,6 +171,14 @@ function Cotizacion() {
     ));
   };
 
+  // ── Editar precio unitario inline ──
+  const handlePrecioChange = (idx, val) => {
+    const precio = parseFloat(val) || 0;
+    setItems((prev) => prev.map((i, k) =>
+      k === idx ? { ...i, precioUnitario: precio, subtotal: parseFloat((i.cantidad * precio).toFixed(2)) } : i
+    ));
+  };
+
   // ── Eliminar ítem ──
   const handleRemoveItem = (idx) => setItems((prev) => prev.filter((_, k) => k !== idx));
 
@@ -187,14 +197,46 @@ function Cotizacion() {
     })),
   });
 
-  // ── Guardar + imprimir (PDF directo) ──
+  // ── Guardar sin imprimir ──
+  const handleGuardar = async () => {
+    if (items.length === 0) { toast.error("Agrega al menos un ítem"); return; }
+    if (impreso) return;
+
+    if (savedCotizacion) {
+      toast.promise(updateMutation.mutateAsync({ id: savedCotizacion.id, data: buildPayload() }), {
+        loading: "Actualizando cotización...",
+        success: (res) => {
+          setSavedCotizacion(res.data);
+          return `Cotización N° ${String(res.data.id).padStart(6, "0")} actualizada`;
+        },
+        error: (err) => `Error: ${err?.response?.data?.message || err.message}`,
+      });
+      return;
+    }
+
+    toast.promise(cotizacionMutation.mutateAsync(buildPayload()), {
+      loading: "Guardando cotización...",
+      success: (res) => {
+        setSavedCotizacion(res.data);
+        return `Cotización N° ${String(res.data.id).padStart(6, "0")} guardada`;
+      },
+      error: (err) => `Error: ${err?.response?.data?.message || err.message}`,
+    });
+  };
+
+  // ── Imprimir PDF (guarda primero si es necesario, luego marca impreso) ──
   const handleSaveAndPrint = async (format) => {
     if (items.length === 0) { toast.error("Agrega al menos un ítem"); return; }
 
+    const doPrint = async (id) => {
+      const res = await getCotizacionPdf(id, format);
+      printPdfBlob(res.data);
+      setImpreso(true);
+    };
+
     if (savedCotizacion) {
       try {
-        const res = await getCotizacionPdf(savedCotizacion.id, format);
-        printPdfBlob(res.data);
+        await doPrint(savedCotizacion.id);
       } catch (err) {
         toast.error("Error al generar PDF");
       }
@@ -202,14 +244,10 @@ function Cotizacion() {
     }
 
     toast.promise(cotizacionMutation.mutateAsync(buildPayload()), {
-      loading: "Guardando cotización...",
+      loading: "Guardando e imprimiendo...",
       success: async (res) => {
         setSavedCotizacion(res.data);
-        try {
-          const pdfRes = await getCotizacionPdf(res.data.id, format);
-          printPdfBlob(pdfRes.data);
-        } catch (_) { /* PDF opcional */ }
-        handleNuevaCotizacion();
+        try { await doPrint(res.data.id); } catch (_) { /* PDF opcional */ }
         return `Cotización N° ${String(res.data.id).padStart(6, "0")} guardada`;
       },
       error: (err) => `Error: ${err?.response?.data?.message || err.message}`,
@@ -220,7 +258,7 @@ function Cotizacion() {
   const handleNuevaCotizacion = () => {
     setCliente(""); setTipoDoc("Sin Documento"); setNroDoc(""); setDireccion(""); setTelefono("");
     setFechaEmision(today); setItems([]); setBarcodeInput("");
-    setShowManualRow(false); setSavedCotizacion(null);
+    setShowManualRow(false); setSavedCotizacion(null); setImpreso(false);
     setTimeout(() => barcodeRef.current?.focus(), 100);
   };
 
@@ -254,9 +292,14 @@ function Cotizacion() {
                 {savedCotizacion ? String(savedCotizacion.id).padStart(6, "0") : "------"}
               </span>
             </div>
-            {savedCotizacion && (
+            {savedCotizacion && !impreso && (
               <span className="mt-2 bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-800/50">
                 Guardada
+              </span>
+            )}
+            {impreso && (
+              <span className="mt-2 flex items-center gap-1 bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border border-amber-200 dark:border-amber-800/50">
+                <FaLock className="text-[8px]" /> Impresa
               </span>
             )}
           </div>
@@ -275,11 +318,12 @@ function Cotizacion() {
       </div>
 
       {/* ── Datos del cliente ── */}
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 p-5 mb-6 flex flex-col gap-4 shadow-sm transition-colors">
+      <div className={`bg-white dark:bg-slate-900 rounded-xl border p-5 mb-6 flex flex-col gap-4 shadow-sm transition-colors ${impreso ? "border-amber-200 dark:border-amber-800/40 opacity-75" : "border-gray-200 dark:border-slate-800"}`}>
         <div className="flex flex-col md:flex-row gap-4">
           <input
             type="text"
-            className="w-full md:w-1/2 bg-gray-50 dark:bg-slate-950 rounded-lg p-3 border border-gray-200 dark:border-slate-800 text-gray-800 dark:text-slate-100 text-sm focus:outline-none focus:border-sky-500 transition-all font-bold"
+            disabled={impreso}
+            className="w-full md:w-1/2 bg-gray-50 dark:bg-slate-950 rounded-lg p-3 border border-gray-200 dark:border-slate-800 text-gray-800 dark:text-slate-100 text-sm focus:outline-none focus:border-sky-500 transition-all font-bold disabled:opacity-60 disabled:cursor-not-allowed"
             placeholder="Nombre o Razón Social del cliente"
             value={cliente}
             onChange={(e) => setCliente(e.target.value)}
@@ -352,29 +396,31 @@ function Cotizacion() {
       </div>
 
       {/* ── Lector de barras ── */}
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 p-4 mb-6 shadow-sm transition-colors">
-        <div className="flex items-center gap-4">
-          <div className="bg-sky-50 dark:bg-slate-800 p-2.5 rounded-lg border dark:border-slate-700">
-            <FaBarcode className="text-sky-700 dark:text-slate-300 text-2xl" />
+      {!impreso && (
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 p-4 mb-6 shadow-sm transition-colors">
+          <div className="flex items-center gap-4">
+            <div className="bg-sky-50 dark:bg-slate-800 p-2.5 rounded-lg border dark:border-slate-700">
+              <FaBarcode className="text-sky-700 dark:text-slate-300 text-2xl" />
+            </div>
+            <input
+              ref={barcodeRef}
+              type="text"
+              className="flex-1 bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-lg p-3 text-gray-800 dark:text-slate-100 text-sm focus:outline-none focus:border-sky-500 transition-all font-mono font-bold"
+              placeholder="Escanea el código de barras o escribe para buscar producto..."
+              value={barcodeInput}
+              onChange={(e) => setBarcodeInput(e.target.value)}
+              onKeyDown={handleBarcodeKey}
+            />
+            <button
+              onClick={() => { setShowManualRow(true); setTimeout(() => manualDescRef.current?.focus(), 50); }}
+              className="flex items-center gap-2 bg-white dark:bg-slate-900 border-2 border-dashed border-sky-700 dark:border-slate-800 text-sky-700 dark:text-slate-300 hover:bg-sky-50 dark:hover:bg-slate-800 rounded-lg px-5 py-2.5 cursor-pointer transition-all text-xs font-black uppercase tracking-widest whitespace-nowrap"
+            >
+              <FaPlus className="text-sm" />
+              <span className="hidden md:inline">Ítem manual</span>
+            </button>
           </div>
-          <input
-            ref={barcodeRef}
-            type="text"
-            className="flex-1 bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-lg p-3 text-gray-800 dark:text-slate-100 text-sm focus:outline-none focus:border-sky-500 transition-all font-mono font-bold"
-            placeholder="Escanea el código de barras o escribe para buscar producto..."
-            value={barcodeInput}
-            onChange={(e) => setBarcodeInput(e.target.value)}
-            onKeyDown={handleBarcodeKey}
-          />
-          <button
-            onClick={() => { setShowManualRow(true); setTimeout(() => manualDescRef.current?.focus(), 50); }}
-            className="flex items-center gap-2 bg-white dark:bg-slate-900 border-2 border-dashed border-sky-700 dark:border-slate-800 text-sky-700 dark:text-slate-300 hover:bg-sky-50 dark:hover:bg-slate-800 rounded-lg px-5 py-2.5 cursor-pointer transition-all text-xs font-black uppercase tracking-widest whitespace-nowrap"
-          >
-            <FaPlus className="text-sm" />
-            <span className="hidden md:inline">Ítem manual</span>
-          </button>
         </div>
-      </div>
+      )}
 
       {/* ── Tabla de ítems ── */}
       <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 mb-6 overflow-visible shadow-lg transition-colors">
@@ -402,18 +448,34 @@ function Cotizacion() {
                 <td className="p-4 font-bold text-gray-800 dark:text-slate-200">{item.descripcion}</td>
                 <td className="p-4 text-center text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">{item._unidad || "—"}</td>
                 <td className="p-4 text-center">
-                  <input
-                    type="number" min={1} value={item.cantidad}
-                    onChange={(e) => handleCantChange(idx, e.target.value)}
-                    className="w-20 text-center bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg p-1.5 text-gray-800 dark:text-slate-100 font-bold focus:outline-none focus:border-sky-500 transition-all font-mono"
-                  />
+                  {impreso ? (
+                    <span className="font-mono font-bold text-gray-800 dark:text-slate-100">{item.cantidad}</span>
+                  ) : (
+                    <input
+                      type="number" min={1} value={item.cantidad}
+                      onChange={(e) => handleCantChange(idx, e.target.value)}
+                      className="w-20 text-center bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg p-1.5 text-gray-800 dark:text-slate-100 font-bold focus:outline-none focus:border-sky-500 transition-all font-mono"
+                    />
+                  )}
                 </td>
-                <td className="p-4 text-right dark:text-slate-300 font-mono">S/ {item.precioUnitario.toFixed(2)}</td>
+                <td className="p-4 text-right dark:text-slate-300 font-mono">
+                  {impreso ? (
+                    <span className="font-mono font-bold">S/ {item.precioUnitario.toFixed(2)}</span>
+                  ) : (
+                    <input
+                      type="number" min={0} step="0.01" value={item.precioUnitario}
+                      onChange={(e) => handlePrecioChange(idx, e.target.value)}
+                      className="w-24 text-right bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg p-1.5 text-gray-800 dark:text-slate-100 font-bold focus:outline-none focus:border-sky-500 transition-all font-mono"
+                    />
+                  )}
+                </td>
                 <td className="p-4 text-right font-black text-sky-800 dark:text-slate-100 font-mono">S/ {item.subtotal.toFixed(2)}</td>
                 <td className="p-4 text-center">
-                  <button onClick={() => handleRemoveItem(idx)} className="text-rose-500 hover:text-rose-400 hover:scale-110 transition-all cursor-pointer">
-                    <FaTrash className="text-base" />
-                  </button>
+                  {!impreso && (
+                    <button onClick={() => handleRemoveItem(idx)} className="text-rose-500 hover:text-rose-400 hover:scale-110 transition-all cursor-pointer">
+                      <FaTrash className="text-base" />
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}
@@ -520,21 +582,31 @@ function Cotizacion() {
 
       {/* ── Botones de acción ── */}
       <div className="flex flex-col md:flex-row gap-4 justify-end mb-10">
+        {!impreso && (
+          <button
+            onClick={handleGuardar}
+            disabled={cotizacionMutation.isPending || updateMutation.isPending}
+            className="flex items-center justify-center gap-3 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white rounded-xl px-8 py-4 cursor-pointer transition-all font-black uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95 text-xs"
+          >
+            <FaSave className="text-lg" />
+            {savedCotizacion ? "Actualizar Cotización" : "Guardar Cotización"}
+          </button>
+        )}
         <button
           onClick={() => handleSaveAndPrint("a5")}
-          disabled={cotizacionMutation.isPending}
+          disabled={cotizacionMutation.isPending || updateMutation.isPending}
           className="flex items-center justify-center gap-3 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white rounded-xl px-8 py-4 cursor-pointer transition-all font-black uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95 text-xs"
         >
           <FaPrint className="text-lg" />
-          {savedCotizacion ? "Reimprimir A5" : "Emitir Cotización A5"}
+          {impreso ? "Reimprimir A5" : "Imprimir A5"}
         </button>
         <button
           onClick={() => handleSaveAndPrint("a4")}
-          disabled={cotizacionMutation.isPending}
+          disabled={cotizacionMutation.isPending || updateMutation.isPending}
           className="flex items-center justify-center gap-3 bg-sky-800 hover:bg-sky-700 disabled:opacity-50 text-white rounded-xl px-8 py-4 cursor-pointer transition-all font-black uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95 text-xs"
         >
           <FaPrint className="text-lg" />
-          {savedCotizacion ? "Reimprimir A4" : "Emitir Cotización A4"}
+          {impreso ? "Reimprimir A4" : "Imprimir A4"}
         </button>
       </div>
     </div>
