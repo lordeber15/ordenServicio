@@ -340,19 +340,22 @@ function Boleta() {
       const estadoFinal = await pollEstadoHastaFinal(comprobanteId, { timeout: 30000, intervalo: 2000 });
 
       const aceptado   = ["ACEPTADO", "OBSERVADO"].includes(estadoFinal.estado_sunat);
+      const observado  = estadoFinal.estado_sunat === "OBSERVADO";
       const enProceso  = ["GENERADO", "FIRMADO", "ENVIANDO"].includes(estadoFinal.estado_sunat);
 
       setResultado({
         comprobante_id: comprobanteId,
         metodo_pago:    metodoPago || "Efectivo",
         success:        aceptado,
+        observado,
         en_proceso:     enProceso,
         estado_sunat:   estadoFinal.estado_sunat,
         codigo_sunat:   estadoFinal.cdr_code || estadoFinal.codigo_sunat,
         mensaje_sunat:  estadoFinal.mensaje_sunat,
       });
 
-      if (aceptado)       toast.success("✓ Boleta aceptada por SUNAT");
+      if (observado)      toast("⚠ Boleta aceptada con observaciones de SUNAT", { icon: "⚠️" });
+      else if (aceptado)  toast.success("✓ Boleta aceptada por SUNAT");
       else if (enProceso) toast("SUNAT aún procesando — revisa en Ventas del Día", { icon: "⏳" });
       else                toast.error(`SUNAT: ${estadoFinal.mensaje_sunat || estadoFinal.estado_sunat}`);
 
@@ -516,18 +519,19 @@ function Boleta() {
 
         {/* Resultado de emisión */}
         {resultado && (() => {
-          const { success, en_proceso, esperando } = resultado;
-          const cardCls = esperando || en_proceso
+          const { success, observado, en_proceso, esperando } = resultado;
+          const cardCls = esperando || en_proceso || observado
             ? "bg-amber-50 dark:bg-amber-950/20 border-amber-300 dark:border-amber-700/50"
             : success
               ? "bg-emerald-50 dark:bg-emerald-950/20 border-emerald-300 dark:border-emerald-800/50"
               : "bg-rose-50 dark:bg-rose-950/20 border-rose-300 dark:border-rose-800/50";
-          const titleCls = esperando || en_proceso
+          const titleCls = esperando || en_proceso || observado
             ? "text-amber-700 dark:text-amber-400"
             : success ? "text-emerald-800 dark:text-emerald-400" : "text-rose-800 dark:text-rose-400";
           const title = esperando
             ? "⏳ Esperando respuesta de SUNAT…"
             : en_proceso ? "⏳ En proceso — revisa en Ventas del Día"
+            : observado ? "⚠ Boleta aceptada con observaciones"
             : success ? "✓ Boleta aceptada" : "✗ Boleta rechazada";
           const puedeImprimir = success || en_proceso;
 

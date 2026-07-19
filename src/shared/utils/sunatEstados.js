@@ -20,7 +20,7 @@ export const SUNAT_ESTADOS = {
   ENVIANDO:    { label: "Enviando…",    color: "text-sky-500",    bg: "bg-sky-50     dark:bg-sky-950/30",     icon: FaSpinner,             reenviable: false, spin: true },
   ACEPTADO:    { label: "Aceptado",     color: "text-green-600",  bg: "bg-green-50   dark:bg-green-950/30",   icon: FaCheckCircle,         reenviable: false },
   OBSERVADO:   { label: "Observado",    color: "text-yellow-600", bg: "bg-yellow-50  dark:bg-yellow-950/30",  icon: FaExclamationTriangle, reenviable: false }, // SUNAT lo aceptó con notas, no reenviar
-  RECHAZADO:   { label: "Rechazado",    color: "text-red-600",    bg: "bg-red-50     dark:bg-red-950/30",     icon: FaTimesCircle,         reenviable: true  }, // reenviable solo si !es_terminal
+  RECHAZADO:   { label: "Rechazado",    color: "text-red-600",    bg: "bg-red-50     dark:bg-red-950/30",     icon: FaTimesCircle,         reenviable: true  }, // el backend regenera el XML al reenviar
   ERROR_RED:   { label: "Error red",    color: "text-orange-600", bg: "bg-orange-50  dark:bg-orange-950/30",  icon: FaWifi,                reenviable: true  },
   FUERA_PLAZO: { label: "Fuera plazo",  color: "text-gray-400",   bg: "bg-gray-100   dark:bg-gray-800/60",    icon: FaClock,               reenviable: false },
   SIN_CDR:     { label: "Sin CDR",      color: "text-purple-600", bg: "bg-purple-50  dark:bg-purple-950/30",  icon: FaQuestionCircle,      reenviable: true  },

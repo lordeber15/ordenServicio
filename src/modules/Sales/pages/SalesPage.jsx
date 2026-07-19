@@ -165,7 +165,13 @@ function Ventas() {
                 <tbody>
                   {paginatedVentas.map((v, i) => {
                     const esComprobante = v.tipo !== "ticket";
-                    const puedeReenviar = esComprobante && ESTADOS_REENVIABLES.includes(v.estado) && !v.es_terminal;
+                    // RECHAZADO siempre ofrece reenviar: el backend regenera el XML y
+                    // rechaza con mensaje claro los casos irrecuperables (numeración ya
+                    // registrada, comprobante de baja, etc.).
+                    const puedeReenviar =
+                      esComprobante &&
+                      ESTADOS_REENVIABLES.includes(v.estado) &&
+                      (v.estado === "RECHAZADO" || !v.es_terminal);
                     const reenviando = reenviarMutation.isPending && reenviarMutation.variables === v.id;
 
                     return (
