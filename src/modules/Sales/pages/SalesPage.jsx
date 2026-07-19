@@ -149,17 +149,17 @@ function Ventas() {
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto rounded-lg shadow dark:shadow-slate-950/50">
+            <div className="overflow-x-auto md:overflow-visible rounded-lg shadow dark:shadow-slate-950/50">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-sky-700 dark:bg-slate-950 text-white">
-                    <th className="px-4 py-3 text-left">Tipo</th>
+                    <th className="px-4 py-3 text-left rounded-tl-lg">Tipo</th>
                     <th className="px-4 py-3 text-left">N° Documento</th>
                     <th className="px-4 py-3 text-left">Cliente</th>
                     <th className="px-4 py-3 text-left">Doc. Identidad</th>
                     <th className="px-4 py-3 text-right">Total</th>
                     <th className="px-4 py-3 text-center">Estado SUNAT</th>
-                    <th className="px-4 py-3 text-center">Acciones</th>
+                    <th className="px-4 py-3 text-center rounded-tr-lg">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
