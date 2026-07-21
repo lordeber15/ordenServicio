@@ -73,27 +73,26 @@ export const pollEstadoHastaFinal = (id, { intervalo = 2000, timeout = 30000, on
   });
 
 /**
- * Retorna la URL para descarga del PDF.
- * El backend responde con res.download(), así que se abre en nueva pestaña.
- */
-export const getPdfUrl = (id) => {
-  const base = import.meta.env.VITE_API_URL || "http://localhost:3000/";
-  return `${base}comprobante/${id}/pdf`;
-};
-
-/**
- * Retorna la URL para descarga del XML firmado.
- */
-export const getXmlUrl = (id) => {
-  const base = import.meta.env.VITE_API_URL || "http://localhost:3000/";
-  return `${base}comprobante/${id}/xml`;
-};
-
-/**
  * Obtiene el PDF del comprobante como blob (para impresión directa via iframe).
  */
 export const getComprobantePdf = (id, format = "a5") =>
   axiosURL.get(`/comprobante/${id}/pdf?format=${format}`, { responseType: "blob" });
+
+/**
+ * Obtiene el XML firmado del comprobante como blob.
+ *
+ * Va por axios (no por <a href>) para que el interceptor adjunte el token:
+ * el endpoint exige autenticación y una navegación del navegador no puede
+ * enviar la cabecera Authorization.
+ */
+export const getComprobanteXml = (id) =>
+  axiosURL.get(`/comprobante/${id}/xml`, { responseType: "blob" });
+
+/**
+ * Obtiene el XML firmado de una guía de remisión como blob.
+ */
+export const getGuiaXml = (id) =>
+  axiosURL.get(`/guia/${id}/xml`, { responseType: "blob" });
 
 /**
  * Lista comprobantes con filtro por tipo (07=NC, 01=Factura, etc.) y fecha opcional.

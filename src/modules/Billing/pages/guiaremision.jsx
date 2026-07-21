@@ -9,8 +9,9 @@ import { getEmisores } from "../services/emisores";
 import { getSeriesByTipo } from "../services/series";
 import { buscarClientePorDoc, createCliente } from "../../../shared/services/clientes";
 import axiosURL from "../../../core/api/axiosURL";
-import { getGuiaPdf } from "../services/comprobantes";
+import { getGuiaPdf, getGuiaXml } from "../services/comprobantes";
 import { printPdfBlob } from "../../../shared/utils/printPdfBlob";
+import { downloadBlobResponse } from "../../../shared/utils/downloadBlob";
 
 const HOY = new Date().toLocaleDateString('en-CA');
 
@@ -90,6 +91,16 @@ function GuiaRemision() {
       printPdfBlob(res.data);
     } catch {
       toast.error("Error al generar PDF de la guía");
+    }
+  };
+
+  /** Descarga el XML firmado. Va por axios para que viaje el token de sesión. */
+  const handleDescargarXml = async (id) => {
+    try {
+      const res = await getGuiaXml(id);
+      downloadBlobResponse(res, `guia-${id}.xml`);
+    } catch {
+      toast.error("XML no disponible");
     }
   };
 
@@ -436,10 +447,10 @@ function GuiaRemision() {
                   className="flex items-center gap-2 bg-sky-700 hover:bg-sky-600 text-white px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all shadow-md cursor-pointer">
                   <FaPrint className="text-base" /> Imprimir A5
                 </button>
-                <a href={`${import.meta.env.VITE_API_URL || "http://localhost:3000/"}guia/${resultado.guia_id}/xml`} target="_blank" rel="noreferrer"
-                  className="flex items-center gap-2 bg-slate-600 hover:bg-slate-500 text-white px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all shadow-md">
+                <button onClick={() => handleDescargarXml(resultado.guia_id)}
+                  className="flex items-center gap-2 bg-slate-600 hover:bg-slate-500 text-white px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all shadow-md cursor-pointer">
                   <FaFileCode className="text-base" /> XML
-                </a>
+                </button>
               </div>
             )}
           </div>

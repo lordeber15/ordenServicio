@@ -51,5 +51,25 @@ egresosoApi.interceptors.request.use((config) => {
   return config;
 });
 
+/**
+ * INTERCEPTOR DE RESPUESTA
+ *
+ * Ante un 401 (token ausente, inválido o expirado) limpia la sesión y devuelve
+ * al login. El token dura 8 h; sin esto la app quedaría en un estado
+ * inconsistente mostrando errores sueltos tras la expiración.
+ */
+egresosoApi.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem("userData");
+      cachedToken = null;
+      lastRaw = null;
+      if (window.location.pathname !== "/") window.location.href = "/"; // el login vive en "/"
+    }
+    return Promise.reject(error);
+  }
+);
+
 // Exportar instancia configurada para usar en otros módulos
 export default egresosoApi;

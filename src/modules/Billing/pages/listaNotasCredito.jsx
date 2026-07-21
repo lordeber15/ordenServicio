@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { listComprobantes, getComprobantePdf, getXmlUrl, reenviarComprobante } from "../services/comprobantes";
+import { listComprobantes, getComprobantePdf, getComprobanteXml, reenviarComprobante } from "../services/comprobantes";
 import Drawer from "../../../shared/components/drawer";
 import EstadoSunatBadge from "../../../shared/components/EstadoSunatBadge";
 import { ESTADOS_PENDIENTES, ESTADOS_REENVIABLES } from "../../../shared/utils/sunatEstados";
 import { printPdfBlob } from "../../../shared/utils/printPdfBlob";
+import { downloadBlobResponse } from "../../../shared/utils/downloadBlob";
 import { FaPrint, FaFileCode, FaFileCircleMinus, FaFilter, FaRotateRight } from "react-icons/fa6";
 
 const PER_PAGE = 8;
@@ -45,6 +46,16 @@ function ListaNotasCredito() {
       printPdfBlob(res.data);
     } catch {
       toast.error("Error al generar PDF");
+    }
+  };
+
+  /** Descarga el XML firmado. Va por axios para que viaje el token de sesión. */
+  const handleDescargarXml = async (id) => {
+    try {
+      const res = await getComprobanteXml(id);
+      downloadBlobResponse(res, `nota-credito-${id}.xml`);
+    } catch {
+      toast.error("XML no disponible");
     }
   };
 
@@ -145,15 +156,13 @@ function ListaNotasCredito() {
                                 >
                                   <FaPrint /> A5
                                 </button>
-                                <a
-                                  href={getXmlUrl(c.id)}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="flex items-center gap-1 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 text-xs font-medium"
+                                <button
+                                  onClick={() => handleDescargarXml(c.id)}
+                                  className="flex items-center gap-1 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 text-xs font-medium cursor-pointer"
                                   title="Descargar XML"
                                 >
                                   <FaFileCode /> XML
-                                </a>
+                                </button>
                               </>
                             )}
                             {puedeReenviar && (

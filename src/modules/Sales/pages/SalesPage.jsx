@@ -3,11 +3,12 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { getVentasDia } from "../../../shared/services/caja";
 import { getTicketPdf } from "../../../shared/services/ticket";
-import { getComprobantePdf, getXmlUrl, reenviarComprobante } from "../../Billing/services/comprobantes";
+import { getComprobantePdf, getComprobanteXml, reenviarComprobante } from "../../Billing/services/comprobantes";
 import Drawer from "../../../shared/components/drawer";
 import EstadoSunatBadge from "../../../shared/components/EstadoSunatBadge";
 import { ESTADOS_PENDIENTES, ESTADOS_REENVIABLES } from "../../../shared/utils/sunatEstados";
 import { printPdfBlob } from "../../../shared/utils/printPdfBlob";
+import { downloadBlobResponse } from "../../../shared/utils/downloadBlob";
 import {
   FaReceipt, FaFileInvoice, FaFileLines,
   FaFilter, FaFileCode, FaRotateRight,
@@ -66,6 +67,17 @@ function Ventas() {
       }
     } catch {
       toast.error("PDF no disponible");
+    }
+    setOpenPdfMenu(null);
+  };
+
+  /** Descarga el XML firmado. Va por axios para que viaje el token de sesión. */
+  const handleDescargarXml = async (venta) => {
+    try {
+      const res = await getComprobanteXml(venta.id);
+      downloadBlobResponse(res, `${venta.numero || venta.id}.xml`);
+    } catch {
+      toast.error("XML no disponible");
     }
     setOpenPdfMenu(null);
   };
@@ -234,15 +246,12 @@ function Ventas() {
                                     A5
                                   </button>
                                   {esComprobante && (
-                                    <a
-                                      href={getXmlUrl(v.id)}
-                                      target="_blank"
-                                      rel="noreferrer"
-                                      onClick={() => setOpenPdfMenu(null)}
+                                    <button
+                                      onClick={() => handleDescargarXml(v)}
                                       className="w-full text-left px-3 py-2 text-xs hover:bg-emerald-50 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200 cursor-pointer border-t border-gray-100 dark:border-slate-700 transition-colors flex items-center gap-1.5"
                                     >
                                       <FaFileCode /> XML
-                                    </a>
+                                    </button>
                                   )}
                                 </div>
                               )}

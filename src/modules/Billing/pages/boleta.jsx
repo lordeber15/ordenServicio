@@ -18,11 +18,12 @@ import {
   emitirComprobante,
   pollEstadoHastaFinal,
   getComprobantePdf,
-  getXmlUrl,
+  getComprobanteXml,
 } from "../services/comprobantes";
 import { getProducto } from "../../Inventory/services/productos";
 import { openCashDrawer } from "../../../shared/utils/printDrawer";
 import { printPdfBlob } from "../../../shared/utils/printPdfBlob";
+import { downloadBlobResponse } from "../../../shared/utils/downloadBlob";
 import PaymentModal from "../../../shared/components/PaymentModal";
 
 const IGV_RATE = 0.18;
@@ -34,6 +35,16 @@ const handlePrintComprobante = async (id, format) => {
     printPdfBlob(res.data);
   } catch {
     toast.error("Error al generar PDF");
+  }
+};
+
+/** Descarga el XML firmado. Va por axios para que viaje el token de sesión. */
+const handleDescargarXml = async (id) => {
+  try {
+    const res = await getComprobanteXml(id);
+    downloadBlobResponse(res, `boleta-${id}.xml`);
+  } catch {
+    toast.error("XML no disponible");
   }
 };
 
@@ -561,10 +572,10 @@ function Boleta() {
                     className="flex items-center gap-2 bg-sky-700 hover:bg-sky-600 text-white px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all shadow-md cursor-pointer">
                     <FaFileLines className="text-base" /> Imprimir A5
                   </button>
-                  <a href={getXmlUrl(resultado.comprobante_id)} target="_blank" rel="noreferrer"
-                    className="flex items-center gap-2 bg-slate-600 hover:bg-slate-500 text-white px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all shadow-md">
+                  <button onClick={() => handleDescargarXml(resultado.comprobante_id)}
+                    className="flex items-center gap-2 bg-slate-600 hover:bg-slate-500 text-white px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all shadow-md cursor-pointer">
                     <FaFileCode className="text-base" /> XML
-                  </a>
+                  </button>
                 </div>
               )}
             </div>
