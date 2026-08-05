@@ -20,7 +20,7 @@ function ModalIngreso({ isOpen, onClose, titulo }) {
   const addIngresosMutation = useMutation({
     mutationFn: createIngresos,
     onSuccess: () => {
-      queryClient.invalidateQueries(["ingresos"]); // 🔹 la misma key que usa tu tabla ingresos
+      queryClient.invalidateQueries({ queryKey: ["ingresos"] }); // 🔹 la misma key que usa tu tabla ingresos
       handlerReset();
       onClose(); // 🔹 cierra el modal
     },
@@ -29,7 +29,7 @@ function ModalIngreso({ isOpen, onClose, titulo }) {
   const addEgresosMutation = useMutation({
     mutationFn: createEgresos,
     onSuccess: () => {
-      queryClient.invalidateQueries(["egresos"]); // 🔹 la misma key que usa tu tabla egresos
+      queryClient.invalidateQueries({ queryKey: ["egresos"] }); // 🔹 la misma key que usa tu tabla egresos
       handlerReset();
       onClose(); // 🔹 cierra el modal
     },

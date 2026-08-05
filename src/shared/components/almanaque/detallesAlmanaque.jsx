@@ -48,7 +48,7 @@ function DetallesAlmanaque() {
   const mutation = useMutation({
     mutationFn: ({ id, data }) => updateAlmanaque(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries(["almanaque", id]);
+      queryClient.invalidateQueries({ queryKey: ["almanaque", id] });
       toast.success("Cotización actualizada correctamente");
     },
     onError: (error) => {
@@ -279,10 +279,10 @@ function DetallesAlmanaque() {
               {!impreso && (
                 <button
                   onClick={handleActualizar}
-                  disabled={mutation.isLoading}
+                  disabled={mutation.isPending}
                   className="bg-sky-700 hover:bg-sky-600 dark:bg-emerald-600 dark:hover:bg-emerald-500 rounded-xl p-4 text-white cursor-pointer font-black uppercase tracking-[0.2em] shadow-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
                 >
-                  {mutation.isLoading ? "Actualizando..." : "Actualizar Cotización"}
+                  {mutation.isPending ? "Actualizando..." : "Actualizar Cotización"}
                 </button>
               )}
             </div>
