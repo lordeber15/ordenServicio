@@ -122,6 +122,13 @@ export default function Drawer() {
               </Link>
             </li>
           )}
+          {isAdmin && (
+            <li>
+              <Link to="/reportes/documentos" onClick={() => setIsOpen(false)} className={linkClass}>
+                Reporte de Documentos
+              </Link>
+            </li>
+          )}
           {canAccess("cotizacion") && (
             <li>
               <Link to="/almanaque" onClick={() => setIsOpen(false)} className={linkClass}>
