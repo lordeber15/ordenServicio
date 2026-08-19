@@ -109,6 +109,7 @@ function DetallesAlmanaque() {
       cliente: nombreAlmanaque,
       tipoDocumento: selectDocumento || "Sin Documento",
       numeroDocumento: requestAlmanaque || "",
+      telefono,
       fechaEmision,
       subtotal: totales.opeGravada.toFixed(2),
       igv: totales.igv.toFixed(2),

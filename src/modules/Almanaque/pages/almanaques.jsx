@@ -6,7 +6,7 @@ import {
 import { CiSearch } from "react-icons/ci";
 import toast from "react-hot-toast";
 import { getProducto } from "../../Inventory/services/productos";
-import { getReniec } from "../../../shared/services/reniec";
+import { buscarClientePorDoc, createCliente } from "../../../shared/services/clientes";
 import { createAlmanaque, updateAlmanaque, getCotizacionPdf } from "../services/almanaques";
 import { getUnidades } from "../../Billing/services/unidades";
 import logo from "../../../assets/ALEXANDER.webp";
@@ -14,6 +14,18 @@ import { printPdfBlob } from "../../../shared/utils/printPdfBlob";
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 const today = new Date().toLocaleDateString('en-CA');
+
+// Catálogo SUNAT 06 — enlaza las etiquetas del selector con los ids de la tabla TipoDocumento.
+const TIPO_DOC_ID = {
+  DNI: "1",
+  RUC: "6",
+  "Carnet de Extranjería": "4",
+  Pasaporte: "7",
+  "Cédula Diplomática": "A",
+};
+
+// Solo DNI (8 dígitos) y RUC (11) son consultables en RENIEC/SUNAT.
+const LONGITUD_DOC = { DNI: 8, RUC: 11 };
 
 // ─────────────────────────────────────────────────────────────────
 // Componente principal
@@ -39,6 +51,10 @@ function Cotizacion() {
   const [manualPid, setManualPid] = useState(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
+  // ── Estado de búsqueda de cliente ──
+  const [buscando, setBuscando] = useState(false);
+  const [clienteEncontrado, setClienteEncontrado] = useState(null);
+
   // ── Estado de guardado ──
   const [savedCotizacion, setSavedCotizacion] = useState(null);
   const [impreso, setImpreso] = useState(false);
@@ -58,17 +74,64 @@ function Cotizacion() {
   });
   const unidadMap = useMemo(() => Object.fromEntries(unidades.map((u) => [u.id, u.descripcion || u.nombre || u.id])), [unidades]);
 
-  // ── RENIEC ──
-  const { data: reniecData, refetch: buscarReniec } = useQuery({
-    queryKey: ["reniec", nroDoc],
-    queryFn: () => getReniec(nroDoc),
-    enabled: false,
-  });
-  useEffect(() => {
-    if (reniecData) {
-      setCliente([reniecData.nombres, reniecData.apellidoPaterno, reniecData.apellidoMaterno].filter(Boolean).join(" "));
+  // ── Búsqueda de cliente (BD local → RENIEC / SUNAT) ──
+  const longitudDoc = LONGITUD_DOC[tipoDoc] || 0;
+  const puedeBuscar = longitudDoc > 0;
+
+  const handleBuscarCliente = useCallback(async () => {
+    if (!puedeBuscar || buscando) return;
+    const doc = nroDoc.trim();
+    if (doc.length !== longitudDoc) {
+      toast.error(`El ${tipoDoc} debe tener ${longitudDoc} dígitos`);
+      return;
     }
-  }, [reniecData]);
+    setBuscando(true);
+    try {
+      const data = await buscarClientePorDoc(doc);
+      setCliente(data.razon_social || "");
+      setDireccion(data.direccion || "");
+      setClienteEncontrado(data);
+      toast.success(data.source === "db" ? "Cliente encontrado" : "Encontrado en RENIEC/SUNAT");
+    } catch {
+      setClienteEncontrado(null);
+      toast("No encontrado — ingresa los datos manualmente");
+    } finally {
+      setBuscando(false);
+    }
+  }, [puedeBuscar, buscando, nroDoc, longitudDoc, tipoDoc]);
+
+  /**
+   * Registra el cliente en la BD si aún no existe, igual que boleta/factura.
+   * Es best-effort: un fallo aquí nunca debe impedir guardar la cotización.
+   */
+  const sincronizarCliente = useCallback(async () => {
+    const doc = nroDoc.trim();
+    const tipoId = TIPO_DOC_ID[tipoDoc];
+    if (!tipoId || !doc) return;
+
+    // Si ya lo buscamos en esta cotización sabemos si está en BD y evitamos otra llamada.
+    let existeEnBD = clienteEncontrado?.nrodoc === doc ? clienteEncontrado.source === "db" : null;
+    if (existeEnBD === null) {
+      try {
+        const found = await buscarClientePorDoc(doc);
+        existeEnBD = found.source === "db";
+      } catch {
+        existeEnBD = false;
+      }
+    }
+    if (existeEnBD) return;
+
+    try {
+      await createCliente({
+        tipo_documento_id: tipoId,
+        nrodoc: doc,
+        razon_social: cliente || doc,
+        direccion: direccion || null,
+      });
+    } catch {
+      /* El cliente no se pudo registrar; la cotización se guarda igual. */
+    }
+  }, [nroDoc, tipoDoc, clienteEncontrado, cliente, direccion]);
 
   // ── Mutaciones ──
   const cotizacionMutation = useMutation({ mutationFn: createAlmanaque });
@@ -188,6 +251,7 @@ function Cotizacion() {
     tipoDocumento: tipoDoc,
     numeroDocumento: nroDoc || "00000000",
     direccion,
+    telefono,
     fechaEmision,
     precioTotal: parseFloat(total.toFixed(2)),
     aCuenta: 0,
@@ -201,6 +265,8 @@ function Cotizacion() {
   const handleGuardar = async () => {
     if (items.length === 0) { toast.error("Agrega al menos un ítem"); return; }
     if (impreso) return;
+
+    await sincronizarCliente();
 
     if (savedCotizacion) {
       toast.promise(updateMutation.mutateAsync({ id: savedCotizacion.id, data: buildPayload() }), {
@@ -243,6 +309,8 @@ function Cotizacion() {
       return;
     }
 
+    await sincronizarCliente();
+
     toast.promise(cotizacionMutation.mutateAsync(buildPayload()), {
       loading: "Guardando e imprimiendo...",
       success: async (res) => {
@@ -257,6 +325,7 @@ function Cotizacion() {
   // ── Nueva Cotización ──
   const handleNuevaCotizacion = () => {
     setCliente(""); setTipoDoc("Sin Documento"); setNroDoc(""); setDireccion(""); setTelefono("");
+    setClienteEncontrado(null);
     setFechaEmision(today); setItems([]); setBarcodeInput("");
     setShowManualRow(false); setSavedCotizacion(null); setImpreso(false);
     setTimeout(() => barcodeRef.current?.focus(), 100);
@@ -331,7 +400,7 @@ function Cotizacion() {
           <div className="w-full md:w-1/2 flex gap-3">
             <select
               value={tipoDoc}
-              onChange={(e) => { setTipoDoc(e.target.value); setNroDoc(""); }}
+              onChange={(e) => { setTipoDoc(e.target.value); setNroDoc(""); setClienteEncontrado(null); }}
               className="p-3 bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-lg w-2/5 text-gray-800 dark:text-slate-100 text-sm focus:outline-none focus:border-sky-500 transition-all font-bold"
             >
               <option value="Sin Documento">Sin Documento</option>
@@ -348,16 +417,18 @@ function Cotizacion() {
                 className="bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-lg p-3 w-full text-gray-800 dark:text-slate-100 text-sm focus:outline-none focus:border-sky-500 transition-all disabled:opacity-50 font-mono font-bold"
                 placeholder="Nro. Documento"
                 value={nroDoc}
-                onChange={(e) => setNroDoc(e.target.value)}
-                maxLength={tipoDoc === "DNI" ? 8 : tipoDoc === "RUC" ? 11 : 20}
+                onChange={(e) => { setNroDoc(e.target.value); setClienteEncontrado(null); }}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleBuscarCliente(); } }}
+                maxLength={longitudDoc || 20}
               />
-              {tipoDoc === "DNI" ? (
+              {puedeBuscar ? (
                 <button
-                  onClick={() => nroDoc.length === 8 && buscarReniec()}
-                  className="absolute right-2 top-2 p-1.5 bg-sky-700 hover:bg-sky-600 text-white rounded-md cursor-pointer transition-colors shadow-sm"
-                  title="Buscar en RENIEC"
+                  onClick={handleBuscarCliente}
+                  disabled={buscando}
+                  className="absolute right-2 top-2 p-1.5 bg-sky-700 hover:bg-sky-600 text-white rounded-md cursor-pointer transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  title={tipoDoc === "RUC" ? "Buscar en SUNAT" : "Buscar en RENIEC"}
                 >
-                  <CiSearch className="w-5 h-5" />
+                  <CiSearch className={`w-5 h-5 ${buscando ? "animate-pulse" : ""}`} />
                 </button>
               ) : (
                 <span className="absolute right-2 top-2 p-1.5 opacity-30 text-gray-500">
