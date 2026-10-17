@@ -8,7 +8,6 @@ import {
 import { CiSearch } from "react-icons/ci";
 import toast from "react-hot-toast";
 import { getProducto } from "../../Inventory/services/productos";
-import { openCashDrawer } from "../../../shared/utils/printDrawer";
 import { printPdfBlob } from "../../../shared/utils/printPdfBlob";
 import PaymentModal from "../../../shared/components/PaymentModal";
 import { createTicket, getTicketPdf } from "../../../shared/services/ticket";
@@ -103,6 +102,10 @@ function Ticket() {
     total_efectivo: cajaData?.total_efectivo || 0,
     total_yape: cajaData?.total_yape || 0,
   };
+  // Desglose calculado por el servidor (por método de pago, crédito y pendientes SUNAT)
+  const desglose = cajaData?.desglose || null;
+  const efectivo = desglose?.por_metodo?.Efectivo || null;
+  const otrosMetodos = Object.entries(desglose?.por_metodo || {}).filter(([m]) => m !== "Efectivo");
 
   // ── Búsqueda de cliente por DNI/RUC ──
   const [buscandoCliente, setBuscandoCliente] = useState(false);
@@ -283,7 +286,7 @@ function Ticket() {
         const res = await getTicketPdf(savedTicket.id, format);
         printPdfBlob(res.data);
         // if (metodoPago === "Efectivo") openCashDrawer(); // Retirado a petición del usuario. Solo se abre en modal.
-      } catch (err) {
+      } catch {
         toast.error("Error al generar PDF");
       }
       return;
@@ -310,7 +313,7 @@ function Ticket() {
           const pdfRes = await getTicketPdf(res.data.id, format);
           printPdfBlob(pdfRes.data);
           // if (metodoPago === "Efectivo") openCashDrawer(); // Retirado a petición del usuario. Solo se abre en modal.
-        } catch (_) { /* PDF opcional */ }
+        } catch { /* PDF opcional */ }
         handleNuevaVenta();
         return `Ticket N° ${String(res.data.id).padStart(6, "0")} guardado`;
       },
@@ -397,7 +400,10 @@ function Ticket() {
   useEffect(() => { barcodeRef.current?.focus(); }, []);
 
   // ── Cálculo diferencia en modal cierre ──
-  const montoEsperado = caja ? parseFloat(caja.monto_apertura) + ventasPreview.total : 0;
+  // Efectivo esperado = apertura + efectivo neto (Yape/tarjeta no están en el cajón).
+  const montoEsperado = caja
+    ? (cajaData?.efectivo_esperado ?? parseFloat(caja.monto_apertura) + ventasPreview.total_efectivo)
+    : 0;
   const diferenciaPreview = montoCierre !== "" ? parseFloat(montoCierre || 0) - montoEsperado : null;
 
   return (
@@ -880,7 +886,10 @@ function Ticket() {
               {[
                 ["Apertura inicial", `S/ ${parseFloat(caja.monto_apertura).toFixed(2)}`, "text-slate-500"],
                 ["Ventas en tickets", `S/ ${ventasPreview.tickets.toFixed(2)}`, "text-slate-500"],
-                ["Boletas / Facturas", `S/ ${ventasPreview.comprobantes.toFixed(2)}`, "text-slate-500"],
+                ["Boletas / Facturas (neto de NC)", `S/ ${ventasPreview.comprobantes.toFixed(2)}`, "text-slate-500"],
+                ...(efectivo && (efectivo.ingresos || efectivo.egresos)
+                  ? [["Ingresos − Egresos (efectivo)", `S/ ${(efectivo.ingresos - efectivo.egresos).toFixed(2)}`, "text-slate-500"]]
+                  : []),
               ].map(([label, val, color]) => (
                 <div key={label} className="flex justify-between items-center text-[11px] font-black uppercase tracking-widest">
                   <span className={color}>{label}</span>
@@ -891,10 +900,18 @@ function Ticket() {
                 <span className="text-[11px] font-black uppercase tracking-widest text-slate-700 dark:text-slate-300">Total ventas del turno</span>
                 <span className="font-mono text-sm font-black text-slate-800 dark:text-slate-200">S/ {ventasPreview.total.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between items-center pt-3 border-t dark:border-slate-800">
-                <span className="text-[11px] font-black uppercase tracking-widest text-violet-700 dark:text-violet-400">Total Yape</span>
-                <span className="font-mono text-sm font-black text-violet-800 dark:text-violet-300">S/ {ventasPreview.total_yape.toFixed(2)}</span>
-              </div>
+              {otrosMetodos.map(([metodo, v]) => (
+                <div key={metodo} className="flex justify-between items-center pt-3 border-t dark:border-slate-800">
+                  <span className="text-[11px] font-black uppercase tracking-widest text-violet-700 dark:text-violet-400">Total {metodo}</span>
+                  <span className="font-mono text-sm font-black text-violet-800 dark:text-violet-300">S/ {v.neto.toFixed(2)}</span>
+                </div>
+              ))}
+              {desglose?.credito?.neto > 0 && (
+                <div className="flex justify-between items-center pt-3 border-t dark:border-slate-800">
+                  <span className="text-[11px] font-black uppercase tracking-widest text-slate-500">Ventas al crédito (no cobradas)</span>
+                  <span className="font-mono text-sm font-black text-slate-600 dark:text-slate-300">S/ {desglose.credito.neto.toFixed(2)}</span>
+                </div>
+              )}
               <div className="flex justify-between items-center pt-3 border-t dark:border-slate-800">
                 <span className="text-[11px] font-black uppercase tracking-widest text-emerald-700 dark:text-emerald-400">Total Efectivo</span>
                 <span className="font-mono text-sm font-black text-emerald-800 dark:text-emerald-300">S/ {ventasPreview.total_efectivo.toFixed(2)}</span>
@@ -904,6 +921,14 @@ function Ticket() {
                 <span className="text-xl font-mono font-black text-sky-800 dark:text-sky-100">S/ {montoEsperado.toFixed(2)}</span>
               </div>
             </div>
+
+            {/* Comprobantes que SUNAT aún no aceptó: el dinero se cobró, pero hay que darles seguimiento */}
+            {desglose?.sunat_pendientes?.cantidad > 0 && (
+              <div className="rounded-xl p-3 mb-6 text-[11px] font-black uppercase tracking-widest bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+                ⚠ {desglose.sunat_pendientes.cantidad} comprobante(s) sin aceptar por SUNAT
+                (S/ {desglose.sunat_pendientes.total.toFixed(2)}) — revisa Ventas del Día
+              </div>
+            )}
 
             {/* Monto físico */}
             <div className="mb-6">
