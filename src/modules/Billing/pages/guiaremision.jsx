@@ -9,6 +9,7 @@ import { getEmisores } from "../services/emisores";
 import { getSeriesByTipo } from "../services/series";
 import { buscarClientePorDoc, createCliente } from "../../../shared/services/clientes";
 import axiosURL from "../../../core/api/axiosURL";
+import { esperarResultadoGuia } from "../services/guias";
 import { getGuiaPdf, getGuiaXml } from "../services/comprobantes";
 import { printPdfBlob } from "../../../shared/utils/printPdfBlob";
 import { downloadBlobResponse } from "../../../shared/utils/downloadBlob";
@@ -168,7 +169,7 @@ function GuiaRemision() {
         tipo_guia: tipoGuia,
         serie_id: serie.id,
         serie: serie.serie,
-        correlativo: serie.correlativo,
+        // serie y correlativo los asigna el servidor a partir de serie_id
         fecha_emision: fechaEmision,
         fecha_traslado: fechaTraslado,
         destinatario_id: cliente.id,
@@ -219,7 +220,12 @@ function GuiaRemision() {
         }
       );
 
-      setResultado(emitRes.data);
+      // Recibida por SUNAT (ticket): el resultado real llega al consultar el ticket.
+      setResultado({ guia_id: guiaId, en_proceso: true, mensaje_sunat: emitRes.data.message, codigo_sunat: "TICKET" });
+      const final = await esperarResultadoGuia(guiaId);
+      setResultado(final);
+      if (final.success) toast.success("✓ Guía aceptada por SUNAT");
+      else if (!final.en_proceso) toast.error(`SUNAT rechazó la guía: ${final.mensaje_sunat || final.codigo_sunat}`);
     } catch (err) {
       toast.error(err?.response?.data?.message || "Error general al emitir guía");
     } finally {
@@ -436,9 +442,9 @@ function GuiaRemision() {
 
         {/* Alerta SUNAT */}
         {resultado && (
-          <div className={`rounded-xl p-5 text-sm my-2 shadow-lg border-2 animate-jump-in ${resultado.success ? "bg-emerald-50 dark:bg-emerald-950/20 border-emerald-300 dark:border-emerald-800/50" : "bg-rose-50 dark:bg-rose-950/20 border-rose-300 dark:border-rose-800/50"}`}>
-            <div className={`font-black uppercase tracking-widest mb-2 flex items-center gap-2 ${resultado.success ? "text-emerald-800 dark:text-emerald-400" : "text-rose-800 dark:text-rose-400"}`}>
-              {resultado.success ? "✓ Guía Aceptada" : "✗ Guía Rechazada"}
+          <div className={`rounded-xl p-5 text-sm my-2 shadow-lg border-2 animate-jump-in ${resultado.success ? "bg-emerald-50 dark:bg-emerald-950/20 border-emerald-300 dark:border-emerald-800/50" : resultado.en_proceso ? "bg-amber-50 dark:bg-amber-950/20 border-amber-300 dark:border-amber-800/50" : "bg-rose-50 dark:bg-rose-950/20 border-rose-300 dark:border-rose-800/50"}`}>
+            <div className={`font-black uppercase tracking-widest mb-2 flex items-center gap-2 ${resultado.success ? "text-emerald-800 dark:text-emerald-400" : resultado.en_proceso ? "text-amber-800 dark:text-amber-400" : "text-rose-800 dark:text-rose-400"}`}>
+              {resultado.success ? "✓ Guía Aceptada" : resultado.en_proceso ? "⏳ Enviada — SUNAT aún procesando (revisa en Lista de Guías)" : "✗ Guía Rechazada"}
             </div>
             <div className="text-gray-600 dark:text-slate-400 font-medium">SUNAT: <span className="font-bold">{resultado.codigo_sunat}</span> — {resultado.mensaje_sunat}</div>
             {resultado.success && (

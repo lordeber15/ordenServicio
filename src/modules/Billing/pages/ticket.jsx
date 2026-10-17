@@ -341,6 +341,7 @@ function Ticket() {
           direccion,
           items: items.map(({ _pid, descripcion, cantidad, precioUnitario, _unidad_id }) => ({
             descripcion, cantidad, precioConIgv: precioUnitario, unidad_id: _unidad_id || "NIU",
+            producto_id: _pid ?? null, // para que el comprobante descuente stock
           })),
         },
       },

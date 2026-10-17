@@ -9,15 +9,12 @@ import DatosEmpresa from "../../../shared/components/datosEmpresa";
 import { getEmisores } from "../services/emisores";
 import { getSeriesByTipo } from "../services/series";
 import { getUnidades } from "../services/unidades";
-import { buscarClientePorDoc, createCliente } from "../../../shared/services/clientes";
+import { buscarClientePorDoc } from "../../../shared/services/clientes";
 import {
-  createComprobante,
-  createDetalle,
-  emitirComprobante,
-  pollEstadoHastaFinal,
   getComprobantePdf,
   getComprobanteXml,
 } from "../services/comprobantes";
+import { useEmisionComprobante, itemParaEmision, totalesVista } from "../hooks/useEmisionComprobante";
 import axiosURL from "../../../core/api/axiosURL";
 import { printPdfBlob } from "../../../shared/utils/printPdfBlob";
 import { downloadBlobResponse } from "../../../shared/utils/downloadBlob";
@@ -162,7 +159,6 @@ function NotaDeCredito() {
   const { data: comprobantes = [] } = useQuery({ queryKey: ["comprobantes"], queryFn: () => axiosURL.get("/comprobante").then(res => res.data) });
 
   const emisor = emisores[0] || null;
-  const serie = series[0] || null;
 
   const [items, setItems] = useState(() => {
     if (!fromTicket) return [];
@@ -188,16 +184,25 @@ function NotaDeCredito() {
   const [formaPago, setFormaPago] = useState("Contado");
   const [fechaVencimiento, setFechaVencimiento] = useState("");
   const [buscando, setBuscando] = useState(false);
-  const [emitiendo, setEmitiendo] = useState(false);
-  const [resultado, setResultado] = useState(null);
+  const { emitir, emitiendo, resultado, setResultado } = useEmisionComprobante("Nota de crédito");
 
   const [comprobanteRefId, setComprobanteRefId] = useState("");
   const [tipoNotaId, setTipoNotaId] = useState("01");
   const [descripcionNota, setDescripcionNota] = useState("");
 
-  const opGravadas = useMemo(() => items.reduce((s, i) => s + i.valor_total, 0), [items]);
-  const totalIgv = opGravadas * IGV_RATE;
-  const total = opGravadas + totalIgv;
+  // Solo comprobantes registrados en SUNAT admiten nota de crédito.
+  const referenciables = useMemo(
+    () => comprobantes.filter((c) => ["01", "03"].includes(c.tipo_comprobante_id) && ["ACEPTADO", "OBSERVADO"].includes(c.estado_sunat)),
+    [comprobantes]
+  );
+  const comprobanteRef = referenciables.find((c) => String(c.id) === String(comprobanteRefId)) || null;
+  // SUNAT: la NC usa una serie que empieza con la misma letra que el comprobante (F/B).
+  const serie = useMemo(() => {
+    if (!comprobanteRef) return series[0] || null;
+    return series.find((s) => s.serie?.[0] === comprobanteRef.serie?.[0]) || null;
+  }, [series, comprobanteRef]);
+
+  const { opGravadas, totalIgv, total } = useMemo(() => totalesVista(items), [items]);
 
   const handleBuscarRuc = async () => {
     if (clienteRuc.trim().length !== 11) {
@@ -219,138 +224,34 @@ function NotaDeCredito() {
 
   const handleEmitir = async () => {
     if (!emisor) { toast.error("No hay emisor configurado"); return; }
-    if (!serie) { toast.error("No hay serie F configurada. Crea una en Configuración > Series"); return; }
-    if (!clienteRuc.trim() || clienteRuc.trim().length !== 11) {
-      toast.error("La Factura requiere el RUC del cliente (11 dígitos)");
+    if (!comprobanteRef) { toast.error("Selecciona el comprobante de referencia"); return; }
+    if (!serie) {
+      toast.error(`No hay serie de nota de crédito que empiece con "${comprobanteRef.serie[0]}". Crea una en Configuración > Series`);
       return;
     }
-    if (!clienteNombre.trim()) { toast.error("Ingresa la razón social del cliente"); return; }
+    if (descripcionNota.trim().length < 3) { toast.error("Describe el motivo de la nota de crédito"); return; }
     if (items.length === 0) { toast.error("Agrega al menos un ítem"); return; }
     if (formaPago === "Crédito" && !fechaVencimiento) {
       toast.error("Ingresa la fecha de vencimiento para pago a crédito");
       return;
     }
 
-    setEmitiendo(true);
-    setResultado(null);
-
-    try {
-      // 1. Gestionar cliente (RUC obligatorio)
-      let clienteId;
-      try {
-        const found = await buscarClientePorDoc(clienteRuc.trim());
-        if (found.source === "db" && found.id) {
-          clienteId = found.id;
-        } else {
-          const res = await createCliente({
-            tipo_documento_id: "6",
-            nrodoc: clienteRuc.trim(),
-            razon_social: clienteNombre.trim(),
-            direccion: direccion || null,
-          });
-          clienteId = res.data.id;
-        }
-      } catch {
-        const res = await createCliente({
-          tipo_documento_id: "6",
-          nrodoc: clienteRuc.trim(),
-          razon_social: clienteNombre.trim(),
-          direccion: direccion || null,
-        });
-        clienteId = res.data.id;
-      }
-
-      // 2. Crear cabecera
-      const cabRes = await createComprobante({
-        emisor_id: emisor.id,
-        tipo_comprobante_id: "07",
-        serie_id: serie.id,
-        serie: serie.serie,
-        correlativo: serie.correlativo,
-        fecha_emision: fechaEmision,
-        fecha_vencimiento: formaPago === "Crédito" ? fechaVencimiento : null,
-        moneda_id: "PEN",
-        op_gravadas: opGravadas.toFixed(2),
-        igv: totalIgv.toFixed(2),
-        total: total.toFixed(2),
-        cliente_id: clienteId,
-        forma_pago: formaPago,
+    // El cliente lo toma el servidor del comprobante de referencia (mismo receptor).
+    await emitir({
+      tipo_comprobante_id: "07",
+      emisor_id: emisor.id,
+      serie_id: serie.id,
+      fecha_emision: fechaEmision,
+      forma_pago: formaPago,
+      fecha_vencimiento: formaPago === "Crédito" ? fechaVencimiento : null,
+      nota: {
+        comprobante_ref_id: comprobanteRef.id,
         tipo_nota_id: tipoNotaId,
-        descripcion_nota: descripcionNota,
-        comprobante_ref_id: comprobanteRefId ? parseInt(comprobanteRefId, 10) : null,
-      });
-      const comprobanteId = cabRes.data.id;
-
-      // 3. Crear detalles
-      for (let i = 0; i < items.length; i++) {
-        const it = items[i];
-        await createDetalle({
-          comprobante_id: comprobanteId,
-          item: i + 1,
-          descripcion: it.descripcion,
-          unidad_id: it.unidad_id || "NIU",
-          cantidad: it.cantidad,
-          valor_unitario: it.valor_unitario.toFixed(6),
-          precio_unitario: it.precio_unitario.toFixed(6),
-          igv: it.igv.toFixed(6),
-          porcentaje_igv: (IGV_RATE * 100).toFixed(6),
-          valor_total: it.valor_total.toFixed(6),
-          importe_total: it.importe_total.toFixed(6),
-        });
-      }
-
-      // 4. Crear cuota si pago a crédito
-      if (formaPago === "Crédito") {
-        await axiosURL.post("/cuota", {
-          comprobante_id: comprobanteId,
-          numero: "001",
-          importe: total.toFixed(6),
-          fecha_vencimiento: fechaVencimiento,
-          estado: "P",
-        });
-      }
-
-      // 5. Firmar y encolar en SUNAT (202 inmediato)
-      await toast.promise(
-        emitirComprobante(comprobanteId),
-        {
-          loading: "Firmando y enviando a SUNAT…",
-          success: "Nota en cola — esperando respuesta…",
-          error: (e) => `Error SUNAT: ${e?.response?.data?.message || e.message}`,
-        }
-      );
-
-      setResultado({ comprobante_id: comprobanteId, esperando: true });
-
-      // 6. Polling hasta respuesta final de SUNAT (máx 30 s)
-      const estadoFinal = await pollEstadoHastaFinal(comprobanteId, { timeout: 30000, intervalo: 2000 });
-
-      const aceptado   = ["ACEPTADO", "OBSERVADO"].includes(estadoFinal.estado_sunat);
-      const observado  = estadoFinal.estado_sunat === "OBSERVADO";
-      const enProceso  = ["GENERADO", "FIRMADO", "ENVIANDO"].includes(estadoFinal.estado_sunat);
-
-      setResultado({
-        comprobante_id: comprobanteId,
-        success:        aceptado,
-        observado,
-        en_proceso:     enProceso,
-        estado_sunat:   estadoFinal.estado_sunat,
-        codigo_sunat:   estadoFinal.cdr_code || estadoFinal.codigo_sunat,
-        mensaje_sunat:  estadoFinal.mensaje_sunat,
-      });
-
-      if (observado)      toast("⚠ Nota de Crédito aceptada con observaciones de SUNAT", { icon: "⚠️" });
-      else if (aceptado)  toast.success("✓ Nota de Crédito aceptada por SUNAT");
-      else if (enProceso) toast("SUNAT aún procesando — revisa en Ventas del Día", { icon: "⏳" });
-      else                toast.error(`SUNAT: ${estadoFinal.mensaje_sunat || estadoFinal.estado_sunat}`);
-
-    } catch (err) {
-      toast.error(err?.response?.data?.message || err.message || "Error al emitir Nota de Crédito");
-    } finally {
-      setEmitiendo(false);
-    }
+        descripcion_nota: descripcionNota.trim(),
+      },
+      items: items.map(itemParaEmision),
+    });
   };
-
   return (
     <div className="px-4 md:px-12 py-4 w-full">
       <div className="flex justify-start gap-5 items-center">
@@ -425,7 +326,7 @@ function NotaDeCredito() {
               }}
               className="w-full p-2.5 rounded-lg border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-sm focus:outline-none focus:border-amber-500 font-bold text-gray-700 dark:text-slate-200">
               <option value="">-- Seleccionar Comprobante --</option>
-              {comprobantes.filter(c => ['01', '03'].includes(c.tipo_comprobante_id) && c.estado_sunat === 'AC').map(c => (
+              {referenciables.map(c => (
                 <option key={c.id} value={c.id}>{c.serie}-{c.correlativo} (S/ {c.total})</option>
               ))}
             </select>

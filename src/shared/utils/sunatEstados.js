@@ -10,7 +10,7 @@ import {
 } from "react-icons/fa";
 
 /**
- * Config centralizada de los 9 estados SUNAT.
+ * Config centralizada de los estados SUNAT (comprobantes y guías).
  * reenviable: true → muestra el botón "Reenviar" en la UI.
  * spin: true      → el icono rota (estado transitorio).
  */
@@ -24,6 +24,14 @@ export const SUNAT_ESTADOS = {
   ERROR_RED:   { label: "Error red",    color: "text-orange-600", bg: "bg-orange-50  dark:bg-orange-950/30",  icon: FaWifi,                reenviable: true  },
   FUERA_PLAZO: { label: "Fuera plazo",  color: "text-gray-400",   bg: "bg-gray-100   dark:bg-gray-800/60",    icon: FaClock,               reenviable: false },
   SIN_CDR:     { label: "Sin CDR",      color: "text-purple-600", bg: "bg-purple-50  dark:bg-purple-950/30",  icon: FaQuestionCircle,      reenviable: true  },
+  // Anulación por Comunicación de Baja
+  EN_BAJA:     { label: "Anulando…",    color: "text-orange-500", bg: "bg-orange-50  dark:bg-orange-950/30",  icon: FaSpinner,             reenviable: false, spin: true },
+  ANULADO:     { label: "Anulado",      color: "text-gray-500",   bg: "bg-gray-100   dark:bg-gray-800/60",    icon: FaTimesCircle,         reenviable: false },
+  // Guías de remisión (códigos de 2 letras)
+  PE:          { label: "Pendiente",    color: "text-slate-500",  bg: "bg-slate-100  dark:bg-slate-800/60",   icon: FaClock,               reenviable: false },
+  EN:          { label: "En SUNAT…",    color: "text-sky-500",    bg: "bg-sky-50     dark:bg-sky-950/30",     icon: FaSpinner,             reenviable: false, spin: true },
+  AC:          { label: "Aceptada",     color: "text-green-600",  bg: "bg-green-50   dark:bg-green-950/30",   icon: FaCheckCircle,         reenviable: false },
+  RR:          { label: "Rechazada",    color: "text-red-600",    bg: "bg-red-50     dark:bg-red-950/30",     icon: FaTimesCircle,         reenviable: false },
   // Fallback para estados no reconocidos
   _desconocido: { label: "Pendiente",   color: "text-yellow-500", bg: "bg-yellow-50  dark:bg-yellow-950/30",  icon: FaClock,               reenviable: false },
 };
@@ -34,7 +42,7 @@ export function getEstadoConfig(estado) {
 }
 
 /** Estados que indican procesamiento en curso (usados para activar polling). */
-export const ESTADOS_PENDIENTES = ["GENERADO", "FIRMADO", "ENVIANDO"];
+export const ESTADOS_PENDIENTES = ["GENERADO", "FIRMADO", "ENVIANDO", "EN"];
 
 /** Estados desde los que el usuario puede reenviar manualmente (y además es_terminal=false). */
 export const ESTADOS_REENVIABLES = ["RECHAZADO", "ERROR_RED", "SIN_CDR"];

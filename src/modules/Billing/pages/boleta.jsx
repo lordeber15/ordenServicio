@@ -11,15 +11,12 @@ import DatosEmpresa from "../../../shared/components/datosEmpresa";
 import { getEmisores } from "../services/emisores";
 import { getSeriesByTipo } from "../services/series";
 import { getUnidades } from "../services/unidades";
-import { buscarClientePorDoc, createCliente } from "../../../shared/services/clientes";
+import { buscarClientePorDoc } from "../../../shared/services/clientes";
 import {
-  createComprobante,
-  createDetalle,
-  emitirComprobante,
-  pollEstadoHastaFinal,
   getComprobantePdf,
   getComprobanteXml,
 } from "../services/comprobantes";
+import { useEmisionComprobante, itemParaEmision, totalesVista } from "../hooks/useEmisionComprobante";
 import { getProducto } from "../../Inventory/services/productos";
 import { openCashDrawer } from "../../../shared/utils/printDrawer";
 import { printPdfBlob } from "../../../shared/utils/printPdfBlob";
@@ -91,6 +88,7 @@ function ItemForm({ unidades, productos = EMPTY_LIST, onAgregar, onCancelar }) {
   const [unidadId, setUnidadId] = useState(unidades[0]?.id || "NIU");
   const [cantidad, setCantidad] = useState("1");
   const [precio, setPrecio] = useState("");
+  const [productoId, setProductoId] = useState(null); // vínculo al inventario (descuenta stock)
   
   const [showSuggestions, setShowSuggestions] = useState(false);
   const suggestions = useMemo(() => {
@@ -102,6 +100,7 @@ function ItemForm({ unidades, productos = EMPTY_LIST, onAgregar, onCancelar }) {
 
   const handleSelectSuggestion = (p) => {
     setDesc(p.nombre);
+    setProductoId(p.es_servicio ? null : p.id);
     setPrecio(parseFloat(p.valor_unitario || 0).toFixed(2));
     setUnidadId(p.unidad_id || "NIU");
     setShowSuggestions(false);
@@ -117,6 +116,7 @@ function ItemForm({ unidades, productos = EMPTY_LIST, onAgregar, onCancelar }) {
     const valorUnit = p / (1 + IGV_RATE);
     onAgregar({
       descripcion: desc.trim(),
+      producto_id: productoId,
       unidad_id: unidadId,
       cantidad: q,
       precio_unitario: p,
@@ -135,7 +135,7 @@ function ItemForm({ unidades, productos = EMPTY_LIST, onAgregar, onCancelar }) {
           className="w-16 bg-white dark:bg-slate-950 border border-sky-300 dark:border-slate-800 rounded p-1 text-sm text-gray-800 dark:text-slate-100 transition-colors" />
       </td>
       <td className="px-2 py-1 max-w-64 relative">
-        <input type="text" value={desc} onChange={(e) => { setDesc(e.target.value); setShowSuggestions(true); }}
+        <input type="text" value={desc} onChange={(e) => { setDesc(e.target.value); setProductoId(null); setShowSuggestions(true); }}
           onFocus={() => setShowSuggestions(true)}
           onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
           onKeyDown={(e) => {
@@ -215,6 +215,7 @@ function Boleta() {
       const valorUnit = i.precioConIgv / (1 + IGV_RATE);
       return {
         descripcion: i.descripcion,
+        producto_id: i.producto_id ?? null,
         unidad_id: i.unidad_id || "NIU",
         cantidad: i.cantidad,
         precio_unitario: parseFloat(i.precioConIgv.toFixed(2)),
@@ -232,13 +233,10 @@ function Boleta() {
   const [direccion, setDireccion] = useState(fromTicket?.direccion || "");
   const [fechaEmision, setFechaEmision] = useState(HOY);
   const [buscando, setBuscando] = useState(false);
-  const [emitiendo, setEmitiendo] = useState(false);
-  const [resultado, setResultado] = useState(null);
+  const { emitir, emitiendo, resultado, setResultado } = useEmisionComprobante("Boleta");
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
-  const opGravadas = useMemo(() => items.reduce((s, i) => s + i.valor_total, 0), [items]);
-  const totalIgv = opGravadas * IGV_RATE;
-  const total = opGravadas + totalIgv;
+  const { opGravadas, totalIgv, total } = useMemo(() => totalesVista(items), [items]);
 
   const handleBuscar = async () => {
     if (!clienteDoc.trim()) return;
@@ -268,113 +266,25 @@ function Boleta() {
     if (!serie) { toast.error("No hay serie B configurada. Crea una en Configuración > Series"); return; }
     if (items.length === 0) { toast.error("Agrega al menos un ítem"); return; }
 
-    setEmitiendo(true);
-    setResultado(null);
-
-    try {
-      // 1. Gestionar cliente (buscar o crear)
-      let clienteId = null;
-      if (tipoDoc !== "0" && clienteDoc.trim()) {
-        try {
-          const found = await buscarClientePorDoc(clienteDoc.trim());
-          if (found.source === "db" && found.id) {
-            clienteId = found.id;
-          } else {
-            const res = await createCliente({
-              tipo_documento_id: tipoDoc,
-              nrodoc: clienteDoc.trim(),
-              razon_social: clienteNombre || clienteDoc.trim(),
-              direccion: direccion || null,
-            });
-            clienteId = res.data.id;
-          }
-        } catch {
-          const res = await createCliente({
+    // Una sola petición: el servidor crea cliente, cabecera y detalles en una
+    // transacción, asigna el número y calcula montos. Luego espera a SUNAT.
+    const conDocumento = tipoDoc !== "0" && clienteDoc.trim();
+    await emitir({
+      tipo_comprobante_id: "03",
+      emisor_id: emisor.id,
+      serie_id: serie.id,
+      fecha_emision: fechaEmision,
+      metodo_pago: metodoPago || "Efectivo",
+      cliente: conDocumento
+        ? {
             tipo_documento_id: tipoDoc,
             nrodoc: clienteDoc.trim(),
-            razon_social: clienteNombre || clienteDoc.trim(),
+            razon_social: clienteNombre.trim() || clienteDoc.trim(),
             direccion: direccion || null,
-          });
-          clienteId = res.data.id;
-        }
-      }
-
-      // 2. Crear cabecera
-      const cabRes = await createComprobante({
-        emisor_id: emisor.id,
-        tipo_comprobante_id: "03",
-        serie_id: serie.id,
-        serie: serie.serie,
-        correlativo: serie.correlativo,
-        fecha_emision: fechaEmision,
-        moneda_id: "PEN",
-        op_gravadas: opGravadas.toFixed(2),
-        igv: totalIgv.toFixed(2),
-        total: total.toFixed(2),
-        cliente_id: clienteId,
-        forma_pago: "Contado",
-        metodo_pago: metodoPago || "Efectivo",
-      });
-      const comprobanteId = cabRes.data.id;
-
-      // 3. Crear detalles
-      for (let i = 0; i < items.length; i++) {
-        const it = items[i];
-        await createDetalle({
-          comprobante_id: comprobanteId,
-          item: i + 1,
-          descripcion: it.descripcion,
-          unidad_id: it.unidad_id || "NIU",
-          cantidad: it.cantidad,
-          valor_unitario: it.valor_unitario.toFixed(6),
-          precio_unitario: it.precio_unitario.toFixed(6),
-          igv: it.igv.toFixed(6),
-          porcentaje_igv: (IGV_RATE * 100).toFixed(6),
-          valor_total: it.valor_total.toFixed(6),
-          importe_total: it.importe_total.toFixed(6),
-        });
-      }
-
-      // 4. Firmar y encolar en SUNAT (202 inmediato)
-      await toast.promise(
-        emitirComprobante(comprobanteId),
-        {
-          loading: "Firmando y enviando a SUNAT…",
-          success: "Boleta en cola — esperando respuesta…",
-          error: (e) => `Error SUNAT: ${e?.response?.data?.message || e.message}`,
-        }
-      );
-
-      setResultado({ comprobante_id: comprobanteId, metodo_pago: metodoPago || "Efectivo", esperando: true });
-
-      // 5. Polling hasta respuesta final de SUNAT (máx 30 s)
-      const estadoFinal = await pollEstadoHastaFinal(comprobanteId, { timeout: 30000, intervalo: 2000 });
-
-      const aceptado   = ["ACEPTADO", "OBSERVADO"].includes(estadoFinal.estado_sunat);
-      const observado  = estadoFinal.estado_sunat === "OBSERVADO";
-      const enProceso  = ["GENERADO", "FIRMADO", "ENVIANDO"].includes(estadoFinal.estado_sunat);
-
-      setResultado({
-        comprobante_id: comprobanteId,
-        metodo_pago:    metodoPago || "Efectivo",
-        success:        aceptado,
-        observado,
-        en_proceso:     enProceso,
-        estado_sunat:   estadoFinal.estado_sunat,
-        codigo_sunat:   estadoFinal.cdr_code || estadoFinal.codigo_sunat,
-        mensaje_sunat:  estadoFinal.mensaje_sunat,
-      });
-
-      if (observado)      toast("⚠ Boleta aceptada con observaciones de SUNAT", { icon: "⚠️" });
-      else if (aceptado)  toast.success("✓ Boleta aceptada por SUNAT");
-      else if (enProceso) toast("SUNAT aún procesando — revisa en Ventas del Día", { icon: "⏳" });
-      else                toast.error(`SUNAT: ${estadoFinal.mensaje_sunat || estadoFinal.estado_sunat}`);
-
-    } catch (err) {
-      toast.error(err?.response?.data?.message || err.message || "Error al emitir boleta");
-    } finally {
-      setEmitiendo(false);
-    }
+          }
+        : null,
+      items: items.map(itemParaEmision),
+    }, { metodo_pago: metodoPago || "Efectivo" });
   };
 
   return (

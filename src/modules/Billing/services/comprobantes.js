@@ -7,15 +7,16 @@ export const getComprobantes = async () => {
   return res.data;
 };
 
-export const createComprobante = (data) => axiosURL.post("/comprobante", data);
+/**
+ * Emite factura (01), boleta (03) o nota de crédito (07) en una sola petición.
+ * El servidor crea cliente, cabecera y detalles en una transacción, asigna el
+ * número de serie y calcula montos e IGV; luego firma y encola el envío a SUNAT.
+ * NO enviar correlativo ni totales: el backend los rechaza.
+ * @returns {{ comprobante_id, numero, serie, correlativo, total, estado_sunat, advertencia }}
+ */
+export const emitirComprobanteCompleto = (payload) => axiosURL.post("/comprobante/emision", payload);
 
 export const deleteComprobante = (id) => axiosURL.delete(`/comprobante/${id}`);
-
-// ── Detalle (líneas del comprobante) ───────────────────────────────────────
-
-export const createDetalle = (data) => axiosURL.post("/detalle", data);
-
-export const deleteDetalle = (id) => axiosURL.delete(`/detalle/${id}`);
 
 // ── SUNAT — Emisión electrónica ─────────────────────────────────────────────
 
