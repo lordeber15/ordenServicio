@@ -1,0 +1,8 @@
+# node_modules del host (macOS) no debe pisar el `npm ci` del contenedor
+node_modules
+dist
+.git
+.githooks
+*.log
+.DS_Store
+check_imports.py

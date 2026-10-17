@@ -1,9 +1,17 @@
+# Plantilla procesada por la imagen oficial de nginx al arrancar (envsubst):
+# solo se sustituyen variables de entorno definidas (API_ORIGIN); las de nginx
+# ($uri, etc.) quedan intactas.
 server {
     listen 80;
     server_name _;
 
     root /usr/share/nginx/html;
     index index.html;
+
+    # No revelar la versión de nginx
+    server_tokens off;
+
+    include /etc/nginx/conf.d/security-headers.inc;
 
     # Compresión gzip
     gzip on;
@@ -12,6 +20,7 @@ server {
 
     # Assets con hash en el nombre → cache largo (Vite genera hashes)
     location ~* \.(js|css|woff2?|ttf|eot|svg|ico|png|jpg|webp)$ {
+        include /etc/nginx/conf.d/security-headers.inc;
         expires 1y;
         add_header Cache-Control "public, immutable";
         try_files $uri =404;
@@ -19,6 +28,7 @@ server {
 
     # index.html nunca se cachea (siempre pide la versión fresca)
     location = /index.html {
+        include /etc/nginx/conf.d/security-headers.inc;
         add_header Cache-Control "no-cache, no-store, must-revalidate";
     }
 
