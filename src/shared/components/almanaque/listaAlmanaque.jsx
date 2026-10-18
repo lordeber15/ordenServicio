@@ -1,7 +1,7 @@
 import TablaAlmanaque from "./tablaAlmanaque";
 import Drawer from "../drawer";
 import { useQuery } from "@tanstack/react-query";
-import { getAlmanaque, deleteAlmanaque } from "../../../modules/Almanaque/services/almanaques";
+import { getAlmanaque } from "../../../modules/Almanaque/services/almanaques";
 import { Link } from "react-router";
 import { FaPlus } from "react-icons/fa";
 

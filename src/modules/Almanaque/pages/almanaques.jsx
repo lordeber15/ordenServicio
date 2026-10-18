@@ -255,7 +255,7 @@ function Cotizacion() {
     fechaEmision,
     precioTotal: parseFloat(total.toFixed(2)),
     aCuenta: 0,
-    detalles: items.map(({ _pid, descripcion, cantidad, precioUnitario, _unidad }) => ({
+    detalles: items.map(({ descripcion, cantidad, precioUnitario, _unidad }) => ({
       descripcion, cantidad, precioUnitario,
       unidad: _unidad || "UND",
     })),
@@ -303,7 +303,7 @@ function Cotizacion() {
     if (savedCotizacion) {
       try {
         await doPrint(savedCotizacion.id);
-      } catch (err) {
+      } catch {
         toast.error("Error al generar PDF");
       }
       return;
@@ -315,7 +315,7 @@ function Cotizacion() {
       loading: "Guardando e imprimiendo...",
       success: async (res) => {
         setSavedCotizacion(res.data);
-        try { await doPrint(res.data.id); } catch (_) { /* PDF opcional */ }
+        try { await doPrint(res.data.id); } catch { /* PDF opcional */ }
         return `Cotización N° ${String(res.data.id).padStart(6, "0")} guardada`;
       },
       error: (err) => `Error: ${err?.response?.data?.message || err.message}`,
