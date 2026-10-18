@@ -1,0 +1,20 @@
+# Cabeceras de seguridad. Se incluye en el bloque server Y en cada location
+# que use add_header: en nginx, un add_header dentro de un location anula
+# TODOS los heredados del server.
+#
+# CSP:
+# - script-src 'self': solo el bundle de Vite; un <script> inyectado no corre.
+# - style-src 'unsafe-inline': requerido por atributos style de React y por
+#   react-hot-toast (inyecta <style>). No permite ejecutar JS.
+# - connect-src: la API (${API_ORIGIN}) y QZ Tray en localhost (wss 8181/8282/
+#   8383/8484, ws 8182/8283/8384/8485; hosts localhost y localhost.qz.io).
+# - frame-src blob:: impresión de PDF en iframe oculto (printPdfBlob.js).
+add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: ${API_ORIGIN}; font-src 'self' data:; connect-src 'self' ${API_ORIGIN} wss://localhost:* ws://localhost:* wss://localhost.qz.io:* ws://localhost.qz.io:*; frame-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'" always;
+add_header X-Frame-Options "DENY" always;
+add_header X-Content-Type-Options "nosniff" always;
+add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+add_header Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()" always;
+add_header Cross-Origin-Opener-Policy "same-origin" always;
+# HSTS solo tiene efecto sobre HTTPS (lo sirve el proxy TLS). Sin
+# includeSubDomains para no afectar otros subdominios del dominio.
+add_header Strict-Transport-Security "max-age=31536000" always;

@@ -95,7 +95,7 @@ function DetallesAlmanaque() {
         setTimeout(() => { document.body.removeChild(iframe); URL.revokeObjectURL(url); }, 1000);
       };
       setImpreso(true);
-    } catch (err) {
+    } catch {
       toast.error("Error al generar PDF");
     }
   };

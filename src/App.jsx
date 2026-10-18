@@ -11,7 +11,7 @@
  * - Rutas protegidas: Todas las demás (requieren autenticación)
  */
 
-import { lazy, Suspense, useMemo } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import "./App.css";
 
 // Helper: reintenta el import dinámico recargando la página si el chunk no existe
@@ -58,6 +58,8 @@ const DetalleCotizacion = lazyRetry(() => import("./shared/components/almanaque/
 import NavBar from "./shared/components/navbar";
 import Ingresos from "./shared/components/ingresosEgresos/ingresos";
 import ProtectedRoutes from "./shared/components/protectedRoutes";
+import { renovarSesion } from "./core/api/axiosURL";
+import { leerUsuarioGuardado, limpiarSesion } from "./core/auth/session";
 
 // Librerías
 import { Route, Routes, useLocation } from "react-router";
@@ -78,7 +80,12 @@ const LoadingFallback = () => (
  * @returns {JSX.Element} Estructura principal de la aplicación con rutas
  */
 function App() {
-  const storedUserData = useMemo(() => JSON.parse(localStorage.getItem("userData") || "null"), []);
+  // Al abrir o recargar la app, el access token (solo en memoria) se perdió:
+  // se recupera con la cookie httpOnly de refresh. Sin cookie válida → login.
+  useEffect(() => {
+    leerUsuarioGuardado(); // limpia el JWT que guardaban versiones anteriores
+    renovarSesion().catch(() => limpiarSesion());
+  }, []);
   
   /**
    * Hook para obtener la ubicación actual (pathname)
@@ -98,7 +105,7 @@ function App() {
           <Route path="/" element={<Login />} />
           
           {/* RUTAS PROTEGIDAS */}
-          <Route element={<ProtectedRoutes user={storedUserData} />}>
+          <Route element={<ProtectedRoutes />}>
             {/* Dashboard y Gestión */}
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/perfil" element={<Perfil />} />

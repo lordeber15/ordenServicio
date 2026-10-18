@@ -21,7 +21,10 @@ import { useState, useEffect, useRef } from "react";
 import { FaRegUser } from "react-icons/fa";
 import { LuLogOut } from "react-icons/lu";
 import { TiThMenu } from "react-icons/ti";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
+import { cerrarSesion } from "../../core/api/axiosURL";
+import { useSesion } from "../../core/auth/useSesion";
+import { leerUsuarioGuardado } from "../../core/auth/session";
 import { MdOutlineSpaceDashboard } from "react-icons/md";
 import { MdOutlineInventory } from "react-icons/md";
 import { HiOutlineDocumentReport } from "react-icons/hi";
@@ -33,11 +36,13 @@ function Navbar() {
    * ESTADO DEL COMPONENTE
    * 
    * - open: Controla si el dropdown está abierto o cerrado
-   * - userData: Datos del usuario desde localStorage (token, usuario, cargo)
+   * - userData: datos de presentación de la sesión (usuario, cargo); sin token
    * - dropdownRef: Referencia al elemento dropdown para detectar clicks fuera
    */
   const [open, setOpen] = useState(false);
-  const [userData, setUserData] = useState(null);
+  const { usuario } = useSesion();
+  const userData = usuario || leerUsuarioGuardado();
+  const navigate = useNavigate();
   const dropdownRef = useRef(null);
 
   /**
@@ -51,12 +56,6 @@ function Navbar() {
    * 3. Limpiar listener al desmontar el componente
    */
   useEffect(() => {
-    // Cargar datos del usuario desde localStorage
-    const storedUserData = localStorage.getItem("userData");
-    if (storedUserData) {
-      setUserData(JSON.parse(storedUserData));
-    }
-    
     /**
      * HANDLER: Cerrar dropdown al hacer click fuera
      * 
@@ -87,11 +86,15 @@ function Navbar() {
   /**
    * HANDLER: Cerrar sesión
    * 
-   * Elimina los datos del usuario de localStorage.
-   * El componente App.jsx detectará esto y redirigirá al login.
+   * Revoca la sesión en el servidor y luego vuelve al login. Se espera al
+   * logout antes de navegar: si no, el login vería la sesión aún activa y
+   * redirigiría de vuelta al dashboard.
    */
-  const handleLogout = () => {
-    localStorage.removeItem("userData");
+  const handleLogout = async (e) => {
+    e.preventDefault();
+    setOpen(false);
+    await cerrarSesion();
+    navigate("/", { replace: true });
   };
 
   return (

@@ -1,4 +1,4 @@
-import axiosURL from "../../../core/api/axiosURL";
+import axiosURL, { iniciarSesion } from "../../../core/api/axiosURL";
 
 /**
  * Obtener todos los usuarios (Rol: Admin)
@@ -13,20 +13,22 @@ export const getLogins = () => {
 /**
  * Autenticar usuario
  * 
- * Valida credenciales y retorna token JWT si son correctas.
+ * Valida credenciales. El access token queda en memoria y el refresh en una
+ * cookie httpOnly (ver core/api/axiosURL.js); nada sensible va a localStorage.
  * 
  * @param {Object} credentials - Credenciales de login
  * @param {string} credentials.usuario - Nombre de usuario
  * @param {string} credentials.password - Contraseña
- * @returns {Promise} Respuesta con token y datos del usuario
- * 
- * Ejemplo de uso:
- * const response = await authLogin({ usuario: 'admin', password: '123' });
- * localStorage.setItem('userData', JSON.stringify(response.data));
+ * @returns {Promise<{access_token, expires_in, usuario}>}
  */
-export const authLogin = (credentials) => {
-  return axiosURL.post("/auth/login", credentials);
-};
+export const authLogin = (credentials) => iniciarSesion(credentials);
+
+/**
+ * Cambiar la contraseña propia (exige la actual). El servidor cierra todas
+ * las sesiones del usuario: hay que volver a iniciar sesión.
+ */
+export const cambiarPassword = ({ password_actual, password_nueva }) =>
+  axiosURL.put("/auth/password", { password_actual, password_nueva });
 
 /**
  * Crear nuevo usuario

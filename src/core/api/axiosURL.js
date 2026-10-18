@@ -1,75 +1,112 @@
 /**
  * CONFIGURACIÓN BASE DE AXIOS
- * 
- * Este archivo crea y configura la instancia principal de Axios
- * que se usa en todos los módulos de request de la aplicación.
- * 
- * Características:
- * - Base URL configurada desde variables de entorno
- * - Interceptor para agregar token JWT automáticamente
- * - Manejo centralizado de autenticación
- * 
+ *
+ * Instancia que usan todos los servicios de la aplicación.
+ *
+ * Sesión (ver core/auth/session.js):
+ * - El access token (15 min) se agrega desde memoria al header Authorization.
+ * - withCredentials: el navegador envía la cookie httpOnly del refresh token,
+ *   que solo viaja a /auth/* (Path=/auth en el servidor).
+ * - Ante un 401 se renueva la sesión UNA vez con /auth/refresh y se reintenta
+ *   la petición. Si varias peticiones fallan a la vez, todas esperan la misma
+ *   renovación. Si la renovación falla, se cierra la sesión y se vuelve al login.
+ *
  * Uso:
  * import axiosURL from './axiosURL';
  * axiosURL.get('/servicios');
  */
 
 import axios from "axios";
+import { getAccessToken, establecerSesion, limpiarSesion } from "../auth/session";
 
-/**
- * Instancia de Axios configurada
- * 
- * baseURL: URL base del backend API
- * - Producción: Desde VITE_API_URL en .env
- * - Desarrollo: http://localhost:3000/ por defecto
- * 
- * Todas las peticiones usarán esta URL base:
- * Ejemplo: axiosURL.get('/servicios') → GET http://localhost:3000/servicios
- */
 const egresosoApi = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000/",
+  withCredentials: true,
 });
 
-/**
- * INTERCEPTOR DE REQUEST
- *
- * Agrega automáticamente el token JWT al header Authorization.
- * Usa cache en memoria para evitar JSON.parse en cada petición.
- */
-let cachedToken = null;
-let lastRaw = null;
+// Rutas de sesión: nunca disparan una renovación ni llevan el access token.
+const RUTAS_SESION = ["/auth/login", "/auth/refresh", "/auth/logout"];
+const esRutaSesion = (url = "") => RUTAS_SESION.some((r) => url.replace(/^\/?/, "/").startsWith(r));
 
 egresosoApi.interceptors.request.use((config) => {
-  const raw = localStorage.getItem("userData");
-  if (raw !== lastRaw) {
-    lastRaw = raw;
-    cachedToken = raw ? JSON.parse(raw)?.token : null;
-  }
-  if (cachedToken) {
-    config.headers.Authorization = `Bearer ${cachedToken}`;
+  const token = getAccessToken();
+  if (token && !esRutaSesion(config.url)) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
 
+let renovacionEnCurso = null;
+
 /**
- * INTERCEPTOR DE RESPUESTA
+ * Renueva el access token con la cookie de refresh.
  *
- * Ante un 401 (token ausente, inválido o expirado) limpia la sesión y devuelve
- * al login. El token dura 8 h; sin esto la app quedaría en un estado
- * inconsistente mostrando errores sueltos tras la expiración.
+ * Entre pestañas se serializa con Web Locks: el servidor ROTA el refresh en
+ * cada uso y, si dos pestañas enviaran el mismo token a la vez, la segunda
+ * parecería un robo y se revocarían todas las sesiones. Con el lock, la
+ * segunda pestaña espera y envía la cookie ya rotada.
+ * @returns {Promise<object>} datos de la sesión
  */
+export function renovarSesion() {
+  if (!renovacionEnCurso) {
+    const pedir = () => egresosoApi.post("/auth/refresh").then((r) => r.data);
+    const conLock = navigator.locks?.request
+      ? navigator.locks.request("imprenta-auth-refresh", pedir)
+      : pedir();
+    renovacionEnCurso = conLock
+      .then((datos) => {
+        establecerSesion(datos, renovarSesion);
+        return datos;
+      })
+      .finally(() => {
+        renovacionEnCurso = null;
+      });
+  }
+  return renovacionEnCurso;
+}
+
+function irAlLogin() {
+  limpiarSesion();
+  if (window.location.pathname !== "/") window.location.href = "/"; // el login vive en "/"
+}
+
 egresosoApi.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem("userData");
-      cachedToken = null;
-      lastRaw = null;
-      if (window.location.pathname !== "/") window.location.href = "/"; // el login vive en "/"
+  async (error) => {
+    const original = error.config;
+    if (error.response?.status !== 401 || !original || esRutaSesion(original.url)) {
+      return Promise.reject(error);
     }
-    return Promise.reject(error);
+    if (original._reintentado) {
+      irAlLogin();
+      return Promise.reject(error);
+    }
+    try {
+      await renovarSesion();
+    } catch {
+      irAlLogin();
+      return Promise.reject(error);
+    }
+    original._reintentado = true;
+    return egresosoApi(original);
   }
 );
 
-// Exportar instancia configurada para usar en otros módulos
+/** Inicia sesión: guarda el token en memoria y los datos de presentación. */
+export async function iniciarSesion(credenciales) {
+  const { data } = await egresosoApi.post("/auth/login", credenciales);
+  establecerSesion(data, renovarSesion);
+  return data;
+}
+
+/** Cierra la sesión en el servidor (revoca el refresh) y localmente. */
+export async function cerrarSesion() {
+  try {
+    await egresosoApi.post("/auth/logout");
+  } catch {
+    // Aunque el servidor no responda, la sesión local se cierra igual.
+  }
+  limpiarSesion();
+}
+
 export default egresosoApi;

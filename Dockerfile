@@ -22,8 +22,10 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 RUN find /usr/share/nginx/html -type f -exec chmod 644 {} \; \
     && find /usr/share/nginx/html -type d -exec chmod 755 {} \;
 
-# Copiar config nginx con try_files para React Router
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Plantillas nginx: la imagen oficial las procesa con envsubst al arrancar y
+# las deja en /etc/nginx/conf.d/. API_ORIGIN alimenta la CSP (connect-src/img-src).
+COPY nginx/*.template /etc/nginx/templates/
+ENV API_ORIGIN=http://localhost:3000
 
 EXPOSE 80
 

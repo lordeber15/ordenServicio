@@ -7,10 +7,13 @@ import {
   createLogin,
   deleteLogin,
   getFormatos,
-  updateUsuarioFormatos
+  updateUsuarioFormatos,
+  cambiarPassword
 } from "../services/loginrequest";
 import logoDefault from "../../../assets/ALEXANDER.webp";
 import { useNavigate } from "react-router";
+import { cerrarSesion } from "../../../core/api/axiosURL";
+import { actualizarUsuario, leerUsuarioGuardado } from "../../../core/auth/session";
 import toast from "react-hot-toast";
 import { getEmisores, createEmisor, updateEmisor, uploadEmisorLogo } from "../../Billing/services/emisores";
 import {
@@ -46,6 +49,7 @@ function Perfil() {
   const [activeTab, setActiveTab] = useState("seguridad"); // 'seguridad' | 'gestion' | 'empresa'
   
   // Estados para Seguridad
+  const [passwordActual, setPasswordActual] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isUploading, setIsUploading] = useState(false);
@@ -69,10 +73,7 @@ function Perfil() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const storedUserData = localStorage.getItem("userData");
-    if (storedUserData) {
-      setUserData(JSON.parse(storedUserData));
-    }
+    setUserData(leerUsuarioGuardado());
   }, []);
 
   const isAdmin = userData?.cargo === "Administrador";
@@ -87,9 +88,9 @@ function Perfil() {
     select: (res) => res.data,
   });
 
-  // Mutación: Actualizar propia contraseña
+  // Mutación: Actualizar propia contraseña (exige la actual; el servidor cierra todas las sesiones)
   const updatePassMutation = useMutation({
-    mutationFn: updateLogin,
+    mutationFn: cambiarPassword,
     onSuccess: () => {
       toast.success("Contraseña actualizada. Inicia sesión nuevamente.");
       handleLogout();
@@ -104,7 +105,7 @@ function Perfil() {
       toast.success("Foto de perfil actualizada ✅");
       const updatedUser = { ...userData, image_url: response.data.image_url };
       setUserData(updatedUser);
-      localStorage.setItem("userData", JSON.stringify(updatedUser));
+      actualizarUsuario({ image_url: response.data.image_url });
       setIsUploading(false);
     },
     onError: () => {
@@ -179,9 +180,10 @@ function Perfil() {
       ubigeo: emisor.ubigeo || "",
       telefono: emisor.telefono || "",
       usuario_sol: emisor.usuario_sol || "",
-      clave_sol: emisor.clave_sol || "",
+      // Los secretos nunca llegan del servidor: vacío = conservar el guardado.
+      clave_sol: "",
       client_id: emisor.client_id || "",
-      client_secret: emisor.client_secret || "",
+      client_secret: "",
     });
   }, [emisor]);
 
@@ -206,17 +208,17 @@ function Perfil() {
 
   // --- HANDLERS ---
 
-  const handleLogout = () => {
-    localStorage.removeItem("userData");
-    navigate("/");
+  const handleLogout = async () => {
+    await cerrarSesion();
+    navigate("/", { replace: true });
   };
 
   const handleUpdatePassword = async () => {
-    if (!password || !confirmPassword) return toast.error("Completa ambos campos");
+    if (!passwordActual || !password || !confirmPassword) return toast.error("Completa los tres campos");
     if (password !== confirmPassword) return toast.error("Las contraseñas no coinciden");
-    if (password.length < 4) return toast.error("Contraseña demasiado corta");
+    if (password.length < 10) return toast.error("La contraseña debe tener al menos 10 caracteres");
 
-    updatePassMutation.mutate({ id: userData.id, password, confirmPassword });
+    updatePassMutation.mutate({ password_actual: passwordActual, password_nueva: password });
   };
 
   const handleFileChange = (e) => {
@@ -366,11 +368,25 @@ function Perfil() {
 
               <div className="space-y-4 pt-4 border-t border-gray-50">
                 <div className="space-y-1">
+                  <label htmlFor="profile-actual-password" className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">Contraseña Actual</label>
+                  <input
+                    id="profile-actual-password"
+                    type="password"
+                    autoComplete="current-password"
+                    placeholder="••••••••"
+                    value={passwordActual}
+                    onChange={(e) => setPasswordActual(e.target.value)}
+                    className="w-full p-4 pr-12 bg-white dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 outline-none transition-all text-gray-700 dark:text-slate-200"
+                  />
+                </div>
+
+                <div className="space-y-1">
                   <label htmlFor="profile-nueva-password" className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase ml-1">Nueva Contraseña</label>
                   <div className="relative">
                     <input
                       id="profile-nueva-password"
                       type={showNewPassword ? "text" : "password"}
+                      autoComplete="new-password"
                       placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
@@ -570,7 +586,8 @@ function Perfil() {
                     <input
                       id="profile-clave-sol"
                       type={showClaveSol ? "text" : "password"}
-                      placeholder="••••••••"
+                      autoComplete="new-password"
+                      placeholder={emisor?.tiene_clave_sol ? "Guardada (cifrada) · escriba para reemplazarla" : "Sin configurar"}
                       value={empresaForm.clave_sol || ""}
                       onChange={(e) => setEmpresaForm({ ...empresaForm, clave_sol: e.target.value })}
                       className="w-full p-4 pr-12 bg-white dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 outline-none transition-all text-gray-700 dark:text-slate-200 font-mono"
@@ -601,7 +618,8 @@ function Perfil() {
                     <input
                       id="profile-client-secret"
                       type={showClientSecret ? "text" : "password"}
-                      placeholder="••••••••"
+                      autoComplete="new-password"
+                      placeholder={emisor?.tiene_client_secret ? "Guardado (cifrado) · escriba para reemplazarlo" : "Sin configurar"}
                       value={empresaForm.client_secret || ""}
                       onChange={(e) => setEmpresaForm({ ...empresaForm, client_secret: e.target.value })}
                       className="w-full p-4 pr-12 bg-white dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 outline-none transition-all text-gray-700 dark:text-slate-200 font-mono"
