@@ -109,7 +109,9 @@ function GuiaTransportista() {
       const destinatario = await garantizarCliente(destinatarioDoc, destinatarioNombre);
 
       // 2. Crear cabecera (Adaptado para Transportista - 31)
-      const cabGuia = await axiosURL.post("/guia", {
+      // Cabecera + ítems en una sola petición: el servidor los guarda en una
+      // transacción (con su número) y luego envía a SUNAT.
+      const cabecera = {
         emisor_id: emisor.id,
         tipo_guia: "31",
         serie_id: serie.id,
@@ -149,26 +151,18 @@ function GuiaTransportista() {
         remitente_razon_social: remitenteNombre,
         doc_referencia_serie: docRefSerie,
         doc_referencia_correlativo: docRefCorrelativo
-      });
+      };
 
-      const guiaId = cabGuia.data.id;
-
-      // 3. Crear los detalles de la guía /guia/detalle
-      for (let i = 0; i < items.length; i++) {
-        const it = items[i];
-        await axiosURL.post("/guia/detalle", {
-          guia_id: guiaId,
-          item: i + 1,
-          descripcion: it.descripcion,
-          unidad_id: it.unidad_id,
-          cantidad: it.cantidad,
-          codigo_sunat: it.codigo || "",
-        });
-      }
-
-      // 4. Emitir a SUNAT
       const emitRes = await toast.promise(
-        axiosURL.post("/guia/emitir", { guia_id: guiaId }),
+        axiosURL.post("/guia/emision", {
+          ...cabecera,
+          items: items.map((it) => ({
+            descripcion: it.descripcion,
+            unidad_id: it.unidad_id,
+            cantidad: it.cantidad,
+            codigo_sunat: it.codigo || null,
+          })),
+        }),
         {
           loading: "Enviando Guía de Transportista a SUNAT...",
           success: "Guía enviada a SUNAT",
@@ -176,6 +170,7 @@ function GuiaTransportista() {
         }
       );
 
+      const guiaId = emitRes.data.guia_id;
       // Recibida por SUNAT (ticket): el resultado real llega al consultar el ticket.
       setResultado({ guia_id: guiaId, en_proceso: true, mensaje_sunat: emitRes.data.message, codigo_sunat: "TICKET" });
       const final = await esperarResultadoGuia(guiaId);

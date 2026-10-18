@@ -180,9 +180,10 @@ function Perfil() {
       ubigeo: emisor.ubigeo || "",
       telefono: emisor.telefono || "",
       usuario_sol: emisor.usuario_sol || "",
-      clave_sol: emisor.clave_sol || "",
+      // Los secretos nunca llegan del servidor: vacío = conservar el guardado.
+      clave_sol: "",
       client_id: emisor.client_id || "",
-      client_secret: emisor.client_secret || "",
+      client_secret: "",
     });
   }, [emisor]);
 
@@ -585,7 +586,8 @@ function Perfil() {
                     <input
                       id="profile-clave-sol"
                       type={showClaveSol ? "text" : "password"}
-                      placeholder="••••••••"
+                      autoComplete="new-password"
+                      placeholder={emisor?.tiene_clave_sol ? "Guardada (cifrada) · escriba para reemplazarla" : "Sin configurar"}
                       value={empresaForm.clave_sol || ""}
                       onChange={(e) => setEmpresaForm({ ...empresaForm, clave_sol: e.target.value })}
                       className="w-full p-4 pr-12 bg-white dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 outline-none transition-all text-gray-700 dark:text-slate-200 font-mono"
@@ -616,7 +618,8 @@ function Perfil() {
                     <input
                       id="profile-client-secret"
                       type={showClientSecret ? "text" : "password"}
-                      placeholder="••••••••"
+                      autoComplete="new-password"
+                      placeholder={emisor?.tiene_client_secret ? "Guardado (cifrado) · escriba para reemplazarlo" : "Sin configurar"}
                       value={empresaForm.client_secret || ""}
                       onChange={(e) => setEmpresaForm({ ...empresaForm, client_secret: e.target.value })}
                       className="w-full p-4 pr-12 bg-white dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 outline-none transition-all text-gray-700 dark:text-slate-200 font-mono"
