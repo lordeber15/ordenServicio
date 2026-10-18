@@ -20,6 +20,7 @@ import {
 
 import Pagination from "../../../shared/components/pagination";
 import Drawer from "../../../shared/components/drawer";
+import PanelSunat from "../components/PanelSunat";
 
 Modal.setAppElement("#root");
 
@@ -302,6 +303,9 @@ function Dashboard() {
             </div>
           ))}
         </div>
+
+        {/* FACTURACIÓN ELECTRÓNICA: pendientes SUNAT, worker y certificado */}
+        <PanelSunat />
 
         {/* SEARCH + TABS */}
         <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-gray-100 dark:border-slate-800 shadow-sm space-y-4">
