@@ -7,7 +7,7 @@
  * - Formulario de login con usuario y contraseña
  * - Validación de campos obligatorios
  * - Autenticación con React Query (useMutation)
- * - Almacenamiento de token en localStorage
+ * - Sesión: token en memoria + cookie httpOnly (ver core/auth/session.js)
  * - Redirección automática al dashboard tras login exitoso
  * - Notificaciones toast para éxito y errores
  * - Soporte para Enter key en campo de contraseña
@@ -24,7 +24,8 @@
 
 import { useState } from "react";
 import logo from "../../../assets/ALEXANDER.webp";
-import { useNavigate } from "react-router";
+import { Navigate, useNavigate } from "react-router";
+import { useSesion } from "../../../core/auth/useSesion";
 import { useMutation } from "@tanstack/react-query";
 import { authLogin } from "../services/loginrequest";
 import toast from "react-hot-toast";
@@ -42,6 +43,7 @@ function Login() {
   const [contrasena, setContrasena] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const { estado } = useSesion();
 
   /**
    * MUTACIÓN DE LOGIN CON REACT QUERY
@@ -61,12 +63,9 @@ function Login() {
     /**
      * CALLBACK: Login exitoso
      * 
-     * 1. Guardar datos del usuario (token, id, usuario, cargo) en localStorage
-     * 2. Mostrar notificación de éxito
-     * 3. Redirigir al dashboard
+     * La sesión ya quedó guardada por authLogin (core/api/axiosURL.js).
      */
-    onSuccess: (res) => {
-      localStorage.setItem("userData", JSON.stringify(res.data));
+    onSuccess: () => {
       toast.success("¡Acceso correcto!");
       navigate("/dashboard");
     },
@@ -102,6 +101,9 @@ function Login() {
     // Ejecutar mutación de login
     loginMutation.mutate({ usuario, password: contrasena });
   };
+
+  // Con sesión vigente (cookie de refresh válida) no tiene sentido mostrar el login.
+  if (estado === "autenticado" && !loginMutation.isPending) return <Navigate to="/dashboard" replace />;
 
   return (
     // Contenedor principal con gradiente de fondo
