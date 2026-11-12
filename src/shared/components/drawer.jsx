@@ -124,6 +124,13 @@ export default function Drawer() {
           )}
           {isAdmin && (
             <li>
+              <Link to="/pagos" onClick={() => setIsOpen(false)} className={linkClass}>
+                Pagos Yape / Plin
+              </Link>
+            </li>
+          )}
+          {isAdmin && (
+            <li>
               <Link to="/reportes/documentos" onClick={() => setIsOpen(false)} className={linkClass}>
                 Reporte de Documentos
               </Link>
