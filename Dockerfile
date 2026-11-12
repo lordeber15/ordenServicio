@@ -25,7 +25,7 @@ RUN find /usr/share/nginx/html -type f -exec chmod 644 {} \; \
 # Plantillas nginx: la imagen oficial las procesa con envsubst al arrancar y
 # las deja en /etc/nginx/conf.d/. API_ORIGIN alimenta la CSP (connect-src/img-src).
 COPY nginx/*.template /etc/nginx/templates/
-ENV API_ORIGIN=http://localhost:3000
+ENV API_ORIGIN=https://api.impalexander.com
 
 EXPOSE 80
 

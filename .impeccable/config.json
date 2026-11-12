@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "src/modules/Pagos/components/PagoUi.jsx"
+        ],
+        "createdAt": "2026-11-12T20:50:43.441Z",
+        "reason": "Claude: matches the project's existing summary-card pattern (border-l-4 cards in src/modules/Sales/pages/SalesPage.jsx)"
+      }
+    ]
+  }
+}

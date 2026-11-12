@@ -37,6 +37,7 @@ const Inventario = lazyRetry(() => import("./modules/Inventory/pages/InventoryPa
 const Reportes = lazyRetry(() => import("./modules/Reports/pages/ReportsPage"));
 const ReporteDocumentos = lazyRetry(() => import("./modules/Reports/pages/DocumentosReportPage"));
 const Ventas = lazyRetry(() => import("./modules/Sales/pages/SalesPage"));
+const Pagos = lazyRetry(() => import("./modules/Pagos/pages/PagosPage"));
 
 // Páginas de Facturación (Lazy Loaded)
 const Boleta = lazyRetry(() => import("./modules/Billing/pages/boleta"));
@@ -127,6 +128,7 @@ function App() {
             <Route path="/reportes" element={<Reportes />} />
             <Route path="/reportes/documentos" element={<ReporteDocumentos />} />
             <Route path="/ventas" element={<Ventas />} />
+            <Route path="/pagos" element={<Pagos />} /> {/* Yape/Plin: solo Administrador */}
 
             {/* Cotizaciones */}
             <Route path="/almanaque/new" element={<Cotizacion />} />

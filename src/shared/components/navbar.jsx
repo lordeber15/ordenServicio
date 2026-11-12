@@ -27,6 +27,7 @@ import { useSesion } from "../../core/auth/useSesion";
 import { leerUsuarioGuardado } from "../../core/auth/session";
 import { MdOutlineSpaceDashboard } from "react-icons/md";
 import { MdOutlineInventory } from "react-icons/md";
+import { MdOutlinePayments } from "react-icons/md";
 import { HiOutlineDocumentReport } from "react-icons/hi";
 import { FaReceipt } from "react-icons/fa6";
 import ThemeToggle from "./ThemeToggle";
@@ -165,6 +166,18 @@ function Navbar() {
               >
                 <FaReceipt className="text-white" />
                 Ventas
+              </Link>
+            )}
+
+            {/* OPCIÓN: Pagos Yape/Plin - Solo Administrador */}
+            {isAdmin && (
+              <Link
+                to={"/pagos"}
+                onClick={() => setOpen(false)}
+                className="px-4 py-2 cursor-pointer hover:bg-sky-500 dark:hover:bg-slate-800 text-white w-full text-left flex flex-row gap-2 justify-start items-center hover:text-white transition-colors"
+              >
+                <MdOutlinePayments className="text-white" />
+                Pagos Yape/Plin
               </Link>
             )}
 
